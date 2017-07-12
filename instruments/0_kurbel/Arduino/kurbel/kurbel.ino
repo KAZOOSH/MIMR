@@ -13,6 +13,12 @@
 // dummy byte indicating start of Ableton data
 #define SYNC_BYTE 255
 
+
+//sendInverval
+#define sendInterval 5
+int iSent = 0;
+
+
 CRGB leds[NUM_LEDS];
 
 byte serialIn[4] = {0,0,0,0};
@@ -37,7 +43,7 @@ void setup() {
   digitalWrite(GROUND_PIN,LOW);
 
   //init serial
-  Serial.begin(9600);
+  Serial.begin(38400);
 
   // initialize all the readings to 0:
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -98,7 +104,6 @@ void ledColorManual(){
 
 void setLedColor(int value){
   if (serialIn[0] == 0){
-    Serial.println("automode");
     ledAutoMode(value);
   }
   else if (serialIn[0] == 1){
@@ -143,8 +148,11 @@ void loop() {
   setLedColor(127-ltemp);
 
   //write to Serial
-  Serial.println((int)(127 - ltemp));
-
+  if (iSent == 0) Serial.println((int)(127 - ltemp));
+  else{ 
+    ++iSent;
+    if(iSent == sendInterval) iSent = 0;
+  }
   //wait for next read
   delay(10);
 }
