@@ -10,7 +10,7 @@ print "Serial to MIDI"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyUSB0", 38400, bytesize=8, parity='N', timeout=0 )
+serial = Serial( "/dev/ttyUSB0", 9600, bytesize=8, parity='N', timeout=0 )
 
 
 # open UDP socket to listen raveloxmidi
