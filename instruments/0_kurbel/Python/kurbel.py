@@ -19,25 +19,48 @@ udpIn.bind( ('', 5010 ) )
 udpIn.settimeout(0.1)
 
 # open UDP socket to send raveloxmidi
-#udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-#udpOut.connect( ( "localhost", 5006 ) )
+udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+udpOut.connect( ( "localhost", 5006 ) )
 
 
 # initialize old value for change detection
 oldvalue = 0
 	
-
+# midi values
+midiMode = 0
+midiHue = 0
+midiSat = 0
+midiVal = 0
 
 # loop infinitely
 while True:
 	try:
 		data, addr = udpIn.recvfrom(1024)
-		print ":".join(format(ord(c)) for c in data)
-		print ":".join("{0:x}".format(ord(c)) for c in data)
+		#print ":".join(format(ord(c)) for c in data)
+		#print ":".join("{0:x}".format(ord(c)) for c in data)
 		
-		if ord(data[0]) == 176 and ord(data[1]) == 21:
-			elements = [255,1,min(2*ord(data[2]),254),254,0]
-			print elements[2]
+		elements = [255,midiMode,midiHue,midiSat,midiVal]
+		# control command
+		if ord(data[0]) == 176:
+			#set mode
+			if ord(data[1]) == 14:
+				if ord(data[2]) <= 2:
+					midiMode = ord(data[2])
+				else: 
+					midiMode = 0
+			#set hue
+			elif ord(data[1]) == 15:
+				midiHue = min(2*ord(data[2]),254)
+			#set saturation
+			elif ord(data[1]) == 16:
+				midiSat = min(2*ord(data[2]),254)
+			#set brightness
+			elif ord(data[1]) == 17:
+				midiVal = min(2*ord(data[2]),254)
+
+			elements = [255,midiMode,midiHue,midiSat,midiVal]
+			print elements
+
 			for x in elements:
 				#sys.stdout.write(chr(x))
 				#sys.stdout.flush()
@@ -49,7 +72,7 @@ while True:
 
 	# try to read value from Arduino
 	safe = True
-'''
+
 	while safe:
 		
 		try:	
@@ -80,7 +103,7 @@ while True:
 
 		
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
-'''	
+	
 
 		
 
