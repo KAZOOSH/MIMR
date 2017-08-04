@@ -6,11 +6,11 @@ from time import sleep
 from serial import Serial
 import struct
 
-print "Serial to MIDI"
+print "Start Kurbel				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyUSB0", 38400, bytesize=8, parity='N', timeout=0 )
+serial = Serial( "/dev/ttyUSB0", 9600, bytesize=8, parity='N', timeout=0 )
 
 
 # open UDP socket to listen raveloxmidi
@@ -25,7 +25,7 @@ udpOut.connect( ( "localhost", 5006 ) )
 
 # initialize old value for change detection
 oldvalue = 0
-	
+
 # midi values
 midiMode = 0
 midiHue = 0
@@ -38,7 +38,7 @@ while True:
 		data, addr = udpIn.recvfrom(1024)
 		#print ":".join(format(ord(c)) for c in data)
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
-		
+
 		elements = [255,midiMode,midiHue,midiSat,midiVal]
 		# control command
 		if ord(data[0]) == 176:
@@ -46,7 +46,7 @@ while True:
 			if ord(data[1]) == 14:
 				if ord(data[2]) <= 2:
 					midiMode = ord(data[2])
-				else: 
+				else:
 					midiMode = 0
 			#set hue
 			elif ord(data[1]) == 15:
@@ -59,13 +59,13 @@ while True:
 				midiVal = min(2*ord(data[2]),254)
 
 			elements = [255,midiMode,midiHue,midiSat,midiVal]
-			print elements
+			#print elements
 
 			for x in elements:
 				#sys.stdout.write(chr(x))
 				#sys.stdout.flush()
 				serial.write(chr(x))
-		
+
 
 	except Exception:
 		pass
@@ -74,8 +74,8 @@ while True:
 	safe = True
 
 	while safe:
-		
-		try:	
+
+		try:
 			value = serial.readline().strip()
 
 			value = int(value)
@@ -93,20 +93,13 @@ while True:
 			oldvalue = value
 
 			# log current value
-			#sys.stdout.write( "%d   \r" % value )
-			#sys.stdout.flush()
+			sys.stdout.write( "%d   \r" % value )
+			sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 1, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
 			udpOut.send( bytes )
 		#print serial.readline()
 
-		
+
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
-	
-
-		
-
-
-		
-		
