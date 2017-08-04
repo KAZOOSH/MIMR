@@ -43,7 +43,7 @@ void setup() {
   digitalWrite(GROUND_PIN,LOW);
 
   //init serial
-  Serial.begin(38400);
+  Serial.begin(9600);
 
   // initialize all the readings to 0:
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -153,6 +153,4 @@ void loop() {
     ++iSent;
     if(iSent == sendInterval) iSent = 0;
   }
-  //wait for next read
-  delay(10);
 }
