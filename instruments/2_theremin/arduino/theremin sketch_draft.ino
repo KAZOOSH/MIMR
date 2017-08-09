@@ -11,7 +11,7 @@
  * Academy of Media Arts Cologne
 
  */
-#include <Stdio.h>
+#include "Arduino.h"
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
@@ -56,6 +56,18 @@ void setup()
   sbi (TIMSK2,OCIE2A);          // enable Timer2 Interrupt
 
 }
+
+// steps from 0 to 1000 for binning
+int bin1 = 1;
+int bin2 = 3;
+int bin3 = 10;
+int bin4 = 50;
+int bin5 = 100;
+int bin6 = 1000;
+
+int minval = 100000;
+int maxval = 0;
+
 
 volatile byte i_tics;
 volatile byte f_ready ;
@@ -113,16 +125,32 @@ void loop()
   if (cal > cal_max) cal_max=cal;
 
   digitalWrite(pinLed,1);  // let LED blink
-  Serial.print(cnt);
-  Serial.print("  "); 
+  
+  //Serial.print(cnt);
+  //Serial.print("  "); 
 
   if ( tune < 0) tune*=-1;  // absolute value
    sprintf(st1, " %04d",tune);
   
-  //Serial.print(st1);
+  Serial.print(st1);
+  
+  if(st1 < minval){
+    minval = st1;
+  }
+  if(st1 > maxval){
+    maxval = st1;
+  }
+  
+  
+  
+  // check percentual bins !!! 
+  // wich val is cuurent bin!
+  
+  
+  
   //Serial.print("  "); 
 
-  Serial.print(freq_in);
+  //Serial.print(freq_in);
   //Serial.print("  ");
 /*
   Serial.print(freq_zero);
