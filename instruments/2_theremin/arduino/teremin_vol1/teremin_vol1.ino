@@ -27,7 +27,7 @@ void setup()
   pinMode(pinFreq, INPUT);
   pinMode(8, OUTPUT);
 
-  Serial.begin(115200);        // connect to the serial port
+  Serial.begin(57600);        // connect to the serial port
 
   // hardware counter setup ( refer atmega168.pdf chapter 16-bit counter1)
   TCCR1A=0;                   // reset timer/counter1 control register A
@@ -94,56 +94,44 @@ void loop()
     freq_zero=freq_in;
     freq_cal=freq_in;
     cal_max=0;
-  //  Serial.print("** START **");
+    Serial.print("** START **");
   }
 
   // autocalibration
   if (cnt % 20 == 0) {   // try autocalibrate after n cycles
-   // Serial.print("*");
+    Serial.print("*");
     if (cal_max <= 2) {
       freq_zero=freq_in;
-    //  Serial.print(" calibration");
+      Serial.print(" calibration");
     }
     freq_cal=freq_in;
     cal_max=0;
-   // Serial.println("");
+    Serial.println("");
   }
   cal = freq_in-freq_cal;
   if ( cal < 0) cal*=-1;  // absolute value
   if (cal > cal_max) cal_max=cal;
 
   digitalWrite(pinLed,1);  // let LED blink
-  //Serial.print(cnt);
-  //Serial.print("  "); 
+  Serial.print(cnt);
+  Serial.print("  "); 
 
-  //if ( tune < 0) tune*=-1;  // absolute value
-   //sprintf(st1, " %04d",tune);
-   tune = tune* -1;
-   
-   int threshold = 200;
-   int maximum = 4000;
-   if(tune > threshold){
-    if(tune > maximum) tune = maximum;
-    tune -= threshold;
-    tune = (float)tune /(float)(maximum-threshold) *127;
-    Serial.println(tune);
-   }
-   else if (tune < -8000){
-    Serial.println("*");
-   }
-   
-  
- // Serial.print("  "); 
+  if ( tune < 0) tune*=-1;  // absolute value
+   sprintf(st1, " %04d",tune);
+  Serial.print(st1);
+  Serial.print("  "); 
 
- // Serial.println(freq_in);
-  //Serial.print("  ");
+  Serial.print(freq_in);
+  Serial.print("  ");
 /*
   Serial.print(freq_zero);
   Serial.print("  ");
   Serial.print(cal_max);
 */
-  //Serial.println("");
+  Serial.println("");
   digitalWrite(pinLed,0);
+  
+  
 
 }
 //******************************************************************

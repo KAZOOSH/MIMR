@@ -1,6 +1,6 @@
 /*
  * MIMR - KURBEL
- * KAZOOSH! - Brian Eschrich 2017
+ * KAZOOSH! - Brian Eschrich, Nick Schwarzenberg 2017
  * reads Values from the Kurbel, smooths them a little and sends it via serial to the pi
  */
 
