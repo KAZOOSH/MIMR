@@ -155,13 +155,14 @@ void setup()
   TCCR1B |= (1 << CS10); // no prescaler - 62KHz
   TCCR1A |= (1 << COM1A1);
 
+  /*
   LED.setOutput(13);
   ledColor.b = 255; ledColor.g = 0; ledColor.r = 0; // RGB Value -> Blue
   String a;
   while(1) {
+    Serial.print("\START\n");
+    
 
-    
-    
     Serial.print("\nR: ");
     while(Serial.available() < 2) {}
     a = Serial.readStringUntil('\n');
@@ -179,11 +180,12 @@ void setup()
     a = Serial.readStringUntil('\n');
     ledColor.b = a.toInt();
     Serial.print(ledColor.b);
-    
+
     LED.set_crgb_at(0, ledColor); // Set value at LED found at index 0
     LED.sync(); // Sends the value to the LED
-    delay(500);  
+    //delay(500);  
   }
+  */
 }
 
 
