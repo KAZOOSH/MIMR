@@ -6,7 +6,7 @@ from time import sleep
 from serial import Serial
 import struct
 
-print "Start Kurbel				"
+print "Start Kurbel"
 
 '''init serial and network'''
 # open serial port to Arduino
