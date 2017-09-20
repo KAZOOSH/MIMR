@@ -6,11 +6,11 @@ from time import sleep
 from serial import Serial
 import struct
 
-print "Start Kurbel"
+print "Start Kurbel				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyUSB0", 9600, bytesize=8, parity='N', timeout=0 )
+serial = Serial( "/dev/ttyACM0", 38400, bytesize=8, parity='N', timeout=0.1 )
 
 
 # open UDP socket to listen raveloxmidi
@@ -61,10 +61,10 @@ while True:
 			elements = [255,midiMode,midiHue,midiSat,midiVal]
 			#print elements
 
-			for x in elements:
+			#for x in elements:
 				#sys.stdout.write(chr(x))
 				#sys.stdout.flush()
-				serial.write(chr(x))
+				#serial.write(chr(x))
 
 
 	except Exception:
@@ -93,13 +93,15 @@ while True:
 			oldvalue = value
 
 			# log current value
-			sys.stdout.write( "%d   \r" % value )
-			sys.stdout.flush()
+			
+			print value
+			#sys.stdout.write( "%d   \r" % value )
+			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
 			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
 			udpOut.send( bytes )
 		#print serial.readline()
-
+			
 
 		#print ":".join("{0:x}".format(ord(c)) for c in data)

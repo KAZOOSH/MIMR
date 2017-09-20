@@ -15,7 +15,7 @@
 
 
 //sendInverval
-#define sendInterval 5
+#define sendInterval 1000
 int iSent = 0;
 
 
@@ -28,7 +28,7 @@ byte serialIn[4] = {0,0,0,0};
 #define SENSOR_PIN A1
 #define POWER_PIN A2
 
-const int numReadings = 5; //number of smoothing values
+const int numReadings = 10; //number of smoothing values
 int readings[numReadings];      // the readings from the analog input
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
@@ -43,7 +43,7 @@ void setup() {
   digitalWrite(GROUND_PIN,LOW);
 
   //init serial
-  Serial.begin(9600);
+  Serial.begin(38400);
 
   // initialize all the readings to 0:
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -137,12 +137,15 @@ void loop() {
   int value = analogRead(SENSOR_PIN);
   //smooth the value
   smooth(value);
-  
-  //minimum read is 128, so subtract value
-  value -= 128;
+  //minimum read is approx. 100, so subtract value
+  value = average - 100;
 
   //remap to 1Byte -> 0-127
-  float ltemp = (float)value / (1023-128) * 127;
+  float ltemp = (float)value / (1023-100) * 127;
+
+  //Serial.print(ltemp);
+  //Serial.print(' ');
+  //Serial.println((int)(127 - ltemp));
 
   //led color
   setLedColor(127-ltemp);

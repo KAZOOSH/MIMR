@@ -5,7 +5,9 @@ const int pingPin = 7;
 
 double min = 10000;
 double max= 1;
-int result;
+float result;
+
+float res;
 
 void setup() {
   // initialize serial communication:
@@ -44,12 +46,18 @@ void loop() {
     min = cm;
   }
 
-  result = (int)(((min + cm) / (max-min)) * 127);
+  result = (float)(((min + cm) / (max-min)) * 127);
   if(result<0) {result=0;}
   if(result>127) {result=127;}
-  Serial.println(result);
 
-  delay(100);
+  res = 0.8*res + 0.2*result;
+  
+  
+  
+  
+  Serial.println((int)res);
+
+  delay(30);
 }
 
 long microsecondsToInches(long microseconds) {
