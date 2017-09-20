@@ -10,7 +10,7 @@ print "Start Kurbel				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyACM0", 38400, bytesize=8, parity='N', timeout=0.1 )
+serial = Serial( "/dev/ttyACM0", 38400, bytesize=8, parity='N', timeout=0.01 )
 
 
 # open UDP socket to listen raveloxmidi
@@ -66,20 +66,29 @@ while True:
 				#sys.stdout.flush()
 				#serial.write(chr(x))
 
-
 	except Exception:
 		pass
 
-	# try to read value from Arduino
 	safe = True
 
 	while safe:
 
 		try:
-			value = serial.readline().strip()
+			# try to read line from Arduino
+			line = serial.readline()
 
-			value = int(value)
-			safe = True
+			# got complete line with expected start and end character?
+			if line[:1] == ":" and line[-1:] == "\n":
+
+				# get numeric value
+				value = int( line[1:-1] )
+				
+				# read was successfull
+				safe = True
+
+			else:
+				safe = False
+
 		except Exception:
 			safe = False
 
@@ -93,7 +102,6 @@ while True:
 			oldvalue = value
 
 			# log current value
-			
 			print value
 			#sys.stdout.write( "%d   \r" % value )
 			#sys.stdout.flush()
@@ -102,6 +110,6 @@ while True:
 			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
 			udpOut.send( bytes )
 		#print serial.readline()
-			
+
 
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
