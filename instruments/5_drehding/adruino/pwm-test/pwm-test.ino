@@ -209,7 +209,7 @@ void test4() {
 
 void setup() {
     Serial.begin(9600);
-    pinMode(9, OUTPUT);
+    
     //pinMode(6, OUTPUT);
 
     
