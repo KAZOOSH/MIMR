@@ -13,10 +13,9 @@
 // dummy byte indicating start of Ableton data
 #define SYNC_BYTE 255
 
-
-//sendInverval
-#define sendInterval 5
-int iSent = 0;
+// Arduino -> RasPi send interval (microseconds)
+#define sendInterval 20*1000L // 20 ms = 50 fps
+unsigned long lastSendTime = 0;
 
 
 CRGB leds[NUM_LEDS];
@@ -43,7 +42,7 @@ void setup() {
   digitalWrite(GROUND_PIN,LOW);
 
   //init serial
-  Serial.begin(9600);
+  Serial.begin(38400);
 
   // initialize all the readings to 0:
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -137,20 +136,32 @@ void loop() {
   int value = analogRead(SENSOR_PIN);
   //smooth the value
   smooth(value);
-  
-  //minimum read is 128, so subtract value
-  value -= 128;
+  //minimum read is approx. 100, so subtract value
+  value = average - 100;
 
   //remap to 1Byte -> 0-127
-  float ltemp = (float)value / (1023-128) * 127;
+  float ltemp = (float)value / (1023-100) * 127;
+
+  //Serial.print(ltemp);
+  //Serial.print(' ');
+  //Serial.println((int)(127 - ltemp));
 
   //led color
   setLedColor(127-ltemp);
 
-  //write to Serial
-  if (iSent == 0) Serial.println((int)(127 - ltemp));
-  else{ 
-    ++iSent;
-    if(iSent == sendInterval) iSent = 0;
+  // time to update RasPi with current value?
+  if ( micros() - lastSendTime > sendInterval )
+  {
+    // remember time
+    lastSendTime = micros();
+    
+    // write start character
+    Serial.print( ":" );
+    
+    // write value as ASCII and append line break
+    Serial.println( (int) (127 - ltemp) );
+
+    // wait for transmission to finish
+    Serial.flush();
   }
 }
