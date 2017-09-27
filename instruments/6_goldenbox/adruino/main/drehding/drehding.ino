@@ -1,5 +1,3 @@
-#include <WS2812.h>
-
 #define NUMBER_OF_SHIFT_CHIPS   3
 #define DATA_WIDTH NUMBER_OF_SHIFT_CHIPS * 8
 #define PULSE_WIDTH_USEC 5
@@ -21,34 +19,19 @@ const float supplyVoltage = 13.8; 	//Important: Always set DC input Voltage of S
 static float SupplySetpoint = 0;	//output voltage
 
 
-WS2812 LED(1);
-cRGB ledColor;
-
 BYTES_VAL_T read_shift_regs() {
     long bitVal;
     BYTES_VAL_T bytesVal = 0;
 
-    /* Trigger a parallel Load to latch the state of the data lines,
-    */
-    //digitalWrite(clockEnablePin, HIGH);
     digitalWrite(ploadPin, LOW);
     delayMicroseconds(PULSE_WIDTH_USEC);
     digitalWrite(ploadPin, HIGH);
-    //digitalWrite(clockEnablePin, LOW);
-
-    /* Loop to read each bit value from the serial out line
-     * of the SN74HC165N.
-    */
+    
     for(int i = 0; i < DATA_WIDTH; i++)
     {
         bitVal = digitalRead(dataPin);
-
-        /* Set the corresponding bit in bytesVal.
-        */
         bytesVal |= (bitVal << ((DATA_WIDTH-1) - i));
 
-        /* Pulse the Clock (rising edge shifts the next bit).
-        */
         digitalWrite(clockPin, HIGH);
         delayMicroseconds(PULSE_WIDTH_USEC);
         digitalWrite(clockPin, LOW);
@@ -58,10 +41,8 @@ BYTES_VAL_T read_shift_regs() {
 }
 
 inline byte registerValuteToSwitchValue(BYTES_VAL_T regValue) {
-  //Serial.print("\nbegin:");
-  //Serial.print(regValue);
+
   for(int i = 0; i < DATA_WIDTH; i++) {
-    //Serial.print(i);
     if(!((regValue >> i) & 1)) return i;
   }
   return 0;
@@ -123,69 +104,30 @@ void setup()
 {
     Serial.begin(9600);
 
-	//init shift registers for switch
+	  //init shift registers for switch
     pinMode(ploadPin, OUTPUT);
-    //pinMode(clockEnablePin, OUTPUT);
+
     pinMode(clockPin, OUTPUT);
     pinMode(dataPin, INPUT);
 
     digitalWrite(clockPin, LOW);
     digitalWrite(ploadPin, HIGH);
-
-	/*
-    pinValues = read_shift_regs();
-    display_pin_values();
-    oldPinValues = pinValues;
-	*/
-
 	
-	//init led pins
+  	//init led pins
     pinMode(redLedPin, OUTPUT);
     pinMode(yellowLedPin, OUTPUT);
 	
-	//init supply pins
-	pinMode(9, OUTPUT);
+	  //init supply pins
+	  pinMode(9, OUTPUT);
 
-  //Adruino leonardo fast pwm mode usign TIMER1
-  TCCR1A = (1 << WGM10);
-  TCCR1B = (1 << WGM12);
-  TCCR1C = 0;
+    //Adruino leonardo fast pwm mode usign TIMER1
+    TCCR1A = (1 << WGM10);
+    TCCR1B = (1 << WGM12);
+    TCCR1C = 0;
 
   
-  TCCR1B |= (1 << CS10); // no prescaler - 62KHz
-  TCCR1A |= (1 << COM1A1);
-
-  /*
-  LED.setOutput(13);
-  ledColor.b = 255; ledColor.g = 0; ledColor.r = 0; // RGB Value -> Blue
-  String a;
-  while(1) {
-    Serial.print("\START\n");
-    
-
-    Serial.print("\nR: ");
-    while(Serial.available() < 2) {}
-    a = Serial.readStringUntil('\n');
-    ledColor.r = a.toInt();
-    Serial.print(ledColor.r);
-
-    Serial.print("\nG: ");
-    while(Serial.available() < 2) {}
-    a = Serial.readStringUntil('\n');
-    ledColor.g = a.toInt();
-    Serial.print(ledColor.g);
-
-    Serial.print("\nB: ");
-    while(Serial.available() < 2) {}
-    a = Serial.readStringUntil('\n');
-    ledColor.b = a.toInt();
-    Serial.print(ledColor.b);
-
-    LED.set_crgb_at(0, ledColor); // Set value at LED found at index 0
-    LED.sync(); // Sends the value to the LED
-    //delay(500);  
-  }
-  */
+    TCCR1B |= (1 << CS10); // no prescaler - 62KHz
+    TCCR1A |= (1 << COM1A1);
 }
 
 
@@ -193,14 +135,21 @@ void loop() {
 	
 	BYTES_VAL_T pinValues;
 	BYTES_VAL_T oldPinValues;
-	byte sw;
+	byte sw,swOld;
 	while(1) {
 		pinValues = read_shift_regs();
 		if(pinValues != oldPinValues) {
-			Serial.print("*Pin value change detected*\r\n");
 			sw = registerValuteToSwitchValue(pinValues);
-     
-      Serial.print(sw);
+      
+      //nur alle "rastenden Schalterstellungen"
+      if(!(sw % 2)) {
+        if(swOld != sw) {
+          Serial.print(sw / 2);
+          Serial.print('\n');
+          swOld = sw;
+        }
+      }
+      
 			SupplySetVoltage(sw*3);
 			oldPinValues = pinValues;
 		}
