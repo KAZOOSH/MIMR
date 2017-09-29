@@ -1,7 +1,7 @@
 #include "myRGB.h"
 
 const int redLedPin  = 10; //red
-const int greenLedPin   = 9; //yellow
+const int greenLedPin   = 6; //yellow
 const int blueLedPin  = 11; //white
 
 const int whiteSwitchPin  = 7; //green
@@ -10,7 +10,7 @@ const int redSwitchPin  = 4; //red
 
 
 const int potiPin = 0;   //R + red
-const int fanPin = 6; //R + yellow
+const int fanPin = 9; //R + yellow
 
 
 
@@ -31,7 +31,9 @@ void setup() {
   //pullups on
   digitalWrite(whiteSwitchPin, HIGH);
   digitalWrite(orangeSwitchPin, HIGH);
-  digitalWrite(redSwitchPin, HIGH);  
+  digitalWrite(redSwitchPin, HIGH);
+
+  TCCR1B = TCCR1B & 0b11111000 | 0x01; // Setzt Timer1 (Pin 9 und 10) auf 31300Hz
 }
 
 void test1() {
@@ -79,8 +81,9 @@ void test1() {
   analogWrite(greenLedPin,green);
   analogWrite(blueLedPin,blue);
 
-  analogWrite(fanPin,map(analogRead(potiPin), 0, 1023, 0, 255));
-
+  //analogWrite(fanPin,map(analogRead(potiPin), 0, 1023, 0, 255));
+  analogWrite(9,map(analogRead(potiPin), 0, 1023, 0, 255));
+  
   delay(100);
 }
 void test2() {

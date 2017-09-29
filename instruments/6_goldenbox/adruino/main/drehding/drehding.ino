@@ -144,8 +144,10 @@ void loop() {
       //nur alle "rastenden Schalterstellungen"
       if(!(sw % 2)) {
         if(swOld != sw) {
-          Serial.print(sw / 2);
-          Serial.print('\n');
+          Serial.print(':');
+          Serial.println(sw / 2);
+          //Serial.print('\n');
+          Serial.flush();
           swOld = sw;
         }
       }
