@@ -18,6 +18,12 @@
 #define DATA_PIN 3
 CRGB leds[NUM_LEDS];
 
+// dummy byte indicating start of Ableton data
+#define SYNC_BYTE 255
+
+// mode,hue,sat, brightness
+byte serialIn[4] = {0,0,0,0};
+
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
@@ -95,8 +101,25 @@ int tune;
 
 int cnt=0;
 
+
+
 void loop()
 {
+  // check serial buffer for input
+  int test = Serial.read();
+
+  // start byte received?
+  if( test == SYNC_BYTE )
+  {
+    // yes, read data bytes
+    Serial.readBytes( serialIn, 4 );
+
+    /*Serial.print( serialIn[0] ); Serial.print( " " );
+    Serial.print( serialIn[1] ); Serial.print( " " );
+    Serial.print( serialIn[2] ); Serial.print( " " );
+    Serial.print( serialIn[3] ); Serial.println();*/
+  }
+  
   cnt++;
   // add=analogRead(0);
 
@@ -152,11 +175,11 @@ void loop()
 
   if(tune < ( minval + (range * (bin1/1000 )))){
     Serial.print(0);
-    setColor(30);
+    setColor(10);
   }
   else if(tune < (  minval + (range * (bin2/1000 )))){
     Serial.print(1);
-    setColor(60);
+    setColor(30);
   }
   else if(tune < (  minval + (range * (bin3/1000 )))){
     Serial.print(2);
@@ -164,16 +187,16 @@ void loop()
   }
   else if(tune < (  minval + (range * (bin4/1000 )))){
     Serial.print(3);
-    setColor(120);
+    setColor(140);
     
   }
   else if(tune < (  minval + (range * (bin5/1000 )))){
     Serial.print(4);
-    setColor(160);
+    setColor(180);
   }
   else {
     Serial.print(5);
-    setColor(200);
+    setColor(255);
   }
 
   Serial.println("");
@@ -197,10 +220,22 @@ void loop()
   digitalWrite(pinLed,0);
 }
 
-void setColor( uint8_t hue)
+void setColor( uint8_t brightness)
 {
+  CHSV spectrumcolor;
+
+    spectrumcolor.hue = serialIn[1]*2;
+    spectrumcolor.saturation = serialIn[2]*2;
+    if (serialIn[0] == 1){
+      spectrumcolor.value = serialIn[3]*2;
+    }
+    else{
+      spectrumcolor.value = brightness;
+    }
+    
+  
     for( int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CHSV(hue,hue,hue);
+        hsv2rgb_spectrum( spectrumcolor, leds[i] );
     }
     FastLED.show();
 }
