@@ -18,7 +18,7 @@
 unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
-#define BAUD_RATE 38400L
+#define BAUD_RATE 115200L
 
 
 CRGB leds[NUM_LEDS];
