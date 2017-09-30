@@ -7,15 +7,18 @@
 #include <FastLED.h>
 
 //LED control
-#define NUM_LEDS 60
+#define NUM_LEDS 20
 #define DATA_PIN 6
 
 // dummy byte indicating start of Ableton data
 #define SYNC_BYTE 255
 
 // Arduino -> RasPi send interval (microseconds)
-#define sendInterval 20*1000L // 20 ms = 50 fps
+#define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
 unsigned long lastSendTime = 0;
+
+// baud rate for USB communication with RasPi
+#define BAUD_RATE 38400L
 
 
 CRGB leds[NUM_LEDS];
@@ -27,12 +30,6 @@ byte serialIn[4] = {0,0,0,0};
 #define SENSOR_PIN A1
 #define POWER_PIN A2
 
-const int numReadings = 5; //number of smoothing values
-int readings[numReadings];      // the readings from the analog input
-int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
-int average = 0;                // the average
-
 
 void setup() {
   //set pins
@@ -42,51 +39,52 @@ void setup() {
   digitalWrite(GROUND_PIN,LOW);
 
   //init serial
-  Serial.begin(38400);
-
-  // initialize all the readings to 0:
-  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
-    readings[thisReading] = 0;
-  }
+  Serial.begin( BAUD_RATE );
 
   //init led
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
 }
 
-void smooth(int value){
-  // subtract the last reading:
-  total = total - readings[readIndex];
-  // add new value:
-  readings[readIndex] = value;
-  // add the reading to the total:
-  total = total + readings[readIndex];
-  // advance to the next position in the array:
-  readIndex = readIndex + 1;
 
-  // if we're at the end of the array...
-  if (readIndex >= numReadings) {
-    // ...wrap around to the beginning:
-    readIndex = 0;
-  }
+// averaging function
+int average( int value )
+{
+  static const int length = 128;
+  static int buffer[length] = {0};
+  static int index = 0;
+  long output = 0;
 
-  // calculate the average:
-  average = total / numReadings;
+  // replace value at current index
+  buffer[index] = value;
+
+  // advance write index
+  index = ( index + 1 ) % length;
+
+  // sum buffered values
+  for ( int i = 0; i < length; i++ ) { output += buffer[i]; }
+
+  // divide by length and return
+  return output / length;
 }
 
 void ledAutoMode(int value){
   for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    leds[dot].setRGB( value, value, value);  
+    leds[dot].setRGB( value, value*2, value*2);  
   }
 }
 
 void ledColorMode(int value){
-  CHSV spectrumcolor;
+  /*CHSV spectrumcolor;
   spectrumcolor.hue = serialIn[1];
   spectrumcolor.saturation =  serialIn[2];
   spectrumcolor.value =     value;
  
   for(int dot = 0; dot < NUM_LEDS; dot++) { 
     hsv2rgb_spectrum( spectrumcolor, leds[dot] );
+  }*/
+
+  for(int dot = 0; dot < NUM_LEDS; dot++) { 
+    leds[dot].setRGB( value+serialIn[1]/2, value*2, value+serialIn[1]);  
   }
 }
 
@@ -115,6 +113,7 @@ void setLedColor(int value){
   FastLED.show();
 }
 
+
 void loop() {
 
   // check serial buffer for input
@@ -132,25 +131,21 @@ void loop() {
     Serial.print( serialIn[3] ); Serial.println();*/
   }
    
-  //read kurbel value
-  int value = analogRead(SENSOR_PIN);
-  //smooth the value
-  smooth(value);
-  //minimum read is approx. 100, so subtract value
-  value = average - 100;
+  // read and invert current voltage
+  int value = 1023 - analogRead(SENSOR_PIN);
 
-  //remap to 1Byte -> 0-127
-  float ltemp = (float)value / (1023-100) * 127;
+  // smoothen input value
+  int smoothed = average( value );
 
-  //Serial.print(ltemp);
-  //Serial.print(' ');
-  //Serial.println((int)(127 - ltemp));
+  // map sensor value to 0…127
+  // (multiply with >127 to use full range)
+  int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
 
-  //led color
-  setLedColor(127-ltemp);
+  // set LEDs
+  setLedColor( mapped );
 
   // time to update RasPi with current value?
-  if ( micros() - lastSendTime > sendInterval )
+  if ( micros() - lastSendTime > SEND_INTERVAL )
   {
     // remember time
     lastSendTime = micros();
@@ -159,7 +154,7 @@ void loop() {
     Serial.print( ":" );
     
     // write value as ASCII and append line break
-    Serial.println( (int) (127 - ltemp) );
+    Serial.println( mapped );
 
     // wait for transmission to finish
     Serial.flush();
