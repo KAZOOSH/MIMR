@@ -16,7 +16,7 @@ serial = Serial( "/dev/ttyACM0", 38400, bytesize=8, parity='N', timeout=0.01 )
 # open UDP socket to listen raveloxmidi
 udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
 udpIn.bind( ('', 5010 ) )
-udpIn.settimeout(0.1)
+udpIn.settimeout(0.01)
 
 # open UDP socket to send raveloxmidi
 udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -59,12 +59,12 @@ while True:
 				midiVal = min(2*ord(data[2]),254)
 
 			elements = [255,midiMode,midiHue,midiSat,midiVal]
-			#print elements
+			print elements
 
-			#for x in elements:
+			for x in elements:
 				#sys.stdout.write(chr(x))
 				#sys.stdout.flush()
-				#serial.write(chr(x))
+				serial.write(chr(x))
 
 	except Exception:
 		pass
