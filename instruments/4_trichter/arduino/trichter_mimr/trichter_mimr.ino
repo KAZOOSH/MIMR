@@ -11,7 +11,20 @@
 
  */
 
+//communication to serial
+// dummy byte indicating start of Ableton data
+#define SYNC_BYTE 255
+
+// Arduino -> RasPi send interval (microseconds)
+#define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
+unsigned long lastSendTime = 0;
+
+// baud rate for USB communication with RasPi
+#define BAUD_RATE 115200L
+
+
  //min max values for trichter
+ const int delta = 4;
 const int pMin = 0;
 const int pMax = 127;
 
@@ -39,11 +52,32 @@ int pos = 63;
 
 
 void setup() {
-  Serial.begin(9600);
+  //init serial
+  Serial.begin( BAUD_RATE );
+
+  
   pinMode(pin_l, INPUT);
   pinMode(pin_r, INPUT);
   digitalWrite(pin_l, HIGH);       // turn on pullup resistors
   digitalWrite(pin_r, HIGH);       // turn on pullup resistors
+}
+
+void sendValue(int value){
+    // time to update RasPi with current value?
+  if ( micros() - lastSendTime > SEND_INTERVAL )
+  {
+    // remember time
+    lastSendTime = micros();
+    
+    // write start character
+    Serial.print( ":" );
+    
+    // write value as ASCII and append line break
+    Serial.println( value );
+
+    // wait for transmission to finish
+    Serial.flush();
+  }
 }
 
 void loop() {
@@ -78,8 +112,9 @@ void loop() {
       patternL2 = 0;
       patternL1 = 1;
       if(pos < pMax){
-        pos++;
-        Serial.println(pos);
+        pos+=delta;
+        pos = min(127,pos);
+        sendValue(pos);
       }
     }
   }
@@ -91,8 +126,9 @@ void loop() {
       patternL1 = 0;
       patternL2 = 1;
       if(pos < pMax){
-        pos++;
-        Serial.println(pos);
+        pos+=delta;
+        pos = min(127,pos);
+        sendValue(pos);
       }
     }
   }
@@ -104,8 +140,9 @@ void loop() {
       patternR2 = 1;
       patternR1 = 0;
       if(pos > pMin){
-        pos--;
-        Serial.println(pos);
+        pos-=delta;
+        pos = max(0,pos);
+        sendValue(pos);
       }
     }
   }
@@ -117,8 +154,9 @@ void loop() {
       patternR2 = 0;
       patternR1 = 1;
       if(pos > pMin){
-        pos--;
-        Serial.println(pos);
+        pos-=delta;
+        pos = max(0,pos);
+        sendValue(pos);
       }
     }
   }

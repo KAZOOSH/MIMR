@@ -10,13 +10,16 @@ print "Start Trichter				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyACM0", 9600, bytesize=8, parity='N', timeout=0 )
+serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01 )
 
 
 # open UDP socket to listen raveloxmidi
 udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
 udpIn.bind( ('', 5010 ) )
-udpIn.settimeout(0.1)
+udpIn.settimeout(0.01)
+
+# decrease receive buffer size
+udpIn.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,128)
 
 # open UDP socket to send raveloxmidi
 udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -34,7 +37,7 @@ midiBrightness = 0
 
 # loop infinitely
 while True:
-	try:
+	'''try:
 		data, addr = udpIn.recvfrom(1024)
 		#print ":".join(format(ord(c)) for c in data)
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
@@ -67,6 +70,7 @@ while True:
 
 	except Exception:
 		pass
+	'''
 
 	# try to read value from Arduino
 	safe = True
@@ -74,10 +78,21 @@ while True:
 	while safe:
 
 		try:
-			value = serial.readline().strip()
+			# try to read line from Arduino
+			line = serial.readline()
 
-			value = int(value)
-			safe = True
+			# got complete line with expected start and end character?
+			if line[:1] == ":" and line[-1:] == "\n":
+
+				# get numeric value
+				value = int( line[1:-1] )
+				
+				# read was successfull
+				safe = True
+
+			else:
+				safe = False
+
 		except Exception:
 			safe = False
 
@@ -91,13 +106,13 @@ while True:
 			oldvalue = value
 
 			# log current value
-			sys.stdout.write( "%d   \r" % value )
-			sys.stdout.flush()
+			print value
+			#sys.stdout.write( "%d   \r" % value )
+			#sys.stdout.flush()
 
-			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB3, 0, value )
+			# on MIDI channel 4, set controller #1 to value
+			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, value )
 			udpOut.send( bytes )
-		#print serial.readline()
 
 
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
