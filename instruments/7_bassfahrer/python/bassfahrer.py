@@ -106,7 +106,7 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
-			# scale value from 39…68
+			# scale value from 39..68
 			value = (value-39) * 127 / (68-39)
 
 			# limit to 0..127
