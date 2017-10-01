@@ -1,19 +1,21 @@
 /* 
+ * MIMR - TRICHTER
+ * KAZOOSH! - Martin Herrmann, Brian Eschrich 2017
+ * reads Values from the Trichter and sends it via serial to the pi
+ * 
   braun :         GND + Wiederstand(407 ohm)
   braun-weiss :   GND
   grün :          RECHTS
   grün-weiss :    LINKS
   orange :        5V  
 
-  DigitalReadSerial
- Reads a digital input on pin 2, prints the result to the serial monitor 
- 
- This example code is in the public domain.
  */
+
+ //min max values for trichter
 const int pMin = 0;
 const int pMax = 127;
- 
 
+ //pins and patterns
 int pin_l = 13;
 int pin_r = 11;
 
@@ -25,13 +27,16 @@ int patternR2 = 0; // (WS,SS)
 int patternL1 = 0; // (SS,WS)
 int patternL2 = 1; // (SW,SS)
 
-int pos = 63;
-
 int left[2] = {0,0};
 int right[2] = {0,0};
 
 int leftvalue;
 int rightvalue;
+
+//current position
+int pos = 63;
+
+
 
 void setup() {
   Serial.begin(9600);
