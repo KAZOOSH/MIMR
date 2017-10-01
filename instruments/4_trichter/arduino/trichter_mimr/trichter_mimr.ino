@@ -11,6 +11,15 @@
 
  */
 
+#include <FastLED.h>
+
+//LED control
+#define NUM_LEDS 1
+#define DATA_PIN 5
+
+CRGB leds[NUM_LEDS];
+byte serialIn[3] = {0,60,0}; //intensity, hue-min, hue-max
+
 //communication to serial
 // dummy byte indicating start of Ableton data
 #define SYNC_BYTE 255
@@ -55,7 +64,10 @@ void setup() {
   //init serial
   Serial.begin( BAUD_RATE );
 
-  
+
+  //init led
+  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, NUM_LEDS);
+
   pinMode(pin_l, INPUT);
   pinMode(pin_r, INPUT);
   digitalWrite(pin_l, HIGH);       // turn on pullup resistors
@@ -80,21 +92,36 @@ void sendValue(int value){
   }
 }
 
+void setLedColor(){
+  int hue = map(pos,0,127,serialIn[1],serialIn[2]);
+  int value = 255 - serialIn[0];
+
+  for(int dot = 0; dot < NUM_LEDS; dot++) { 
+    leds[dot].setHSV( hue, 255, value);
+  }
+  FastLED.show();
+}
+
+
+
 void loop() {
+    // check serial buffer for input
+    int test = Serial.read();
+
+  // start byte received?
+  if( test == SYNC_BYTE )
+  {
+    // yes, read data bytes
+    Serial.readBytes( serialIn, 3 );
+  }
+
+     // set LEDs
+  setLedColor();
+
+  
   leftvalue = digitalRead(pin_l);
   rightvalue = digitalRead(pin_r);
   
-  //Serial.print(leftvalue);
-  //Serial.println(rightvalue);
-  if(leftvalue!=test_led_l){
-    digitalWrite(4, leftvalue);
-    test_led_l=leftvalue;
-  }
-  
-  if(rightvalue!=test_led_r){
-    digitalWrite(5, rightvalue);
-    test_led_r=rightvalue;
-  }
 
   //push left
   left[0] = left[1];
@@ -160,6 +187,8 @@ void loop() {
       }
     }
   }
+
+
 }
 
 

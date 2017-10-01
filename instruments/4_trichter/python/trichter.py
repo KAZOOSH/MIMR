@@ -30,47 +30,51 @@ udpOut.connect( ( "localhost", 5006 ) )
 oldvalue = 0
 
 # midi values
-midiMode = 0
-midiHueMin = 0
-midiHueMax = 0
-midiBrightness = 0
+intensity = 0
+hueMin = 0
+hueMax = 60
 
 # loop infinitely
 while True:
-	'''try:
-		data, addr = udpIn.recvfrom(1024)
-		#print ":".join(format(ord(c)) for c in data)
-		#print ":".join("{0:x}".format(ord(c)) for c in data)
+	# incoming UDP packets in buffer?
+	bufferClear = False
 
-		elements = [255,midiMode,midiHueMin,midiHueMax,midiBrightness]
-		# control command
-		if ord(data[0]) == 176:
-			#set mode
-			if ord(data[1]) == 44:
-				#print ord(data[2])
-				midiMode = max(ord(data[2]),1)
-			#set hue
-			elif ord(data[1]) == 45:
-				midiHueMin = min(2*ord(data[2]),254)
-			#set saturation
-			elif ord(data[1]) == 46:
-				midiHueMax = min(2*ord(data[2]),254)
-			#set brightness
-			elif ord(data[1]) == 47:
-				midiBrightness = min(2*ord(data[2]),254)
+	# UDP data as string
+	data = chr(0)
 
-			elements = [255,midiMode,midiHueMin,midiHueMax,midiBrightness]
-			#print elements
-
-			for x in elements:
-				#sys.stdout.write(chr(x))
-				#sys.stdout.flush()
-				serial.write(chr(x))
+	# as long as packets in buffer...
+	# (empty buffer, only forward latest packet)
+	if not bufferClear:
+		try:
+			# read UDP packet from socket
+			data, addr = udpIn.recvfrom(256)
+			#print ":".join(format(ord(c)) for c in data)
+			#print ":".join("{0:x}".format(ord(c)) for c in data)
+		except Exception:
+			# no more packets to read
+			bufferClear = True
+			pass
 
 
-	except Exception:
-		pass
-	'''
+	# control command
+	if ord(data[0]) == 176:
+		#set intensity
+		if ord(data[1]) == 44:
+			intensity = min(2*ord(data[2]),254);
+		#set hueMin
+		elif ord(data[1]) == 45:
+			hueMin = min(2*ord(data[2]),254)
+		#set hueMax
+		elif ord(data[1]) == 46:
+			hueMax = min(2*ord(data[2]),254)
+
+		elements = [255,intensity,hueMin,hueMax];
+		#print elements
+
+		for x in elements:
+			#sys.stdout.write(chr(x))
+			#sys.stdout.flush()
+			serial.write(chr(x))
 
 	# try to read value from Arduino
 	safe = True

@@ -6,7 +6,7 @@ from time import sleep
 from serial import Serial
 import struct
 
-print "Start Kurbel				"
+print "Start GoldenBox				"
 
 '''init serial and network'''
 # open serial port to Arduino
@@ -39,7 +39,8 @@ midiVal = 0
 # loop infinitely
 while True:
 	
-'''	# incoming UDP packets in buffer?
+	'''	
+# incoming UDP packets in buffer?
 	bufferClear = False
 
 	# UDP data as string
@@ -81,7 +82,7 @@ while True:
 			#sys.stdout.write(chr(x))
 			#sys.stdout.flush()
 			serial.write(chr(x))
-'''
+	'''
 	safe = True
 
 	while safe:
@@ -108,6 +109,7 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
+			value = value * 127 /12 
 			# limit to 0..127
 			value = max( min( int(value), 127 ), 0 )
 

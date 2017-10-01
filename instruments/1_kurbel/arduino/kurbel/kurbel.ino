@@ -23,7 +23,7 @@ unsigned long lastSendTime = 0;
 
 CRGB leds[NUM_LEDS];
 
-byte serialIn[4] = {0,0,0,0};
+byte serialIn[2] = {0,0};
 
 //kurbel control
 #define GROUND_PIN A0
@@ -67,49 +67,22 @@ int average( int value )
   return output / length;
 }
 
-void ledAutoMode(int value){
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    leds[dot].setRGB( value, value*2, value*2);  
-  }
-}
-
-void ledColorMode(int value){
-  /*CHSV spectrumcolor;
-  spectrumcolor.hue = serialIn[1];
-  spectrumcolor.saturation =  serialIn[2];
-  spectrumcolor.value =     value;
- 
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    hsv2rgb_spectrum( spectrumcolor, leds[dot] );
-  }*/
-
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    leds[dot].setRGB( value+serialIn[1]/2, value*2, value+serialIn[1]);  
-  }
-}
-
-void ledColorManual(){
-  CHSV spectrumcolor;
-  spectrumcolor.hue = serialIn[1];
-  spectrumcolor.saturation =  serialIn[2];
-  spectrumcolor.value =     serialIn[3];
- 
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    hsv2rgb_spectrum( spectrumcolor, leds[dot] );
-  }
-}
 
 void setLedColor(int value){
-  if (serialIn[0] == 0){
-    ledAutoMode(value);
-  }
-  else if (serialIn[0] == 1){
-    ledColorMode(value);
-  }
-  else if (serialIn[0] == 2){
-    ledColorManual();
+
+  bool isRed = bitRead(serialIn[1],0);
+  bool isGreen = bitRead(serialIn[1],1);
+  bool isBlue = bitRead(serialIn[1],2);
+  
+  if(!isRed && !isGreen && !isBlue){
+    isRed = true; isGreen = true; isBlue = true;
   }
   
+  int brightness = max(value - serialIn[0],0);
+
+  for(int dot = 0; dot < NUM_LEDS; dot++) { 
+    leds[dot].setRGB( isRed *brightness, isGreen *brightness, isBlue *brightness);
+  }
   FastLED.show();
 }
 
@@ -123,7 +96,7 @@ void loop() {
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 4 );
+    Serial.readBytes( serialIn, 2 );
 
     /*Serial.print( serialIn[0] ); Serial.print( " " );
     Serial.print( serialIn[1] ); Serial.print( " " );
@@ -142,7 +115,7 @@ void loop() {
   int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
 
   // set LEDs
-  setLedColor( mapped );
+  setLedColor(mapped);
 
   // time to update RasPi with current value?
   if ( micros() - lastSendTime > SEND_INTERVAL )
