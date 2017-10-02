@@ -10,8 +10,6 @@ const int clockPin  = 4; //green
 const int redLedPin = 5;   //R + red
 const int yellowLedPin = 6 ; //R + yellow
 
-
-
 const int supplyPwmPin = 9; //Supply PWM pin
 const int supplyAdcPin = 1; //Feedback Input
 
