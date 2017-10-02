@@ -7,5 +7,5 @@ typedef struct myRGB {
 } myRGB;
 
 myRGB pallette[] = {{0,0,255},{255,100,0},{255,0,0}};
-//myRGB pallette[] = {{0,0,255},{255,100,0},{255,0,0}};
+
 #define palletteSize sizeof(pallette) / sizeof(pallette[0])
