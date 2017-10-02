@@ -46,22 +46,7 @@ void setup() {
 
 uint8_t interPol(float start,float ende, uint8_t range,uint8_t steep) {
   uint8_t res;
-  res = (start + ((ende - start) / range) * steep);
-
-  
-  Serial.print("\n start Color: "); 
-  Serial.print(start);  
-  Serial.print("\n end Color: ");
-  Serial.print(ende);
-  Serial.print("\n range: ");
-  Serial.print(range);
-  Serial.print("\n steep: ");
-  Serial.print(steep);
-  
-  Serial.print("\n ==> result: ");
-  Serial.print(res);
-  
-      
+  res = ((start + ((ende - start) / range) * steep));
   return res;
 }
 
@@ -70,28 +55,13 @@ void fadePallette(myRGB par[],uint8_t elements,uint8_t steep) {
   uint8_t w = steep % g;
   uint8_t si = steep / g;
   uint8_t ei = si + 1;
-  //if(ei == elements) ei = 0;
-
-  //si = 2;ei = 0;g = 255;
-
-  Serial.print("\n elements: ");
-  Serial.print(elements);
-  Serial.print("\n si: "); 
-  Serial.print(si);  
-  Serial.print("\n ei: ");
-  Serial.print(ei);
-  //return;
 
   myRGB r;
-
-  Serial.print("\nred: ");
+  
   r.r = interPol(par[si].r,par[ei].r,g,w);
-  Serial.print("\ngreen: ");
   r.g = interPol(par[si].g,par[ei].g,g,w);
-  Serial.print("\nblue: ");
   r.b = interPol(par[si].b,par[ei].b,g,w);
 
-  
   analogWrite(redLedPin,r.r);
   analogWrite(greenLedPin,r.g);
   analogWrite(blueLedPin,r.b);    
@@ -110,7 +80,7 @@ inline void sendSwitchValue(byte flag) {
   } else {
     Serial.print(protocolSwitchOffValue);
   }
-    Serial.print(protocolDelimeter);
+  Serial.print(protocolDelimeter);
 }
 
 void loop() {
@@ -146,7 +116,5 @@ void loop() {
     Serial.println((byte)(map(cPotiValue, 0, 1023, 0, 127)));
     
   }
-
-
 }
 
