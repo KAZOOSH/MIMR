@@ -1,5 +1,6 @@
 #include "myRGB.h"
 
+//hardware
 const int redLedPin  = 10; //red
 const int greenLedPin   = 6; //yellow
 const int blueLedPin  = 11; //white
@@ -13,15 +14,21 @@ const int potiPin = 0;   //R + red
 const int fanPin = 9; //R + yellow
 
 
+//protocol
+#define FLAG_RED 1
+#define FLAG_ORANGE 2
+#define FLAG_WHITE 4
+#define FLAG_INVALID 0
+
+const byte protocolSwitchOnValue = 127;
+const byte protocolSwitchOffValue = 0;
+const char protocolDelimeter = ' '; //seperator between values
 
 
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
 
-
-  
   pinMode(redLedPin, OUTPUT);
   pinMode(greenLedPin, OUTPUT);
   pinMode(blueLedPin, OUTPUT);
@@ -33,120 +40,14 @@ void setup() {
   digitalWrite(orangeSwitchPin, HIGH);
   digitalWrite(redSwitchPin, HIGH);
 
-  TCCR1B = TCCR1B & 0b11111000 | 0x01; // Setzt Timer1 (Pin 9 und 10) auf 31300Hz
+  //Set Timer1 (Pin 9 und 10) on 31300Hz - wichtig damit luefter nicht "singt"
+  TCCR1B = TCCR1B & 0b11111000 | 0x01;
 }
-
-void test1() {
-  //io test
-  static byte red,green,blue;
-  static byte state;
-  static byte update;
-  
-  //if(update++==0) {
-    Serial.print("\nLOOP START\n");
-  
-    Serial.print("WHITE SWITCH: ");
-    Serial.print(digitalRead(whiteSwitchPin));
-  
-    Serial.print("\nORANGE SWITCH: ");
-    Serial.print(digitalRead(orangeSwitchPin));
-  
-    Serial.print("\nRED SWITCH: ");
-    Serial.print(digitalRead(redSwitchPin));
-  
-    Serial.print("\n\nPOTI VALUE: ");
-    Serial.print(analogRead(potiPin));
-  
-    //delay(1000);
-  //}
-
-  
-  switch(state++) {
-    case 0:
-      red = 255; green = 0; blue = 0;
-      break;
-    case 1:
-      red = 0; green = 255; blue = 0;
-      break;
-    case 2:
-      red = 0; green = 0; blue = 255;
-      break;
-    default:
-      red = 0; green = 0; blue = 0;
-      state = 0;
-  }
-  
-
-  analogWrite(redLedPin,red);
-  analogWrite(greenLedPin,green);
-  analogWrite(blueLedPin,blue);
-
-  //analogWrite(fanPin,map(analogRead(potiPin), 0, 1023, 0, 255));
-  analogWrite(9,map(analogRead(potiPin), 0, 1023, 0, 255));
-  
-  delay(100);
-}
-void test2() {
-  String a;
-  static byte red,green,blue;
-  while(1) {
-    Serial.print("START\n");
-    
-
-    Serial.print("\nR: ");
-    while(Serial.available() == 0) {}
-    a = Serial.readStringUntil('\n');
-    red = a.toInt();
-    Serial.print(red);
-
-    Serial.print("\nG: ");
-    while(Serial.available() == 0) {}
-    a = Serial.readStringUntil('\n');
-    green = a.toInt();
-    Serial.print(green);
-
-    Serial.print("\nB: ");
-    while(Serial.available() == 0) {}
-    a = Serial.readStringUntil('\n');
-    blue = a.toInt();
-    Serial.print(blue);
-
-    analogWrite(redLedPin,red);
-    analogWrite(greenLedPin,green);
-    analogWrite(blueLedPin,blue);    
-
- 
-  }
-}
-
-
-void test3() {
-  byte value;
-  //fading red
-  while(1) {
-    Serial.print("UP\n");
-    for(byte co=1;co++;co < 255) {
-      value = co;
-      analogWrite(redLedPin,value);
-      delay(10);
-    }
-    Serial.print("DOWN\n");
-    for(byte co=254;co--;co > 0) {
-      value = co;
-      analogWrite(redLedPin,value);
-      delay(10);
-    }    
-  }
-}
-
-
-
-
-
 
 uint8_t interPol(float start,float ende, uint8_t range,uint8_t steep) {
   uint8_t res;
   res = (start + ((ende - start) / range) * steep);
+
   
   Serial.print("\n start Color: "); 
   Serial.print(start);  
@@ -159,7 +60,8 @@ uint8_t interPol(float start,float ende, uint8_t range,uint8_t steep) {
   
   Serial.print("\n ==> result: ");
   Serial.print(res);
-        
+  
+      
   return res;
 }
 
@@ -196,70 +98,11 @@ void fadePallette(myRGB par[],uint8_t elements,uint8_t steep) {
 }
 
 
-void test4() {
-  static int counter=0;
-  static int direction=0;
-  delay(10);
-  int value = interPol(50,150,255,counter);
-  Serial.print(value);
-  Serial.print("\n");
-  analogWrite(redLedPin,value);
-  if(direction == 1) {
-    counter--;
-  } else {
-    counter++;
-  }
-  if(counter == 255) {
-    direction = 1;
-  } else if (counter == 0) {
-    direction = 0;  
-  }
-}
-
-void test5() {
-  /*
-  static int counter=0;
-  static int direction=0;
-  
-  fadePallette(pallette,palletteSize,counter);
-  
-  if(direction == 1) {
-    counter--;
-  } else {
-    counter++;
-  }
-  if(counter == 255) {
-    direction = 1;
-  } else if (counter == 0) {
-    direction = 0;  
-  }
-  */
-
-  static int lv = 0;
-  int cv = map(analogRead(potiPin), 0, 1023, 0, 255);
-
-  if(lv!=cv) {
-    lv = cv;
-    fadePallette(pallette,palletteSize,cv);
-  }
-
-  
-  //delay(100);
-}
 
 
 
 
-enum switchFlags {
- FLAG_RED     = 1,
- FLAG_ORANGE  = 2,
- FLAG_WHITE   = 4,
- FLAG_UNUSED   = 8,
-};
 
-const byte protocolSwitchOnValue = 127;
-const byte protocolSwitchOffValue = 0;
-const char protocolDelimeter = ' '; //seperator between values
 
 inline void sendSwitchValue(byte flag) {
   if(flag) {
@@ -274,13 +117,13 @@ void loop() {
   static int cPotiValue = analogRead(potiPin);
   static int lPotiValue;
 
-  switchFlags cFlags = FLAG_UNUSED; 
-  static switchFlags lFlags;
+  byte cFlags = FLAG_INVALID; 
+  static byte lFlags;
 
   //reading switches set Flags
-  if(digitalRead(whiteSwitchPin)) cFlags |= switchFlags.FLAG_WHITE;
-  if(digitalRead(orangeSwitchPin)) cFlags |= switchFlags.FLAG_ORANGE;
-  if(digitalRead(redSwitchPin)) cFlags |= switchFlags.FLAG_RED;
+  if(digitalRead(whiteSwitchPin)) cFlags |= FLAG_WHITE;
+  if(digitalRead(orangeSwitchPin)) cFlags |= FLAG_ORANGE;
+  if(digitalRead(redSwitchPin)) cFlags |= FLAG_RED;
 
   byte tmp = map(cPotiValue, 0, 1023, 0, 255);
   //set fan speed according to poti value
