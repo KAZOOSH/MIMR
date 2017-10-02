@@ -250,33 +250,60 @@ void test5() {
 
 
 
+enum switchFlags {
+ FLAG_RED     = 1,
+ FLAG_ORANGE  = 2,
+ FLAG_WHITE   = 4,
+ FLAG_UNUSED   = 8,
+};
 
+const byte protocolSwitchOnValue = 127;
+const byte protocolSwitchOffValue = 0;
+const char protocolDelimeter = ' '; //seperator between values
+
+inline void sendSwitchValue(byte flag) {
+  if(flag) {
+    Serial.print(protocolSwitchOnValue);
+  } else {
+    Serial.print(protocolSwitchOffValue);
+  }
+    Serial.print(protocolDelimeter);
+}
 
 void loop() {
-  //test1();
-  //test2();
-  //test3();
-  //test4();
-  test5();
+  static int cPotiValue = analogRead(potiPin);
+  static int lPotiValue;
+
+  switchFlags cFlags = FLAG_UNUSED; 
+  static switchFlags lFlags;
+
+  //reading switches set Flags
+  if(digitalRead(whiteSwitchPin)) cFlags |= switchFlags.FLAG_WHITE;
+  if(digitalRead(orangeSwitchPin)) cFlags |= switchFlags.FLAG_ORANGE;
+  if(digitalRead(redSwitchPin)) cFlags |= switchFlags.FLAG_RED;
+
+  byte tmp = map(cPotiValue, 0, 1023, 0, 255);
+  //set fan speed according to poti value
+  analogWrite(fanPin,tmp);
+
+  //set led Color Fading according to poti value
+  fadePallette(pallette,palletteSize,tmp);
+
+  //send values if necessary
+  if ((cFlags != lFlags) || (cPotiValue != lPotiValue)) {
+    lFlags = cFlags;
+    lPotiValue = cPotiValue;
+    
+    //send status
+    Serial.print(':');
+    sendSwitchValue(cFlags & FLAG_RED);
+    sendSwitchValue(cFlags & FLAG_ORANGE);
+    sendSwitchValue(cFlags & FLAG_WHITE);
+
+    Serial.println((byte)(map(cPotiValue, 0, 1023, 0, 127)));
+    
+  }
 
 
-  
-    Serial.print("\nLOOP START\n");
-  
-    Serial.print("WHITE SWITCH: ");
-    Serial.print(digitalRead(whiteSwitchPin));
-  
-    Serial.print("\nORANGE SWITCH: ");
-    Serial.print(digitalRead(orangeSwitchPin));
-  
-    Serial.print("\nRED SWITCH: ");
-    Serial.print(digitalRead(redSwitchPin));
-  
-    Serial.print("\n\nPOTI VALUE: ");
-    Serial.print(analogRead(potiPin));
-
-     analogWrite(9,map(analogRead(potiPin), 0, 1023, 0, 255));
-
-  
 }
 

@@ -140,6 +140,7 @@ void loop() {
 			sw = registerValuteToSwitchValue(pinValues);
       
       //nur alle "rastenden Schalterstellungen"
+      //werte von 0-21 werden gesendet ...
       if(!(sw % 2)) {
         if(swOld != sw) {
           Serial.print(':');
