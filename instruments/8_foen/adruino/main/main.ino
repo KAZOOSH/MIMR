@@ -67,13 +67,6 @@ void fadePallette(myRGB par[],uint8_t elements,uint8_t steep) {
   analogWrite(blueLedPin,r.b);    
 }
 
-
-
-
-
-
-
-
 inline void sendSwitchValue(byte flag) {
   if(flag) {
     Serial.print(protocolSwitchOnValue);
@@ -84,17 +77,37 @@ inline void sendSwitchValue(byte flag) {
 }
 
 void loop() {
-  static int cPotiValue = analogRead(potiPin);
-  static int lPotiValue;
-
-  byte cFlags = FLAG_INVALID; 
+  int cPotiValue = analogRead(potiPin);
+  byte sendPotiValue = map(cPotiValue, 0, 1023, 0, 127);
+  unsigned long ts = millis();
+  
+  static unsigned long deltaW=0;
+  static byte lPotiValue;
+  
+  static byte cFlags = FLAG_INVALID; 
   static byte lFlags;
 
   //reading switches set Flags
-  if(digitalRead(whiteSwitchPin)) cFlags |= FLAG_WHITE;
-  if(digitalRead(orangeSwitchPin)) cFlags |= FLAG_ORANGE;
-  if(digitalRead(redSwitchPin)) cFlags |= FLAG_RED;
-
+  if(deltaW < ts) {
+    deltaW = ts + 300; //300 ms Debounce
+    
+    if(digitalRead(whiteSwitchPin)) {
+      cFlags |= FLAG_WHITE;
+    } else {
+      cFlags &= ~FLAG_WHITE;
+    }
+    if(digitalRead(orangeSwitchPin)) {
+      cFlags |= FLAG_ORANGE;
+    } else {
+      cFlags &= ~FLAG_ORANGE;
+    }
+    if(digitalRead(redSwitchPin)) {
+      cFlags |= FLAG_RED;
+    } else {
+      cFlags &= ~FLAG_RED;
+    }        
+  }
+  
   byte tmp = map(cPotiValue, 0, 1023, 0, 255);
   //set fan speed according to poti value
   analogWrite(fanPin,tmp);
@@ -103,9 +116,9 @@ void loop() {
   fadePallette(pallette,palletteSize,tmp);
 
   //send values if necessary
-  if ((cFlags != lFlags) || (cPotiValue != lPotiValue)) {
+  if ((cFlags != lFlags) || (sendPotiValue != lPotiValue)) {
     lFlags = cFlags;
-    lPotiValue = cPotiValue;
+    lPotiValue = sendPotiValue;
     
     //send status
     Serial.print(':');
@@ -113,7 +126,7 @@ void loop() {
     sendSwitchValue(cFlags & FLAG_ORANGE);
     sendSwitchValue(cFlags & FLAG_WHITE);
 
-    Serial.println((byte)(map(cPotiValue, 0, 1023, 0, 127)));
+    Serial.println(sendPotiValue);
     
   }
 }
