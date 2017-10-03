@@ -15,7 +15,7 @@
 CapacitiveSensor cs_A5 = CapacitiveSensor(A0,A5);        // pin A5 is sensor grünes Kabel
 CapacitiveSensor cs_A4 = CapacitiveSensor(A0,A4);        // pin A4 is sensor blaues Kabel
 CapacitiveSensor cs_A3 = CapacitiveSensor(A0,A3);        // pin A3 is sensor violettes Kabel
-const int treshold = 1000;
+const int treshold = 100;
 
 void setup()                    
 {
@@ -61,7 +61,13 @@ void loop()
     Serial.print("\t");
     if (totalA5 > treshold) Serial.print(totalA5);
   Serial.println("");*/
-    Serial.println((int)value);
+    //Serial.println((int)value);
+
+  Serial.print(totalA3);
+  Serial.print(" ");
+  Serial.print(totalA4);
+  Serial.print(" ");
+  Serial.println(totalA5);
 
     delay(10);                               // limit data to serial port 
 }
