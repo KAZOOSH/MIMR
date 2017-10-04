@@ -14,7 +14,8 @@ const int potiPin = 0;   //R + red
 const int fanPin = 9; //R + yellow
 
 //led control
-byte serialIn[3] = {0,60,0}; //intensity, hue-min, hue-max
+byte serialIn[1] = {0}; //intensity
+unsigned long lastSwitchTime = 0;
 
 //protocol
 #define FLAG_RED 1
@@ -70,11 +71,28 @@ void showAnalogRGB( const CRGB& rgb)
   analogWrite(blueLedPin,  rgb.b );
 }
 
-void setLedColor(int pos){
-  int hue = map(pos,0,255,serialIn[1],serialIn[2]);
-  int value = 255 - serialIn[0];
+void setLedColor(int pos,byte button1, byte button2, byte button3){
+  //multiplier for midi value
+  float value = (255.0 - serialIn[0])/255.0;
 
-  showAnalogRGB( CHSV( hue, 255, value) );
+  //calculate min brightness
+  float minBrightness = 5;
+  float offset = (255.0-minBrightness)/255.0;
+
+  //alltogether
+  int r = (button1*pos*offset + minBrightness)*value;
+  int g = (button2*pos/2*offset + minBrightness)*value;
+  int b = (button3*pos/4*offset + minBrightness)*value;
+
+  //flickering when switched led
+  if(micros() - lastSwitchTime < 10000)
+  {
+    r = 255;
+    g = 255;
+    b = 255;
+  }
+
+  showAnalogRGB( CRGB(r,g,b) );
 }
 
 
@@ -95,7 +113,7 @@ void loop() {
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 3 );
+    Serial.readBytes( serialIn, 1 );
   }
 
   //read sensors
@@ -129,6 +147,8 @@ void loop() {
       cFlags &= ~FLAG_RED;
     }        
   }
+
+  if(cFlags != lFlags) lastSwitchTime = micros();
   
   byte tmp = map(cPotiValue, 0, 1023, 0, 255);
   //set fan speed according to poti value
@@ -136,7 +156,8 @@ void loop() {
 
   //set led Color Fading according to poti value
   //fadePallette(pallette,palletteSize,tmp);
-  setLedColor(tmp);
+  setLedColor(tmp,cFlags & FLAG_RED,cFlags & FLAG_ORANGE,cFlags & FLAG_WHITE);
+
 
   //send values if necessary
   if (((cFlags != lFlags) || (sendPotiValue != lPotiValue))
