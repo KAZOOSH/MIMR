@@ -120,7 +120,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, value )
 			udpOut.send( bytes )
 		#print serial.readline()
 
