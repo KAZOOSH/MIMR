@@ -30,10 +30,8 @@ udpOut.connect( ( "localhost", 5006 ) )
 oldvalue = 0
 
 # midi values
-midiMode = 0
-midiHue = 0
-midiSat = 0
-midiVal = 0
+hue = 0
+intensity = 0
 
 
 # loop infinitely
@@ -51,6 +49,8 @@ while True:
 		try:
 			# read UDP packet from socket
 			data, addr = udpIn.recvfrom(256)
+			#print ":".join(format(ord(c)) for c in data)
+			#print ":".join("{0:x}".format(ord(c)) for c in data)
 		except Exception:
 			# no more packets to read
 			bufferClear = True
@@ -58,23 +58,15 @@ while True:
 
 	# control command
 	if ord(data[0]) == 176:
-		#set mode
+		#set intensity
 		if ord(data[1]) == 14:
-			if ord(data[2]) <= 2:
-				midiMode = ord(data[2])
-			else:
-				midiMode = 0
+			intensity = min(2*ord(data[2]),254)
+			#print intensity
 		#set hue
 		elif ord(data[1]) == 15:
-			midiHue = min(2*ord(data[2]),254)
-		#set saturation
-		elif ord(data[1]) == 16:
-			midiSat = min(2*ord(data[2]),254)
-		#set brightness
-		elif ord(data[1]) == 17:
-			midiVal = min(2*ord(data[2]),254)
+			hue = ord(data[2])*8/127
 
-		elements = [255,midiMode,midiHue,midiSat,midiVal]
+		elements = [255,intensity,hue]
 		print elements
 
 		for x in elements:
@@ -115,7 +107,7 @@ while True:
 			oldvalue = value
 
 			# log current value
-			print value
+			#print value
 			#sys.stdout.write( "%d   \r" % value )
 			#sys.stdout.flush()
 
