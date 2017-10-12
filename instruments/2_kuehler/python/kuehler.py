@@ -26,8 +26,11 @@ udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpOut.connect( ( "localhost", 5006 ) )
 
 
-# initialize old value for change detection
-oldvalue = 0
+# initialize old values for change detection
+oldValues = [0,0,0,0,0]
+
+# initialize the read values
+values = [0,0,0,0,0]
 
 # midi values
 intensity = 0
@@ -80,44 +83,44 @@ while True:
 	safe = True
 
 	while safe:
-
 		try:
 			# try to read line from Arduino
 			line = serial.readline()
 
+
 			# got complete line with expected start and end character?
 			if line[:1] == ":" and line[-1:] == "\n":
 
+
 				# get numeric value
-				value = int( line[1:-1] )
-				
+				#value = int( line[1:-1] )
+				value = line[1:-1]
+				values = value.split()
+
+				for x in values:
+					x = (int)(x)
+
 				# read was successfull
 				safe = True
 
-			else:
-				safe = False
 
 		except Exception:
 			safe = False
 
-		# value available and different from old one?
-		if safe and value != oldvalue:
+		if safe:
+			for i in range(len(values)):
+				if (int)(values[i]) !=(int)(oldValues[i]):
+					# limit to 0..127
+					values[i] = max( min( int(values[i]), 127 ), 0 )
+					if values[i] == 1:
+						values[i] = 127;
+					# update cached value
+					oldValues[i] = values[i]
 
-			# limit to 0..127
-			value = max( min( int(value), 127 ), 0 )
-
-			# update cached value
-			oldvalue = value
-
-			# log current value
-			#print value
-			#sys.stdout.write( "%d   \r" % value )
-			#sys.stdout.flush()
-
-			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, value )
-			udpOut.send( bytes )
-		#print serial.readline()
-
+					# on MIDI channel 4, set controller #1 to value
+					bytes = struct.pack( "BBBB", 0xaa, 0xB1, i, values[i] )
+					udpOut.send( bytes )
+					#print ":".join(format(ord(c)) for c in bytes)	
+		safe = False
 
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
