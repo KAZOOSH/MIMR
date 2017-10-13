@@ -9,7 +9,7 @@
  *
  
         .---------------------------------.
-        |		                          |
+        |		                  |
         |          ATTINY2313A            |
         |                                 |
         |                                 |
@@ -22,7 +22,7 @@
                |             |    | |
                |             |    '-'
                o             |     |
-           usart TX	         | ||  |     
+           usart TX          | ||  |     
                              '-||--o-------------.
                                ||                |
                                                  |
@@ -357,7 +357,7 @@ int main(void)
 	/*     DO JOB     */
     while (1) 
     {			
-		/*    50HZ NOTCH, GET 2 CHARGES AT 180° PHASE DIFFERENCE    */   
+		/*    50HZ NOTCH, GET 2 CHARGES AT 180Â° PHASE DIFFERENCE    */   
 		uint16_t sum = 0;
 		for(uint8_t i = 0; i < 2; i++)
 		{			
