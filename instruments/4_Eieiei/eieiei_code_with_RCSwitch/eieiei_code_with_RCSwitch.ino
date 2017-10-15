@@ -5,18 +5,31 @@
 
 // d10 - data pin of FS1000a
 
+// wireless library
 #include <RCSwitch.h>
-
-// wireless communication
 RCSwitch mySwitch = RCSwitch();
 
 // analog ports for measuring
-const int analogInPin5 = A5;   
-const int analogInPin4 = A4;  
+const int motorPin2 = A5;   
+const int motorPin1 = A4;  
+const int distanceSensorPin = A3;  
 
-// State Booleans 
-int sensorValue1 = 0;        // value read from the pot
-int sensorValue2 = 0;        // value read from the pot
+// distance sensor variables
+double distSensorValue =0;
+double distSensorValue0 =0;
+double distSensorValue1 =0;
+double distSensorValue2 =0;
+
+double distSensorValueMax =360;
+double distSensorValueMin =260;
+
+// rotation sensor
+int sensorValueRot1 = 0;        // value read from the pot
+int sensorValueRot1_0 = 0;
+int sensorValueRot1_1 = 0;
+int sensorValueRot1_2 = 0;
+int sensorValueRot2 = 0;        // value read from the pot
+double sensorValueRot1Max = 0;        // value read from the pot
 
 int isSensorOneNeg = 1;
 int isSensorTwoNeg = 1;
@@ -27,74 +40,107 @@ double loopsToSensor1Pos = 0;
 double loopsToSensor2Pos = 0;
 
 // analog value for zero pass of motor (not moving)
-int basevalue = 678;
+double minvalueMotor = 9999;
+double maxvalueMotor = 0;
 
 // counter for time measuring
 double loopcount = 0 ;
-double lastlooplength = 0;
+int loopcountjitter1 = 0 ;
+int loopcountjitter2 = 0 ;
+int lastlooplength = 0;
 boolean isHalftime = false;
+int inByte = 0;
 
 void setup() {
   // initialize serial communications at 9600 bps:
   Serial.begin(9600);
   mySwitch.enableTransmit(10);
+  //mySwitch.setRepeatTransmit(3);
 }
 
 void loop() {
+  printDistance();
 
   loopcount++;
+
   
-  // read the analog in value:
-  sensorValue1 = analogRead(analogInPin5)- basevalue;
-  sensorValue2 = analogRead(analogInPin4)- basevalue;
+  sensorValueRot1 = analogRead(motorPin1);
+//Serial.println(sensorValueRot1);
+  sensorValueRot1_2 = sensorValueRot1_1;
+  sensorValueRot1_1 = sensorValueRot1_0;
+  sensorValueRot1_0 = sensorValueRot1;
 
-  //Serial.println(sensorValue1);
-  //Serial.println(sensorValue2);
-
-  // check if sensor one changes from pos to neg
-  if(isSensorOneNeg == 1 && sensorValue1 > 1){
-    isSensorOneNeg = 0;
-    loopsToSensor1Pos = loopcount;
+  if(loopcount > 3){
+    sensorValueRot1 = median(sensorValueRot1_2,sensorValueRot1_1,sensorValueRot1_0);
   }
-  if(isSensorOneNeg == 0 && sensorValue1 < -1){
-    isSensorOneNeg = 1;
-    loopsToSensor1Neg = loopcount;
+  
+  if(minvalueMotor > sensorValueRot1){
+    minvalueMotor = (double)sensorValueRot1;
   }
-
-  // check if sensor two changes from pos to neg
-  if(isSensorTwoNeg == 1 && sensorValue2 > 1){
-    loopsToSensor2Pos = loopcount;
-    isSensorTwoNeg = 0;
-  }
-  if(isSensorTwoNeg == 0 && sensorValue2 < -1){
-    isSensorTwoNeg = 1;
-    loopsToSensor2Neg = loopcount;
-    checkDirection();
-    lastlooplength = loopcount;
-
-    // beginn new loopcount
-    loopcount=0;
-    isHalftime= false;
+  if(maxvalueMotor < sensorValueRot1){
+    maxvalueMotor = (double)sensorValueRot1;
   }
 
-  // on half of last loopcount
-  if(loopcount > lastlooplength /2 && isHalftime != true){
-    isHalftime= true;
-    //mySwitch.send(44, 24);
-    Serial.println("reset");
-  }
+  //Serial.println(sensorValueRot1); 
+  
+  //Serial.print(minvalueMotor); 
+  //Serial.print(":"); 
+  //Serial.println(maxvalueMotor);
+   Serial.print(" ");
+   Serial.println( min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10)); 
+  
+   maxvalueMotor=maxvalueMotor*0.9999;
+   minvalueMotor=min(minvalueMotor*1.0001,maxvalueMotor);
+
+  
+
+
+// if (Serial.available() > 0) {
+//
+//    delay(1000);
+//    mySwitch.send(rgbToDouble(0,255,0), 24);
+//    Serial.println("grün");
+//    delay(1000);
+//    mySwitch.send(rgbToDouble(0,0,255), 24);
+//    Serial.println("blau");
+//    delay(1000);
+//    mySwitch.send(rgbToDouble(255,0,0), 24);
+//    Serial.println("rot");
+// }
+
+
 }
 
 
-void checkDirection(){
-  if(loopsToSensor1Neg < loopsToSensor2Pos){
-    //mySwitch.send(11, 24); // Der 433mhz Sender versendet die Dezimalzahl „11“
-    Serial.println("links");
-  } else{
-    //mySwitch.send(22, 24); 
-    Serial.println("rechts");
-  }
+long rgbToDouble(int r,int g,int b){
+  return (double)(r/10)*10000+(double)(g/10)*100+b/10;
 }
+
+
+int median(int val1,int val2,int val3){
+  if(((val1 <= val3) && (val1 >= val2 )) || ((val1 <= val2) && (val1 >= val3))){
+    return val1;
+  } else if(((val2 <= val3) && (val2 >= val1)) || ((val2 <= val1) && (val2 >= val3))){
+    return val2;
+  } 
+  return val3;
+}
+
+void printDistance(){
+  distSensorValue2 =distSensorValue1;
+  distSensorValue1 =distSensorValue0;
+  distSensorValue0 = analogRead(distanceSensorPin);
+  
+  if(distSensorValue0 < distSensorValueMin){ distSensorValue0 =distSensorValueMin;}
+  if(distSensorValue0 > distSensorValueMax){ distSensorValue0 =distSensorValueMax;}
+
+  distSensorValue = median(distSensorValue0,distSensorValue1,distSensorValue2);
+  
+  Serial.print(":");
+  Serial.print((int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127));
+  
+}
+
 
 
 
