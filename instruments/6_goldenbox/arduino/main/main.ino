@@ -3,6 +3,8 @@
 #define PULSE_WIDTH_USEC 5
 #define BYTES_VAL_T unsigned long
 
+#define PI 3.14159265359
+
 const int ploadPin  = 8; //blue
 const int dataPin   = 7; //yellow
 const int clockPin  = 4; //green
@@ -15,6 +17,21 @@ const int supplyAdcPin = 1; //Feedback Input
 
 const float supplyVoltage = 13.8; 	//Important: Always set DC input Voltage of Supply in Volt !!!
 static float SupplySetpoint = 0;	//output voltage
+
+const int bulbPins[] = {10,11,13};
+#define nBulbBrightnessValues (sizeof(bulbBrightness) / sizeof(byte))
+const int bulbAnimationTime = 4500;
+const int maxBrightness = 80;
+unsigned long controlValueChanged = 0;
+
+byte serialIn[1] = {0}; //intensity
+
+//communication to serial
+// dummy byte indicating start of Ableton data
+#define SYNC_BYTE 255
+
+// baud rate for USB communication with RasPi
+#define BAUD_RATE 115200L
 
 
 BYTES_VAL_T read_shift_regs() {
@@ -96,11 +113,41 @@ inline void ledFlicker() {
 }
 
 
+void setBulbBrightness(){
+  int t = millis() % bulbAnimationTime;
+  int activeLed = 0;
+  int tOffset = 0;
+  int valueChanged = 0;
+
+  if(t > bulbAnimationTime/3*2){
+    activeLed = 2;
+    tOffset = bulbAnimationTime/3*2;
+  }
+  else if(t > bulbAnimationTime/3){
+    activeLed = 1;
+    tOffset = bulbAnimationTime/3;
+  }
+  
+
+  float brightness = sin((t-tOffset)*PI*3/bulbAnimationTime)*maxBrightness;
+  if(controlValueChanged + 50 > millis()) valueChanged = maxBrightness;
+
+  for (int i=0; i<3; ++i){
+    if(i == activeLed){
+      analogWrite(bulbPins[i],min(brightness + serialIn[0] + valueChanged,maxBrightness));
+    }
+    else{ 
+      analogWrite(bulbPins[i],min(serialIn[0]+valueChanged,maxBrightness));
+    }
+  }
+  
+}
 
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(BAUD_RATE);
+    while (!Serial) ;
 
 	  //init shift registers for switch
     pinMode(ploadPin, OUTPUT);
@@ -110,6 +157,10 @@ void setup()
 
     digitalWrite(clockPin, LOW);
     digitalWrite(ploadPin, HIGH);
+
+    pinMode(bulbPins[0],OUTPUT);
+    pinMode(bulbPins[1],OUTPUT);
+    pinMode(bulbPins[2],OUTPUT);
 	
   	//init led pins
     pinMode(redLedPin, OUTPUT);
@@ -130,6 +181,19 @@ void setup()
 
 
 void loop() {
+
+   // check serial buffer for input
+   if(Serial.available() > 0){
+    int test = Serial.read();
+
+    // start byte received?
+    if( test == SYNC_BYTE )
+    {
+      // yes, read data bytes
+      Serial.readBytes( serialIn, 1 );
+    }
+   }
+   
 	
 	BYTES_VAL_T pinValues;
 	BYTES_VAL_T oldPinValues;
@@ -143,11 +207,14 @@ void loop() {
       //werte von 0-21 werden gesendet ...
       if(!(sw % 2)) {
         if(swOld != sw) {
-          Serial.print(':');
-          Serial.println(sw / 2);
-          //Serial.print('\n');
-          Serial.flush();
+          if(Serial.available() > 0){
+            Serial.print(':');
+            Serial.println(sw / 2);
+            Serial.flush();
+          }
           swOld = sw;
+
+          controlValueChanged = millis();
         }
       }
       
@@ -159,6 +226,9 @@ void loop() {
 		
 		//led flicker efect
 		ledFlicker();
+
+   //set bulbs
+   setBulbBrightness();
 	}
     //delay(POLL_DELAY_MSEC);
 }

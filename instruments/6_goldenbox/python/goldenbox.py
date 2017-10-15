@@ -10,8 +10,14 @@ print "Start GoldenBox				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyACM0", 9600, bytesize=8, parity='N', timeout=0.01 )
+serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01, xonxoff=0, rtscts=0 )
 
+serial.setDTR(False)
+sleep(1)
+# toss any data already received, see
+# http://pyserial.sourceforge.net/pyserial_api.html#serial.Serial.flushInput
+serial.flushInput()
+serial.setDTR(True)
 
 # open UDP socket to listen raveloxmidi
 udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
@@ -30,16 +36,11 @@ udpOut.connect( ( "localhost", 5006 ) )
 oldvalue = 0
 
 # midi values
-midiMode = 0
-midiHue = 0
-midiSat = 0
-midiVal = 0
+brightness = 0;
 
 
 # loop infinitely
 while True:
-	
-	'''	
 # incoming UDP packets in buffer?
 	bufferClear = False
 
@@ -59,30 +60,18 @@ while True:
 
 	# control command
 	if ord(data[0]) == 176:
-		#set mode
-		if ord(data[1]) == 14:
-			if ord(data[2]) <= 2:
-				midiMode = ord(data[2])
-			else:
-				midiMode = 0
-		#set hue
-		elif ord(data[1]) == 15:
-			midiHue = min(2*ord(data[2]),254)
-		#set saturation
-		elif ord(data[1]) == 16:
-			midiSat = min(2*ord(data[2]),254)
 		#set brightness
-		elif ord(data[1]) == 17:
-			midiVal = min(2*ord(data[2]),254)
+		if ord(data[1]) == 64:
+			brightness = min(2*ord(data[2]),254)
 
-		elements = [255,midiMode,midiHue,midiSat,midiVal]
+		elements = [255,brightness]
 		print elements
 
-		for x in elements:
-			#sys.stdout.write(chr(x))
-			#sys.stdout.flush()
-			serial.write(chr(x))
-	'''
+#TODO add serial com with leonardo
+		#for x in elements:
+			#serial.write(chr(x))
+			#serial.flush()
+
 	safe = True
 
 	while safe:
@@ -125,6 +114,6 @@ while True:
 			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, value )
 			udpOut.send( bytes )
 		#print serial.readline()
-
+		#safe = False	
 
 		#print ":".join("{0:x}".format(ord(c)) for c in data)
