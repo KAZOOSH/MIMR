@@ -10,14 +10,7 @@ print "Start GoldenBox				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01, xonxoff=0, rtscts=0 )
-
-serial.setDTR(False)
-sleep(1)
-# toss any data already received, see
-# http://pyserial.sourceforge.net/pyserial_api.html#serial.Serial.flushInput
-serial.flushInput()
-serial.setDTR(True)
+serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01)
 
 # open UDP socket to listen raveloxmidi
 udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
@@ -68,8 +61,8 @@ while True:
 		print elements
 
 #TODO add serial com with leonardo
-		#for x in elements:
-			#serial.write(chr(x))
+		for x in elements:
+			serial.write(chr(x))
 			#serial.flush()
 
 	safe = True

@@ -18,10 +18,11 @@ const int supplyAdcPin = 1; //Feedback Input
 const float supplyVoltage = 13.8; 	//Important: Always set DC input Voltage of Supply in Volt !!!
 static float SupplySetpoint = 0;	//output voltage
 
-const int bulbPins[] = {10,11,13};
+const int bulbPins[] = {10,11,3};
+const int bulbMinD[] = {17,10,10};
 #define nBulbBrightnessValues (sizeof(bulbBrightness) / sizeof(byte))
 const int bulbAnimationTime = 4500;
-const int maxBrightness = 80;
+const int maxBrightness = 70;
 unsigned long controlValueChanged = 0;
 
 byte serialIn[1] = {0}; //intensity
@@ -33,6 +34,12 @@ byte serialIn[1] = {0}; //intensity
 // baud rate for USB communication with RasPi
 #define BAUD_RATE 115200L
 
+
+BYTES_VAL_T pinValues;
+  BYTES_VAL_T oldPinValues;
+  byte sw,swOld;
+
+  
 
 BYTES_VAL_T read_shift_regs() {
     long bitVal;
@@ -133,11 +140,12 @@ void setBulbBrightness(){
   if(controlValueChanged + 50 > millis()) valueChanged = maxBrightness;
 
   for (int i=0; i<3; ++i){
+    int base = serialIn[0] + bulbMinD[i];
     if(i == activeLed){
-      analogWrite(bulbPins[i],min(brightness + serialIn[0] + valueChanged,maxBrightness));
+      analogWrite(bulbPins[i],min(base + min(brightness + valueChanged,maxBrightness),150));
     }
     else{ 
-      analogWrite(bulbPins[i],min(serialIn[0]+valueChanged,maxBrightness));
+      analogWrite(bulbPins[i],min(base +min(valueChanged,maxBrightness),150));
     }
   }
   
@@ -147,7 +155,6 @@ void setBulbBrightness(){
 void setup()
 {
     Serial.begin(BAUD_RATE);
-    while (!Serial) ;
 
 	  //init shift registers for switch
     pinMode(ploadPin, OUTPUT);
@@ -181,10 +188,11 @@ void setup()
 
 
 void loop() {
-
-   // check serial buffer for input
-   if(Serial.available() > 0){
-    int test = Serial.read();
+	
+	
+	//while(1) {
+       // check serial buffer for input
+   int test = Serial.read();
 
     // start byte received?
     if( test == SYNC_BYTE )
@@ -192,13 +200,8 @@ void loop() {
       // yes, read data bytes
       Serial.readBytes( serialIn, 1 );
     }
-   }
-   
-	
-	BYTES_VAL_T pinValues;
-	BYTES_VAL_T oldPinValues;
-	byte sw,swOld;
-	while(1) {
+
+    
 		pinValues = read_shift_regs();
 		if(pinValues != oldPinValues) {
 			sw = registerValuteToSwitchValue(pinValues);
@@ -207,11 +210,10 @@ void loop() {
       //werte von 0-21 werden gesendet ...
       if(!(sw % 2)) {
         if(swOld != sw) {
-          if(Serial.available() > 0){
-            Serial.print(':');
-            Serial.println(sw / 2);
-            Serial.flush();
-          }
+          Serial.print(':');
+          Serial.println(sw / 2);
+          //Serial.print('\n');
+          Serial.flush();
           swOld = sw;
 
           controlValueChanged = millis();
@@ -229,7 +231,8 @@ void loop() {
 
    //set bulbs
    setBulbBrightness();
-	}
+	//}
     //delay(POLL_DELAY_MSEC);
 }
+
 
