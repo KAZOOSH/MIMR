@@ -9,6 +9,15 @@
 #include <RCSwitch.h>
 RCSwitch mySwitch = RCSwitch();
 
+
+// Arduino -> RasPi send interval (microseconds)
+#define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
+unsigned long lastSendTime = 0;
+
+// baud rate for USB communication with RasPi
+#define BAUD_RATE 115200L
+
+
 // analog ports for measuring
 const int motorPin2 = A5;   
 const int motorPin1 = A4;  
@@ -51,9 +60,13 @@ int lastlooplength = 0;
 boolean isHalftime = false;
 int inByte = 0;
 
+//output values
+int outDist = 0;
+int outRot = 0;
+
 void setup() {
   // initialize serial communications at 9600 bps:
-  Serial.begin(9600);
+  Serial.begin(BAUD_RATE);
   mySwitch.enableTransmit(10);
   //mySwitch.setRepeatTransmit(3);
 }
@@ -86,14 +99,31 @@ void loop() {
   //Serial.print(minvalueMotor); 
   //Serial.print(":"); 
   //Serial.println(maxvalueMotor);
-   Serial.print(" ");
-   Serial.println( min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10)); 
+  // Serial.print(" ");
+  // Serial.println( min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10)); 
+   outRot =  min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10);
   
    maxvalueMotor=maxvalueMotor*0.9999;
    minvalueMotor=min(minvalueMotor*1.0001,maxvalueMotor);
 
   
+  // time to update RasPi with current value?
+  if ( micros() - lastSendTime > SEND_INTERVAL )
+  {
+    // remember time
+    lastSendTime = micros();
+    
+    // write start character
+    Serial.print( ":" );
+    
+    // write value as ASCII and append line break
+    Serial.print( outDist );
+    Serial.print(" ");
+    Serial.println(outRot);
 
+    // wait for transmission to finish
+    Serial.flush();
+  }
 
 // if (Serial.available() > 0) {
 //
@@ -135,9 +165,10 @@ void printDistance(){
   if(distSensorValue0 > distSensorValueMax){ distSensorValue0 =distSensorValueMax;}
 
   distSensorValue = median(distSensorValue0,distSensorValue1,distSensorValue2);
-  
-  Serial.print(":");
-  Serial.print((int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127));
+
+  outDist = (int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127);
+  //Serial.print(":");
+  //Serial.print((int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127));
   
 }
 
