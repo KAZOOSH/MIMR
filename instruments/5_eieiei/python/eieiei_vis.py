@@ -121,8 +121,10 @@ class EGL(object):
         assert s>=0
         dispman_display = bcm.vc_dispmanx_display_open(0)
         dispman_update = bcm.vc_dispmanx_update_start( 0 )
-        dst_rect = eglints( (0,0,width.value,height.value) )
-        src_rect = eglints( (0,0,width.value<<16, height.value<<16) )
+        dst_rect = eglints( (0,0,600,600) )
+        #dst_rect = eglints( (0,0,width.value,height.value) )
+        #src_rect = eglints( (0,0,width.value<<16, height.value<<16) )
+        src_rect = eglints( (0,0,480<<16, 480<<16) )
         assert dispman_update
         assert dispman_display
         dispman_element = bcm.vc_dispmanx_element_add ( dispman_update, dispman_display,
@@ -131,6 +133,8 @@ class EGL(object):
                                   DISPMANX_PROTECTION_NONE,
                                   0 , 0, 0)
         bcm.vc_dispmanx_update_submit_sync( dispman_update )
+
+        #test res
         nativewindow = eglints((dispman_element,width,height));
         nw_p = ctypes.pointer(nativewindow)
         self.nw_p = nw_p
@@ -196,6 +200,7 @@ uniform float iTime;
 uniform float depth;
 
 #define DSP_STR 1.5
+#define PI_HALF 1.57079632679
 
 
 float getsat(vec3 c)
@@ -265,8 +270,8 @@ vec3 samplef(in vec2 uv)
     float t5x = 1.0 + cos(iTime * 0.7) * 0.3; //ausserhalb
     float t5y = -1.0 +sin(iTime * 0.3) * 0.3;
 
-    float d = 1.0-depth/127.0 +1.0;
-
+    //float d = 1.0-(depth/127.0) +1.0;
+    float d = depth/127.0 +1.0;
 
     float r = metaball(uv + vec2(t0x, t0y), .02 *d) * //unten rechts
               metaball(uv + vec2(t1x, t1y), .07*d)+
@@ -290,7 +295,9 @@ vec3 samplef(in vec2 uv)
     
     
 
-    vec3 bg = vLerp( cos(iTime/10.0));
+    //vec3 bg = vLerp( cos(iTime/10.0));
+    //vec3 bg = vLerp( cos(depth*PI_HALF));
+    vec3 bg = vLerp( depth*0.9/127.0);
 
     vec3 col = vec3(0.0,1.0,0.0);//vLerp(sin(iTime/9.0));
 
@@ -321,7 +328,7 @@ vec3 samplef(in vec2 uv)
 		gl_FragColor = vec4(ar,ai,0.0,1.0);*/
   
         vec2 fragCoord = vec2(gl_FragCoord.x,gl_FragCoord.y);
-    vec2 iResolution = vec2(800.0,600.0);
+    vec2 iResolution = vec2(480.0,480.0);
 
     if(fragCoord.x > iResolution.x || fragCoord.y > iResolution.y ){
         gl_FragColor = vec4(0.0,0.0,0.0, 1.0);
@@ -480,16 +487,5 @@ if __name__ == "__main__":
         try:
             #receive values
             data, addr = udpIn.recvfrom(1024)
-            distance = mapValue(float(data),0,30,0,128);
-            print distance
-
-        except Exception:
-            pass
-
-        #draw vis
-        d.draw_triangles(distance)
-    showerror()
-
-
-        
-    
+            distance = float(data) #mapValue(float(data),0,30,0,128);
+       
