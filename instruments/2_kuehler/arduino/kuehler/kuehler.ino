@@ -28,6 +28,8 @@
 #define DATA_PIN 3
 #define CLOCK_PIN 13
 
+#define PI 3.14159265359
+
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 int nLedIndex[] = { 1,1,1,1,1,1,1,1,1,0,
@@ -49,7 +51,7 @@ unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
 #define BAUD_RATE 115200L
-byte serialIn[3] = {0,0,255};
+byte serialIn[4] = {0,0,255,1}; //value, hue, saturation, isIdle
 
 #include <Wire.h>
 
@@ -79,11 +81,19 @@ void loop(){
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 3 );
+    Serial.readBytes( serialIn, 4 );
+  }
+
+  //if not idle proceed normal
+  if(serialIn[3] == 0){
+    readTouchInputs();
+    setLedColor();
+  }
+  else
+  {
+    doIdle();
   }
   
-  readTouchInputs();
-  setLedColor();
   
   
 }
@@ -276,3 +286,32 @@ void set_register(int address, unsigned char r, unsigned char v){
     Wire.write(v);
     Wire.endTransmission();
 }
+
+void doIdle(){
+  int pos = millis()%35000;
+  int indexLeds = pos/7;
+  pos = pos%7000;
+  indexLeds/=1000;
+  float p = pos/5000.0;
+
+  float maxBrightness = 45;
+  
+  int value = sin(p*PI)*maxBrightness;
+  if(p >1) value = 0;
+  
+  CRGB color1 = CRGB(value,value,value);
+  CRGB color2 = CRGB::Black;
+
+  for(int c = 0; c<NUM_LEDS; c++){
+    if(nLedIndex[c] == indexLeds){
+      leds[c] = color1;
+    }
+    else {
+      leds[c] = color2;
+    }
+    
+  }
+  
+  FastLED.show();
+}
+
