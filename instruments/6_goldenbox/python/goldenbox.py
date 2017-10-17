@@ -2,22 +2,12 @@
 
 import socket
 import sys
-from time import sleep
+import time
 from serial import Serial
 import struct
 
-<<<<<<< HEAD
 import RPi.GPIO as GPIO
-import datetime
- 
-def my_callback(channel):
-    if GPIO.input(3) == GPIO.HIGH:
-        print("HIGH" + str(datetime.datetime.now()))
-    else:
-        print("LOW" + str(datetime.datetime.now()))
 
-=======
->>>>>>> 767044cb405a964216dccb07bfdea17b14c08bac
 print "Start GoldenBox				"
 
 '''init serial and network'''
@@ -41,21 +31,34 @@ oldvalue = 0
 
 # midi values
 brightness = 0;
-<<<<<<< HEAD
 
 
 #gpio foot sensor
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(7, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#GPIO.add_event_detect(3, GPIO.BOTH, callback=my_callback)
-=======
->>>>>>> 767044cb405a964216dccb07bfdea17b14c08bac
 
-while True:
-	print GPIO.input(7)
+footPin = 7 #7 on pi1    21 on pi2
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+lastFootChange = 0
+minFootDwellTime = 5.0
+isIdle = 1
+
+
 
 # loop infinitely
 while True:
+# foot sensor
+	if time.time() - lastFootChange > minFootDwellTime:
+		tIdle = GPIO.input(footPin)
+		if tIdle != isIdle:
+			isIdle = tIdle
+			lastFootChange = time.time()
+			elements = [255,brightness,isIdle]
+			print elements
+			for x in elements:
+				serial.write(chr(x))
+
+
 # incoming UDP packets in buffer?
 	bufferClear = False
 
@@ -79,12 +82,11 @@ while True:
 		if ord(data[1]) == 64:
 			brightness = min(2*ord(data[2]),254)
 
-		elements = [255,brightness]
-		print elements
+		elements = [255,brightness,isIdle]
 
-#TODO add serial com with leonardo
-		for x in elements:
-			serial.write(chr(x))
+		if isIdle == 0:
+			for x in elements:
+				serial.write(chr(x))
 			#serial.flush()
 
 	safe = True
