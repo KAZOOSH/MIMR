@@ -2,7 +2,7 @@
 #include "RCSwitch.h"
 
 // How many leds in your strip?
-#define NUM_LEDS 10
+#define NUM_LEDS 17
 #define DATA_PIN 4
 #define IR_PIN 3
 
@@ -11,19 +11,21 @@
 
 // counter for 
 int count = 0;
-int roundcount =0;
+int roundcount =1;
 
 float min_v=9999;
 float max_v=0;
 float voltage =0;
 
 int low =0;
+int i = 0;
+int j = 0;
 RCSwitch mySwitch = RCSwitch();
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
-CRGB currentcolor = CRGB::Blue;
+CRGB currentcolor = CRGB(100,0,150);
 
 void setup() { 
   
@@ -54,6 +56,7 @@ void loop() {
   
   // check for voltage to 
   if(voltage > (max_v-min_v)/2){
+    leds[16] = CRGB::Red;
     if(low){
       low = 0;
       roundcount = count;
@@ -64,60 +67,29 @@ void loop() {
     if(!low){
       low = 1;
     }
-
-    FastLED.show();
+    leds[16] = CRGB::Green;
   }
   
-  if(count > 0 && count < roundcount/10){
-    leds[0] = currentcolor;
-    leds[5] = currentcolor;
-    FastLED.show();
+  int currentpos = ((8 * count)/roundcount)-1;
+  
+
+  if(currentpos>4) {
+    currentpos = 4 -(currentpos-4); 
   }
-  if(count > roundcount/10 && count < roundcount*2/10){
-    leds[1] = currentcolor;
-    leds[6] = currentcolor;
-    FastLED.show();
+  if(currentpos==4){
+    currentpos=3;
   }
-    if(count > roundcount*2/10 && count < roundcount* 3/10){
-    leds[2] = currentcolor;
-    leds[7] = currentcolor;
-    FastLED.show();
-  }
-    if(count > roundcount*3/10 && count < roundcount*4/10){
-    leds[3] = currentcolor;
-    leds[8] = currentcolor;
-    FastLED.show();
-  }
-  if(count > roundcount*4/10 && count < roundcount*5/10){
-    leds[4] = currentcolor;
-    leds[9] = currentcolor;
-    FastLED.show();
-  }
-  if(count > roundcount*5/10 && count < roundcount*6/10){
-    leds[4] = CRGB::Black;
-    leds[9] = CRGB::Black;
-    FastLED.show();
-  }
-  if(count > roundcount*6/10 && count < roundcount*7/10){
-    leds[3] = CRGB::Black;
-    leds[8] = CRGB::Black;
-    FastLED.show();
-  }
-  if(count > roundcount*7/10 && count < roundcount*8/10){
-    leds[2] = CRGB::Black;
-    leds[7] = CRGB::Black;
-    FastLED.show();
-  }
-  if(count > roundcount*8/10 && count < roundcount*9/10){
-    leds[1] = CRGB::Black;
-    leds[6] = CRGB::Black;
-    FastLED.show();
-  }
-   if(count > roundcount*9/10 && count < roundcount){
-    leds[0] = CRGB::Black;
-    leds[5] = CRGB::Black;
-    FastLED.show();
-  }
+  for(i = 0; i<4; i++){
+      for(j = 0; j<4; j++){
+        if(i == currentpos){
+          leds[(j*4)+i] = currentcolor;
+        } else{
+          leds[(j*4)+i] = CRGB(6,20,6);
+        }
+      }
+    }
+     FastLED.show();
+
   
   //pulsing
   
