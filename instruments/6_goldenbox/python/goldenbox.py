@@ -6,6 +6,18 @@ from time import sleep
 from serial import Serial
 import struct
 
+<<<<<<< HEAD
+import RPi.GPIO as GPIO
+import datetime
+ 
+def my_callback(channel):
+    if GPIO.input(3) == GPIO.HIGH:
+        print("HIGH" + str(datetime.datetime.now()))
+    else:
+        print("LOW" + str(datetime.datetime.now()))
+
+=======
+>>>>>>> 767044cb405a964216dccb07bfdea17b14c08bac
 print "Start GoldenBox				"
 
 '''init serial and network'''
@@ -24,13 +36,23 @@ udpIn.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,128)
 udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpOut.connect( ( "localhost", 5006 ) )
 
-
 # initialize old value for change detection
 oldvalue = 0
 
 # midi values
 brightness = 0;
+<<<<<<< HEAD
 
+
+#gpio foot sensor
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(7, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.add_event_detect(3, GPIO.BOTH, callback=my_callback)
+=======
+>>>>>>> 767044cb405a964216dccb07bfdea17b14c08bac
+
+while True:
+	print GPIO.input(7)
 
 # loop infinitely
 while True:
