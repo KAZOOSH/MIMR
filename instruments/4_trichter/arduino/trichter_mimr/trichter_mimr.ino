@@ -17,6 +17,8 @@
 #define NUM_LEDS 1
 #define DATA_PIN 5
 
+#define PI 3.14159265359
+
 CRGB leds[NUM_LEDS];
 byte serialIn[3] = {0,60,0}; //intensity, hue-min, hue-max
 
@@ -55,10 +57,15 @@ int right[2] = {0,0};
 int leftvalue;
 int rightvalue;
 
+//idlemode
+int isInIdleMode =1;
+
 //current position
 int pos = 63;
 
-
+// idle vars
+const int idleAnimationTime = 4500;
+const int maxIdleBrightness = 70;
 
 void setup() {
   //init serial
@@ -102,27 +109,20 @@ void setLedColor(){
   FastLED.show();
 }
 
-
-
-void loop() {
-    // check serial buffer for input
-    int test = Serial.read();
-
-  // start byte received?
-  if( test == SYNC_BYTE )
-  {
-    // yes, read data bytes
-    Serial.readBytes( serialIn, 3 );
-  }
-
-     // set LEDs
-  setLedColor();
-
+void idleAnimation(){
+  int value = maxIdleBrightness+(maxIdleBrightness-1)*sin(2*PI/idleAnimationTime*millis());
   
+  for(int dot = 0; dot < NUM_LEDS; dot++) { 
+    leds[dot].setRGB( value, value, value);
+  }
+  FastLED.show();
+}
+
+void readSensor(){
+ 
   leftvalue = digitalRead(pin_l);
   rightvalue = digitalRead(pin_r);
   
-
   //push left
   left[0] = left[1];
   left[1] = (int)leftvalue;
@@ -188,7 +188,36 @@ void loop() {
     }
   }
 
+}
 
+void loop() {
+  // check serial buffer for input
+  int test = Serial.read();
+
+  // start byte received?
+  if( test == SYNC_BYTE )
+  {
+    // yes, read data bytes
+    Serial.readBytes( serialIn, 4 );
+  }
+
+  
+  if(serialIn[3] == 1){
+    // idle mode
+    isInIdleMode = 1;
+   } else if(serialIn[3] == 0){
+     isInIdleMode = 0;
+   }
+
+  if(isInIdleMode == 1){
+    idleAnimation();
+  } else{
+     // set LEDs  
+     setLedColor();
+
+     // read rotation sensor
+     readSensor();  
+  }
 }
 
 
