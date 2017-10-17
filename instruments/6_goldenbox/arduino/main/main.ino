@@ -25,7 +25,7 @@ const int bulbAnimationTime = 4500;
 const int maxBrightness = 70;
 unsigned long controlValueChanged = 0;
 
-byte serialIn[1] = {0}; //intensity
+byte serialIn[2] = {0,1}; //intensity, isIdle
 
 //communication to serial
 // dummy byte indicating start of Ableton data
@@ -186,6 +186,34 @@ void setup()
     TCCR1A |= (1 << COM1A1);
 }
 
+void doIdle(){
+   int t = millis() % bulbAnimationTime;
+  int activeLed = 0;
+  int tOffset = 0;
+ int  maxBrightness = 10;
+
+  if(t > bulbAnimationTime/3*2){
+    activeLed = 2;
+    tOffset = bulbAnimationTime/3*2;
+  }
+  else if(t > bulbAnimationTime/3){
+    activeLed = 1;
+    tOffset = bulbAnimationTime/3;
+  }
+  
+
+  float brightness = sin((t-tOffset)*PI*3/bulbAnimationTime)*maxBrightness;
+
+  for (int i=0; i<3; ++i){
+    int base = serialIn[0] + bulbMinD[i];
+    if(i == activeLed){
+      analogWrite(bulbPins[i],base + brightness);
+    }
+    else{ 
+      analogWrite(bulbPins[i],base);
+    }
+  }
+}
 
 void loop() {
 	
@@ -198,13 +226,15 @@ void loop() {
     if( test == SYNC_BYTE )
     {
       // yes, read data bytes
-      Serial.readBytes( serialIn, 1 );
+      Serial.readBytes( serialIn, 2 );
     }
 
-    
-		pinValues = read_shift_regs();
-		if(pinValues != oldPinValues) {
-			sw = registerValuteToSwitchValue(pinValues);
+    //check if idle
+    if(serialIn[1] == 0 )
+    {
+      pinValues = read_shift_regs();
+    if(pinValues != oldPinValues) {
+      sw = registerValuteToSwitchValue(pinValues);
       
       //nur alle "rastenden Schalterstellungen"
       //werte von 0-21 werden gesendet ...
@@ -220,19 +250,26 @@ void loop() {
         }
       }
       
-			SupplySetVoltage(sw*3);
-			oldPinValues = pinValues;
-		}
+      SupplySetVoltage(sw*3);
+      oldPinValues = pinValues;
+    }
 
-		SupplyFeedbackLoop();
-		
-		//led flicker efect
-		ledFlicker();
+    SupplyFeedbackLoop();
+    
+    //led flicker efect
+    ledFlicker();
 
    //set bulbs
    setBulbBrightness();
-	//}
+  //}
     //delay(POLL_DELAY_MSEC);
+    }
+    else
+    {
+      doIdle();
+    }
+    
+		
 }
 
 
