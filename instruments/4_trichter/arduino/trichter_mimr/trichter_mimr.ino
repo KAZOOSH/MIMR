@@ -20,7 +20,7 @@
 #define PI 3.14159265359
 
 CRGB leds[NUM_LEDS];
-byte serialIn[3] = {0,60,0}; //intensity, hue-min, hue-max
+byte serialIn[4] = {0,60,0,1}; //intensity, hue-min, hue-max, isIdle
 
 //communication to serial
 // dummy byte indicating start of Ableton data

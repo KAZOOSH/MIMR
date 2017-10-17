@@ -10,6 +10,8 @@
 #define NUM_LEDS 20
 #define DATA_PIN 6
 
+#define PI 3.14159265359
+
 // dummy byte indicating start of Ableton data
 #define SYNC_BYTE 255
 
@@ -23,7 +25,7 @@ unsigned long lastSendTime = 0;
 
 CRGB leds[NUM_LEDS];
 
-byte serialIn[2] = {0,0};
+byte serialIn[3] = {0,0,1}; //intensity, hue, isIdle
 
 //kurbel control
 #define GROUND_PIN A0
@@ -96,40 +98,62 @@ void loop() {
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 2 );
-
-    /*Serial.print( serialIn[0] ); Serial.print( " " );
-    Serial.print( serialIn[1] ); Serial.print( " " );
-    Serial.print( serialIn[2] ); Serial.print( " " );
-    Serial.print( serialIn[3] ); Serial.println();*/
+    Serial.readBytes( serialIn, 3 );
+  }
+//idle
+  if(serialIn[2] == 1){
+    doIdle();
+  }
+  else 
+  {
+     // read and invert current voltage
+    int value = 1023 - analogRead(SENSOR_PIN);
+  
+    // smoothen input value
+    int smoothed = average( value );
+  
+    // map sensor value to 0…127
+    // (multiply with >127 to use full range)
+    int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
+  
+    // set LEDs
+    setLedColor(mapped);
+  
+    // time to update RasPi with current value?
+    if ( micros() - lastSendTime > SEND_INTERVAL )
+    {
+      // remember time
+      lastSendTime = micros();
+      
+      // write start character
+      Serial.print( ":" );
+      
+      // write value as ASCII and append line break
+      Serial.println( mapped );
+  
+      // wait for transmission to finish
+      Serial.flush();
+    }
   }
    
-  // read and invert current voltage
-  int value = 1023 - analogRead(SENSOR_PIN);
+ 
+}
 
-  // smoothen input value
-  int smoothed = average( value );
+void doIdle(){
+  int pos = millis()%6000;
+  pos = pos%6000;
+  float p = pos/5000.0;
 
-  // map sensor value to 0…127
-  // (multiply with >127 to use full range)
-  int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
+  float maxBrightness = 45;
+  
+  int value = sin(p*PI)*maxBrightness;
+  if(p >1) value = 0;
 
-  // set LEDs
-  setLedColor(mapped);
+  for(int c = 0; c<NUM_LEDS; c++){
+      leds[c] = CRGB(value,value,value);
 
-  // time to update RasPi with current value?
-  if ( micros() - lastSendTime > SEND_INTERVAL )
-  {
-    // remember time
-    lastSendTime = micros();
     
-    // write start character
-    Serial.print( ":" );
-    
-    // write value as ASCII and append line break
-    Serial.println( mapped );
-
-    // wait for transmission to finish
-    Serial.flush();
   }
+  
+  FastLED.show();
 }

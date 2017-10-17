@@ -2,9 +2,11 @@
 
 import socket
 import sys
-from time import sleep
+import time
 from serial import Serial
 import struct
+
+import RPi.GPIO as GPIO
 
 print "Start foen"
 
@@ -37,8 +39,30 @@ intensity = 0
 hueMin = 0
 hueMax = 60
 
+#gpio foot sensor
+
+footPin = 21 #7 on pi1    21 on pi2
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+lastFootChange = 0
+minFootDwellTime = 5.0
+isIdle = 1
+
 # loop infinitely
 while True:
+# foot sensor
+	if time.time() - lastFootChange > minFootDwellTime:
+		tIdle = GPIO.input(footPin)
+		if tIdle != isIdle:
+			print ("idle " + str(tIdle) + "  " + str(isIdle))
+			isIdle = tIdle
+			lastFootChange = time.time()
+			elements = [255,intensity,isIdle]
+			print elements
+			for x in elements:
+				serial.write(chr(x))
+	
 	# incoming UDP packets in buffer?
 	bufferClear = False
 
@@ -65,13 +89,12 @@ while True:
 		if ord(data[1]) == 74:
 			intensity = min(2*ord(data[2]),254);
 
-		elements = [255,intensity];
+		elements = [255,intensity,isIdle]
 		#print elements
 
-		for x in elements:
-			#sys.stdout.write(chr(x))
-			#sys.stdout.flush()
-			serial.write(chr(x))
+		if isIdle == 0:
+			for x in elements:
+				serial.write(chr(x))
 
 	# try to read value from Arduino
 	safe = True
