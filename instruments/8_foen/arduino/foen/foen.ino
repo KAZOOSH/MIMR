@@ -1,5 +1,7 @@
 #include <FastLED.h>
 
+#define PI 3.14159265359
+
 //hardware
 const int redLedPin  = 10; //red
 const int greenLedPin   = 6; //yellow
@@ -14,8 +16,8 @@ const int potiPin = 0;   //R + red
 const int fanPin = 9; //R + yellow
 
 //led control
-byte serialIn[1] = {0}; //intensity
-unsigned long lastSwitchTime = 0;
+byte serialIn[2] = {0,1}; //intensity,isidle
+unsigned long lastSwitchTime = 0; 
 
 //protocol
 #define FLAG_RED 1
@@ -105,6 +107,20 @@ inline void sendSwitchValue(byte flag) {
   Serial.print(protocolDelimeter);
 }
 
+void doIdle(){
+  int pos = millis()%6500;
+  pos = pos%6500;
+  float p = pos/5200.0;
+
+  float maxBrightness = 45;
+  
+  int value = sin(p*PI)*maxBrightness;
+  if(p >1) value = 0;
+
+  analogWrite(fanPin,0);
+  showAnalogRGB( CRGB(value,value,value) );
+}
+
 void loop() {
   // check serial buffer for input
     int test = Serial.read();
@@ -113,10 +129,16 @@ void loop() {
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 1 );
+    Serial.readBytes( serialIn, 2 );
   }
 
-  //read sensors
+//idle
+  if(serialIn[1] == 1){
+    doIdle();
+  }
+  else
+  {
+    //read sensors
   int cPotiValue = analogRead(potiPin);
   byte sendPotiValue = map(cPotiValue, 0, 1023, 0, 127);
   unsigned long ts = millis();
@@ -180,5 +202,7 @@ void loop() {
     Serial.flush();
     
   }
+  }
+  
 }
 
