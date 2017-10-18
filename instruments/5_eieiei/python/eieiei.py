@@ -58,49 +58,13 @@ for i in range(15):
 # midi values
 intensity = 0
 
-'''
-#GPIO
-#GPIO Modus (BOARD / BCM)
+footPin = 21 #7 on pi1    21 on pi2
 GPIO.setmode(GPIO.BCM)
- 
-#GPIO Pins zuweisen
-GPIO_TRIGGER = 18
-GPIO_ECHO = 24
- 
-#Richtung der GPIO-Pins festlegen (IN / OUT)
-GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
-GPIO.setup(GPIO_ECHO, GPIO.IN)
+GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-
-
-def distance():
-    # setze Trigger auf HIGH
-    GPIO.output(GPIO_TRIGGER, True)
- 
-    # setze Trigger nach 0.01ms aus LOW
-    time.sleep(0.00001)
-    GPIO.output(GPIO_TRIGGER, False)
- 
-    StartZeit = time.time()
-    StopZeit = time.time()
- 
-    # speichere Startzeit
-    while GPIO.input(GPIO_ECHO) == 0:
-        StartZeit = time.time()
- 
-    # speichere Ankunftszeit
-    while GPIO.input(GPIO_ECHO) == 1:
-        StopZeit = time.time()
- 
-    # Zeit Differenz zwischen Start und Ankunft
-    TimeElapsed = StopZeit - StartZeit
-    # mit der Schallgeschwindigkeit (34300 cm/s) multiplizieren
-    # und durch 2 teilen, da hin und zurueck
-    distanz = (TimeElapsed * 34300) / 2
- 
-    return distanz
-
-   '''
+lastFootChange = 0
+minFootDwellTime = 5.0
+isIdle = 1
 
 def mapValue(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
@@ -117,6 +81,22 @@ def mapValue(value, leftMin, leftMax, rightMin, rightMax):
 
 # loop infinitely
 while True:
+
+	# foot sensor
+	if time.time() - lastFootChange > minFootDwellTime:
+		tIdle = GPIO.input(footPin)
+		if tIdle != isIdle:
+			isIdle = tIdle
+			lastFootChange = time.time()
+			elements = [255,isIdle]
+
+			#print elements
+			for x in elements:
+				serial.write(chr(x))
+
+			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, 0 if isIdle else int(values[0]) )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 1, 0 if isIdle else values[1] )
+			udpOut.send( bytes )
 
 	# incoming UDP packets in buffer?
 	bufferClear = False
@@ -190,6 +170,7 @@ while True:
 					# update cached value
 					oldValues[0] = values[0]
 
+
 					# on MIDI channel 4, set controller #1 to value
 					bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, values[0] )
 					udpOut.send( bytes )
@@ -222,5 +203,8 @@ while True:
 	#send distance to visualisation
 	if time.time() - lastSendVis > 1.0/sendFps:
 		#print float(values[0])*0.9 + intensity*0.1
-		udpVis.send( str(float(values[0])*0.80 + intensity*0.1) )
+		#print str(float(values[0])*0.80 + intensity*0.1) + ":" + str(isIdle) 
+		d = str(float(values[0])*0.80 + intensity*0.1);
+		if (isIdle == 1): d = "127"
+		udpVis.send( d + ":" + str(isIdle) )
 		lastSendVis = time.time();

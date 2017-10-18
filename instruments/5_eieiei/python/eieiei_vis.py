@@ -198,6 +198,7 @@ class demo():
 
 uniform float iTime;
 uniform float depth;
+uniform int isIdle;
 
 #define DSP_STR 1.5
 #define PI_HALF 1.57079632679
@@ -343,7 +344,7 @@ vec3 samplef(in vec2 uv)
     col = samplef(uv);  
     
     col = clamp(col,0.0,1.0);
-
+    if(isIdle == 1) col*=0.3;
     gl_FragColor = vec4(col, 1.0);}
 	}""")
 
@@ -374,6 +375,7 @@ vec3 samplef(in vec2 uv)
         self.attr_vertex = opengles.glGetAttribLocation(program, "vertex");
         self.unif_time = opengles.glGetUniformLocation(program, "iTime");
         self.unif_depth = opengles.glGetUniformLocation(program, "depth");
+        self.unif_idle = opengles.glGetUniformLocation(program, "isIdle");
         self.unif_tex = opengles.glGetUniformLocation(program, "tex");
         
 
@@ -424,7 +426,7 @@ vec3 samplef(in vec2 uv)
         opengles.glEnableVertexAttribArray(self.attr_vertex);
         self.check()
         
-    def draw_triangles(self,dist):
+    def draw_triangles(self,dist,isIdle):
 
         # Now render to the main frame buffer
         opengles.glBindFramebuffer(GL_FRAMEBUFFER,0)
@@ -440,9 +442,11 @@ vec3 samplef(in vec2 uv)
         self.check()
         opengles.glUniform4f(self.unif_color, eglfloat(0.5), eglfloat(0.5), eglfloat(0.8), eglfloat(1.0));
         self.check()
-        opengles.glUniform1f(self.unif_time, eglfloat(time.time()-1506193010));
+        opengles.glUniform1f(self.unif_time, eglfloat(time.time()-1506193010.0));
         self.check()
         opengles.glUniform1f(self.unif_depth, eglfloat(dist));
+        self.check()
+        opengles.glUniform1i(self.unif_idle, eglint(isIdle));
         self.check()
         opengles.glUniform1i(self.unif_tex, 0); # I don't really understand this part, perhaps it relates to active texture?
         self.check()
@@ -479,7 +483,9 @@ if __name__ == "__main__":
     egl = EGL()
     d = demo()
 
-    distance = 0.0;
+    #tl = 0
+    distance = 0.0
+    isIdle = 1
     while 1:
         #t = time.time()-tl;
         #tl = time.time();
@@ -487,5 +493,22 @@ if __name__ == "__main__":
         try:
             #receive values
             data, addr = udpIn.recvfrom(1024)
-            distance = float(data) #mapValue(float(data),0,30,0,128);
-       
+            #print data
+            value = data.split(":")
+            #print value   
+
+
+            distance = float(value[0]) #mapValue(float(data),0,30,0,128);
+            isIdle = int(value[1])
+            #print distance
+
+        except Exception:
+            pass
+
+        #draw vis
+        d.draw_triangles(distance,isIdle)
+    showerror()
+
+
+        
+    
