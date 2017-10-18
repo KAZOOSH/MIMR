@@ -110,6 +110,7 @@ xcuserdata
 *.ilk
 *.aps
 ipch/
+projectGenerator-vs/*
 
 # Eclipse
 .metadata

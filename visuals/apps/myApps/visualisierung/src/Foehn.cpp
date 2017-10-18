@@ -102,7 +102,8 @@ void Foehn::updateParticles(){
             particles[i].color -= decay;
             
             particles[i].rotation += 0.1;
-            particles[i].rotation = FractToFloat(particles[i].rotation);
+			int t = floor(particles[i].rotation);
+            particles[i].rotation = t - particles[i].rotation;
             
             billboards.getVertices()[i] += ofVec3f(particles[i].dir);
             billboards.getColors()[i].a -= decay;

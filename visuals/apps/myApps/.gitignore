@@ -1,0 +1,11 @@
+*.obj
+*.dll
+*.exe
+*.lib
+*.rc
+*.sln
+*.db
+*.vcxproj
+*.vcxproj.*
+*.vcxproj.*
+*.exp
