@@ -62,6 +62,10 @@ while True:
 			print elements
 			for x in elements:
 				serial.write(chr(x))
+
+			for i in range(len(values)):
+				bytes = struct.pack( "BBBB", 0xaa, 0xB1, i, 0 if isIdle else values[i] )
+				udpOut.send( bytes )
 	
 	# incoming UDP packets in buffer?
 	bufferClear = False
