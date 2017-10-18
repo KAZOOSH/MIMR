@@ -30,6 +30,7 @@ udpOut.connect( ( "localhost", 5006 ) )
 
 # initialize old value for change detection
 oldvalue = 0
+value = 0
 
 # midi values
 hue = 0
@@ -51,13 +52,14 @@ while True:
 	if time.time() - lastFootChange > minFootDwellTime:
 		tIdle = GPIO.input(footPin)
 		if tIdle != isIdle:
-			print ("idle " + str(tIdle) + "  " + str(isIdle))
 			isIdle = tIdle
 			lastFootChange = time.time()
 			elements = [255,intensity,hue,isIdle]
-			print elements
 			for x in elements:
 				serial.write(chr(x))
+
+			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, 0 if isIdle else value )
+			udpOut.send( bytes )
 	# incoming UDP packets in buffer?
 	bufferClear = False
 

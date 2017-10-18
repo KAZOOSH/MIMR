@@ -29,6 +29,8 @@ udpOut.connect( ( "localhost", 5006 ) )
 # initialize old value for change detection
 oldvalue = 0
 
+value = 0
+
 # midi values
 brightness = 0;
 
@@ -57,6 +59,8 @@ while True:
 			print elements
 			for x in elements:
 				serial.write(chr(x))
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if isIdle else value )
+			udpOut.send( bytes )
 
 
 # incoming UDP packets in buffer?
