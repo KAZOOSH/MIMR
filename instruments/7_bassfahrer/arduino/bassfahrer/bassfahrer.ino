@@ -38,6 +38,10 @@ void setup()
   // start USB connection to RasPi
   Serial.begin( BAUD_RATE );
 
+  // flash lamp to say hello
+  LampPin.write( HIGH );
+  delay( 500 );
+
   // start serial connection to sensor controller
   SensorSerial.begin( 9600 );
 }
@@ -90,10 +94,13 @@ void loop()
   {
     // update cached value (0..255)
     sensorValue = SensorSerial.read();
+
+    // HACK: treat 255 as 0 (bug in sensor)
+    if ( sensorValue == 255 ) { sensorValue = 0; }
   }
 
   // visualize data: show sensor value with meter, MIDI data dims light
-  driveOutputs( sensorValue + 20, 255 - 2*(int)serialIn[0] );  
+  driveOutputs( sensorValue+20, 255-serialIn[0] );  
 
   // switch lamp on for high values
   LampPin.write( sensorValue > LAMP_THRESHOLD ? HIGH : LOW );
