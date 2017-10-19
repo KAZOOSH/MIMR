@@ -177,7 +177,7 @@ void loop()
     maxval = tune;
   }
   range = maxval - minval;
-
+/*
   if(tune < ( minval + (range * (bin1/1000 )))){
     Serial.print(0);
     setColor(10);
@@ -203,8 +203,15 @@ void loop()
     Serial.print(5);
     setColor(255);
   }
-
+*/
+  Serial.print(tune);
   Serial.println("");
+  CRGB color = CRGB(tune/5,tune/5,tune/5); 
+
+  for( int i = 0; i < NUM_LEDS; i++) {
+        leds[i]  = color;
+    }
+    FastLED.show();
   
   
   // check percentual bins !!! 
@@ -221,7 +228,6 @@ void loop()
   Serial.print("  ");
   Serial.print(cal_max);
 */
-  Serial.println("");
   digitalWrite(pinLed,0);
 }
 
