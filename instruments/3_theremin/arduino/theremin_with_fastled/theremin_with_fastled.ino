@@ -15,7 +15,7 @@
 #include "FastLED.h"
 
 #define NUM_LEDS 39
-#define DATA_PIN 3
+#define DATA_PIN 11
 CRGB leds[NUM_LEDS];
 
 // dummy byte indicating start of Ableton data
@@ -32,11 +32,16 @@ byte serialIn[4] = {0,0,0,0};
 
 int pinLed = 13;                 // LED connected to digital pin 13
 int pinFreq = 5;
+int pinEmitter = 7;
+int pin1KOhm = 2;
 
 void setup()
 {
   pinMode(pinLed, OUTPUT);      // sets the digital pin as output
   pinMode(pinFreq, INPUT);
+  pinMode(pinEmitter, OUTPUT);
+  pinMode(pin1KOhm, OUTPUT);
+  digitalWrite(pin1KOhm, HIGH);
   pinMode(8, OUTPUT);
 
    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
