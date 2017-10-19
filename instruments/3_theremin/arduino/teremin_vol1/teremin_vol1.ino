@@ -21,13 +21,10 @@ CRGB leds[NUM_LEDS];
 #define SYNC_BYTE 255
 
 // Arduino -> RasPi send interval (microseconds)
-
 #define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
-
 unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
-
 #define BAUD_RATE 115200L
 
 // intensity,color,isIdle
@@ -44,7 +41,8 @@ int pinFreq = 5;
 int pinEmitter = 7;
 int pin1KOhm = 2;
 
-int updateLeds = 0;
+
+int value = 0;
 
 void setup()
 {
@@ -84,9 +82,9 @@ void setup()
   sbi (TIMSK2,OCIE2A);          // enable Timer2 Interrupt
 }
 
-unsigned int minval = 30000;
-unsigned int maxval = 0;
-unsigned int range = 0;
+unsigned int minval = 30;
+unsigned int maxval = 18000;
+unsigned int range = maxval-minval;
 
 volatile byte i_tics;
 volatile byte f_ready ;
@@ -108,30 +106,111 @@ void loop()
   // yes, read data bytes
     Serial.readBytes( serialIn, 3 );
   }
-  
- f_meter_start();
- while (f_ready==0);
- tune = freq_in;
- 
- digitalWrite(pinLed,1);  // let LED blink
 
-  if ( tune < 0) tune*=-1;  // absolute value
-  //sprintf(st1, " %04d",tune);
-    
-  if(tune < minval){
-    minval = tune;
+  //if not idle proceed normal
+  if(serialIn[2] == 0){
+    f_meter_start();
+     while (f_ready==0);
+     tune = freq_in;
+     
+     digitalWrite(pinLed,1);  // let LED blink
+
+      if ( tune < 0) tune*=-1;  // absolute value
+      //sprintf(st1, " %04d",tune);
+        /*
+      if(tune < minval){
+        minval = tune;
+      }
+      if(tune > maxval){
+        maxval = tune;
+      }
+      
+      range = maxval - minval;*/
+      
+      unsigned int vTemp = tune-minval;
+
+        /*  LOWPASSFILTER   */
+  static uint32_t filter1;
+  filter1 = ((filter1 << 1) - filter1 + vTemp) >> 1; // simple hotstart
+      
+      //float vTemp = (tune-minval)*255.0/range;
+      //vTemp = max(vTemp,1);
+      float V2 = log10(vTemp-30) * 25;
+      
+      vTemp = min(max(V2,0),255);
+
+      
+      
+      value = vTemp;//average(vTemp);
+
+      //Serial.print(tune);
+      //Serial.print(" ");
+      Serial.print(tune);
+      Serial.print(" ");
+      Serial.print(filter1);
+      Serial.print(" ");
+      Serial.print(V2);
+      Serial.println("");
+      
+      setColor(vTemp);
+      //sendValue();
+      digitalWrite(pinLed,0);
   }
-  if(tune > maxval){
-    maxval = tune;
+  else
+  {
+    doIdle();
   }
   
-  range = maxval - minval;
-  
-  
-  setColor(tune/5);
-  digitalWrite(pinLed,0);
+ 
 }
 
+void sendValue(){
+   /*// smoothen input value
+    int smoothed = average( value );
+  
+    // map sensor value to 0…127
+    // (multiply with >127 to use full range)
+    int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
+  */
+  
+    // time to update RasPi with current value?
+    if ( micros() - lastSendTime > SEND_INTERVAL )
+    {
+      // remember time
+      lastSendTime = micros();
+      
+      // write start character
+      Serial.print( ":" );
+      
+      // write value as ASCII and append line break
+      Serial.println( value );
+  
+      // wait for transmission to finish
+      Serial.flush();
+    }
+  
+}
+
+// averaging function
+int average( int value )
+{
+  static const int length = 128;
+  static int buffer[length] = {0};
+  static int index = 0;
+  long output = 0;
+
+  // replace value at current index
+  buffer[index] = value;
+
+  // advance write index
+  index = ( index + 1 ) % length;
+
+  // sum buffered values
+  for ( int i = 0; i < length; i++ ) { output += buffer[i]; }
+
+  // divide by length and return
+  return output / length;
+}
 
 //******************************************************************
 
@@ -197,4 +276,23 @@ ISR(TIMER2_COMPA_vect) {
   if(updateLeds == 0)
     FastLED.show(); */
 
+}
+
+void doIdle(){
+  int pos = millis()%6000;
+  pos = pos%6000;
+  float p = pos/5000.0;
+
+  float maxBrightness = 45;
+  
+  int value = sin(p*PI)*maxBrightness;
+  if(p >1) value = 0;
+
+  for(int c = 0; c<NUM_LEDS; c++){
+      leds[c] = CRGB(value,value,value);
+
+    
+  }
+  
+  FastLED.show();
 }
