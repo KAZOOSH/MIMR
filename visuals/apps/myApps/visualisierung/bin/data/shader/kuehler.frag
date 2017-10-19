@@ -7,6 +7,7 @@ uniform sampler2DRect tex0;
 
 uniform float speed;
 uniform float angle;
+uniform float time;
 uniform int kuehler1;
 uniform int kuehler2;
 uniform int kuehler3;
@@ -142,7 +143,7 @@ float fbm(vec2 P, int octaves, float lacunarity, float gain)
 }
 
 float noise(float alpha, float p){
-	return fbm(vec2(angle/15, alpha + p), 2,6,0.4);
+	return fbm(vec2(time/15, alpha + p), 2,6,0.4);
 }
 
 float cosAngle(vec2 v1, vec2 v2){
@@ -167,11 +168,11 @@ void main()
     float t = acos(alpha2);
     if(texCoordVarying.y >512) t*=-1;
 
-    radius[0] = 450 + sin(angle/30+t*20)*15*kuehler1 * sin(angle*0.04*speed);
-    radius[1] = 430 + sin(angle/30+t*20)*15*kuehler2 * sin(angle*0.05*speed);
-    radius[2] = 410 + sin(angle/30+t*20)*15*kuehler3 * sin(angle*0.06*speed);
-    radius[3] = 390 + sin(angle/30+t*20)*15*kuehler4 * sin(angle*0.07*speed);
-    radius[4] = 370 + sin(angle/30+t*20)*15*kuehler5 * sin(angle*0.08*speed);
+    radius[0] = 450 + sin(time/30+t*20)*15*kuehler1 * sin(time*0.04*speed);
+    radius[1] = 430 + sin(time/30+t*20)*15*kuehler2 * sin(time*0.05*speed);
+    radius[2] = 410 + sin(time/30+t*20)*15*kuehler3 * sin(time*0.06*speed);
+    radius[3] = 390 + sin(time/30+t*20)*15*kuehler4 * sin(time*0.07*speed);
+    radius[4] = 370 + sin(time/30+t*20)*15*kuehler5 * sin(time*0.08*speed);
 
 	vec4 color = vec4(1,1,1,0);
 

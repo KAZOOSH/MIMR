@@ -19,6 +19,7 @@ public:
     
     float angle; //in °
     float lastAngle; //in °
+    float time;
     
     //values for objects
     ofParameter<int> v_kurbel;

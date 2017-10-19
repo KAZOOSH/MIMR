@@ -32,6 +32,7 @@ void Universum::draw() {
     ofClear(0, 0);
     shader.begin();
     shader.setUniform1f("angle", params->angle);
+    shader.setUniform1f("time", params->time);
     shader.setUniform1f("spiral", map(params->v_eieiei_spin,0,127,0.5,0.05,0.8));
     shader.setUniform1f("detail", map(params->v_eieiei_membrane,0,127,0.53,0.57,1.0));
     shader.setUniform1f("center", map(params->v_trichter_mic,0,127,0.0,1.0,1.0));

@@ -41,7 +41,7 @@ void ofApp::setup() {
     layer.push_back(new GoldenBox());
     layer.push_back(new Radar());
     layer.push_back(new Foehn());
-    //layer.push_back(new Kurbel());
+    layer.push_back(new Kurbel());
     
     for(auto& l:layer){
         l->setup(&params);
@@ -59,9 +59,9 @@ void ofApp::update() {
     
     params.lastAngle = params.angle;
     params.angle = ofGetElapsedTimef()*20;
-    if (params.angle >360) {
-        params.angle -= 360;
-    }
+    int tAngle = params.angle/360;
+    params.angle = params.angle - tAngle*360;
+    params.time = ofGetElapsedTimef()*20;
 }
 
 //--------------------------------------------------------------

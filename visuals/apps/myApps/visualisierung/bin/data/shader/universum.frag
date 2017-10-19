@@ -7,6 +7,7 @@
 uniform sampler2DRect tex0;
 
 uniform float angle;
+uniform float time;
 
 uniform float spiral; // -0.01 to 0.4
 uniform float detail; // 0.0 to 1.0   0.659
@@ -37,9 +38,9 @@ void main()
     vec2 uv = (texCoordVarying.xy/iResolution.xy)-.5;
     float len = length(uv);                             //coords
     
-    float t = .001*angle;
-    float time = t  +  (5.+sin(t))*.11 / (len+spiral); // spiraling
-    float si = sin(time), co = cos(time);
+    float t = .001*time;
+    float time2 = t  +  (5.+sin(t))*.11 / (len+spiral); // spiraling
+    float si = sin(time2), co = cos(time2);
     uv *= mat2(co, si, -si, co);                    // rotation
 
     float c=0., v1=0., v2=0., glow;  vec3 p;

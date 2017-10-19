@@ -32,6 +32,7 @@ void Kuehler::draw() {
     shader.begin();
     shader.setUniform1f("speed", 2.0);
     shader.setUniform1f("angle", params->angle);
+    shader.setUniform1f("time", params->time);
     shader.setUniform1i("kuehler1",params->v_kuehler1);
     shader.setUniform1i("kuehler2",params->v_kuehler2);
     shader.setUniform1i("kuehler3",params->v_kuehler3);

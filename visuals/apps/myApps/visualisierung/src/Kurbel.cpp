@@ -45,14 +45,15 @@ void Kurbel::draw() {
         nSteps = 360 - params->lastAngle + params->angle;
     }
     nSteps *= STEPSIZE_TEX;
+    //cout << nSteps <<endl;
     
     ofEnableArbTex();
     valueFbo.begin();
     ofSetColor(params->v_kurbel*2);
     for (int i=pStart; i<pStart+nSteps; ++i) {
         int px = i%1024;
-        int py = i/1024;
-        ofDrawRectangle(px, py, 1, 1);
+        int py = i/1024*3;
+        ofDrawRectangle(px, py, 1, 3);
     }
     valueFbo.end();
     
@@ -62,13 +63,15 @@ void Kurbel::draw() {
     shader.begin();
     shader.setUniform1f("speed", 2.0);
     shader.setUniform1f("angle", params->angle);
-    shader.setUniformTexture("tex0", fbo.getTexture(), 1);
-    shader.setUniformTexture("tex1", valueFbo.getTexture(), 2);
+    shader.setUniform1f("time", params->time);
+    //shader.setUniformTexture("tex0", fbo.getTexture(), 1);
+    shader.setUniformTexture("tex0", valueFbo.getTexture(), 1);
     img.draw(0,0);
     shader.end();
     fbo.end();
     
     fbo.draw(0,0);
+    //valueFbo.draw(0,50,4096,4096);
     
 }
 

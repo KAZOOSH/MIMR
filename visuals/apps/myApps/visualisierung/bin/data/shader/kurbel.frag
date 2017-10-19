@@ -4,10 +4,11 @@
 
 // this is how we receive the texture
 uniform sampler2DRect tex0;
-uniform sampler2DRect tex1;
+//uniform sampler2DRect tex1;
 
 uniform float speed;
 uniform float angle;
+uniform float time;
 
 in vec2 texCoordVarying;
 
@@ -15,7 +16,7 @@ out vec4 outputColor;
 
 float radius[3];// = {500,480,460,440,420};
 
-float widthLine = 14;
+float widthLine = 4;
  
 
 
@@ -137,8 +138,8 @@ float fbm(vec2 P, int octaves, float lacunarity, float gain)
  
 }
 
-float noise(float alpha, float p){
-	return fbm(vec2(angle/15, alpha + p), 2,6,0.4);
+float noise(float cosAngle, float multiplier){
+    return fbm(vec2(cosAngle,(time*multiplier)/100), 2,6,0.4);
 }
 
 float cosAngle(vec2 v1, vec2 v2){
@@ -148,38 +149,61 @@ float cosAngle(vec2 v1, vec2 v2){
 void main()
 {
 	float distance = length(vec2(512,512) - texCoordVarying);
-	float alpha = (texCoordVarying.x - 512)/distance;
-
-    float alpha2 = cosAngle(texCoordVarying - vec2(512,512), vec2(1,0));
-
-	
+	//float alpha = (texCoordVarying.x - 512)/distance;
 
 
-    float t = acos(alpha2);
-    if(texCoordVarying.y >512) t+=M_PI;
+    //calculate angle
+    float cosAlpha = cosAngle(texCoordVarying - vec2(512,512), vec2(1,0));
+    float alpha = acos(cosAlpha);
 
-    radius[0] = 500 + noise(t, 0)*50;
-    radius[1] = 480 + noise(t, 1)*50;
-    radius[2] = 460 + noise(t, 2)*50;
+    alpha/=M_PI;
+	if (texCoordVarying.y >= 512) alpha = (1-alpha)*0.5 +0.5;
+    else alpha *= 0.5;
+
+    int iTex = 4096 - int(alpha * 4096);
+    vec2 pTex = vec2(iTex%1024, iTex/1024*3+1);
 
 
-	vec4 color = vec4(3-t,t,0,1);
+//distance makes freaky effect
+    //radius[0] = 500 + fbm(vec2(cosAlpha,(distance+ angle)/100), 2,6,0.4)*50;
+    float dFlows = texture(tex0, pTex).r ;
 
-    if (t>5 && t<5.01) color = vec4(0,0,0,1);
+    radius[0] = 490 + noise(cosAlpha,1.0)*50;
+    radius[1] = 490 + noise(cosAlpha,1.0 + dFlows*0.2)*50;
+    radius[2] = 490 + noise(cosAlpha,1.0 + dFlows*0.3)*50;
 
-    /*int interference = 0;
-	for(int i=0; i<5; ++i){
-		if(distance >= radius[i] && distance <= radius[i] + widthLine){
-            if(interference > 0) color = vec4(1,0,0.12,1);
-            else color = vec4(1,1,1,0.7);
+
+	vec4 color = vec4(0,0,0,0);
+
+    //if (t>5 && t<5.01) color = vec4(0,0,0,1);
+
+
+    float angleNorm = 1 -angle/360;
+    float decay = angleNorm - alpha;
+    if (angleNorm < alpha) decay = angleNorm + 1 -alpha;
+    decay = (1 - decay)*1.2;
+
+
+    float brightness = max(texture(tex0, pTex).r  -decay,0);
+
+
+    float b = 0;
+    for(int i=0; i<3; ++i){
+        if(distance >= radius[i] && distance <= radius[i] + widthLine){
+            color = vec4(1,1,1,brightness);
+            //b+= brightness;
             
-            interference++;
-		}
-	}*/
+        }
+        //color = vec4(1,1,1,b);
+    }
+    
 
+    //color = texture(tex0, vec2(texCoordVarying.x,1024-texCoordVarying.y));
 
     //outputColor = vec4(alpha2/3,-alpha2/3,0,1);
     //color.a = min(color.a,1.0);
 
+    //outputColor = vec4(decay,0,0,1.0);
     outputColor = color;
+    //outputColor = texture(tex0, pTex);
 }
