@@ -106,8 +106,8 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
-			# scale value from 39..68
-			value = (value-39) * 127 / (68-39)
+			# scale value from 0..225 to 0..127
+			value = value * 127 / 225
 
 			# limit to 0..127
 			value = max( min( int(value), 127 ), 0 )
