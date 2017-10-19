@@ -198,7 +198,7 @@ class demo():
 
 uniform float iTime;
 uniform float depth;
-uniform int isIdle;
+uniform float isIdle;
 
 #define DSP_STR 1.5
 #define PI_HALF 1.57079632679
@@ -261,15 +261,15 @@ vec3 samplef(in vec2 uv)
     float t0y = -0.2 + cos(iTime * 2.4) * .3;
     float t1x = -0.7 + sin(iTime * .5) * 0.25;
     float t1y = -0.7 + sin(iTime * .3) * 0.35;
-    float t2x = -0.1 + cos(iTime * 0.1) * 0.9; //grosse kurve
-    float t2y = - 0.1 +sin(iTime * 0.05) * 0.88;
+    //float t2x = -0.1 + cos(iTime * 0.1) * 0.9; //grosse kurve
+    //float t2y = - 0.1 +sin(iTime * 0.05) * 0.88;
     float t3x = 0.8 + cos(iTime * 1.5) * 0.33; 
     float t3y = 0.2 +sin(iTime * 2.0) * 0.3;
     float t4x = 0.5 + cos(iTime * 0.8) * 0.2; 
     float t4y = 0.7 +sin(iTime * 0.6) * 0.2;
-    float t6y = -0.6 +cos(iTime * 0.2) * 0.5;
-    float t5x = 1.0 + cos(iTime * 0.7) * 0.3; //ausserhalb
-    float t5y = -1.0 +sin(iTime * 0.3) * 0.3;
+    //float t6y = -0.6 +cos(iTime * 0.2) * 0.5;
+    //float t5x = 1.0 + cos(iTime * 0.7) * 0.3; //ausserhalb
+    //float t5y = -1.0 +sin(iTime * 0.3) * 0.3;
 
     //float d = 1.0-(depth/127.0) +1.0;
     float d = depth/127.0 +1.0;
@@ -285,13 +285,13 @@ vec3 samplef(in vec2 uv)
 
               metaball(uv + vec2(t3y, t0x), .04*d) * //unten links
               metaball(uv + vec2(t3x, t1y), .09*d) +
-              metaball(uv + vec2(t3x, t6y), .03*d) +
+              metaball(uv + vec2(t3x, t4y), .03*d);// +
 
-              metaball(uv + vec2(t5y, t5y), .06*d) +
+              //metaball(uv + vec2(t5y, t5y), .06*d) +
 
-              metaball(uv + vec2(t5x, t5x), .05*d) +
+              //metaball(uv + vec2(t5x, t5x), .05*d) +
 
-              metaball(uv + vec2(t2x, t2y), .04*d);
+              //metaball(uv + vec2(t2x, t2y), .04*d);
 
     
     
@@ -321,14 +321,7 @@ vec3 samplef(in vec2 uv)
 
 	uniform sampler2D tex;
 	void main(void) {
-		/*float intensity;
-		vec4 color2;
-		float ar=(gl_FragCoord.x-810.0)*scale.x;
-		float ai=(gl_FragCoord.y-540.0)*scale.y;
-
-		gl_FragColor = vec4(ar,ai,0.0,1.0);*/
-  
-        vec2 fragCoord = vec2(gl_FragCoord.x,gl_FragCoord.y);
+    vec2 fragCoord = vec2(gl_FragCoord.x,gl_FragCoord.y);
     vec2 iResolution = vec2(480.0,480.0);
 
     if(fragCoord.x > iResolution.x || fragCoord.y > iResolution.y ){
@@ -343,8 +336,11 @@ vec3 samplef(in vec2 uv)
 
     col = samplef(uv);  
     
+    if(isIdle == 1.0) col*=0.3;
+    else col -= isIdle*0.2;
+
     col = clamp(col,0.0,1.0);
-    if(isIdle == 1) col*=0.3;
+    
     gl_FragColor = vec4(col, 1.0);}
 	}""")
 
@@ -428,12 +424,17 @@ vec3 samplef(in vec2 uv)
         
     def draw_triangles(self,dist,isIdle):
 
+        inIdle = isIdle
+        if time.time() - lastActive < 0.25:
+            p = (time.time() - lastActive)*4*2*math.pi
+            inIdle = -math.cos(p);
+        #print inIdle
+
         # Now render to the main frame buffer
         opengles.glBindFramebuffer(GL_FRAMEBUFFER,0)
         # Clear the background (not really necessary I suppose)
         opengles.glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
         self.check()
-        
         opengles.glBindBuffer(GL_ARRAY_BUFFER, self.buf);
         self.check()
         opengles.glUseProgram ( self.program );
@@ -446,7 +447,7 @@ vec3 samplef(in vec2 uv)
         self.check()
         opengles.glUniform1f(self.unif_depth, eglfloat(dist));
         self.check()
-        opengles.glUniform1i(self.unif_idle, eglint(isIdle));
+        opengles.glUniform1f(self.unif_idle, eglfloat(inIdle));
         self.check()
         opengles.glUniform1i(self.unif_tex, 0); # I don't really understand this part, perhaps it relates to active texture?
         self.check()
@@ -486,6 +487,7 @@ if __name__ == "__main__":
     #tl = 0
     distance = 0.0
     isIdle = 1
+    lastActive = 0
     while 1:
         #t = time.time()-tl;
         #tl = time.time();
@@ -499,6 +501,10 @@ if __name__ == "__main__":
 
 
             distance = float(value[0]) #mapValue(float(data),0,30,0,128);
+            
+            if isIdle == 1 and int(value[1]) == 0:
+                lastActive = time.time();
+
             isIdle = int(value[1])
             #print distance
 

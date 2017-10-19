@@ -32,7 +32,7 @@ udpOut.connect( ( "localhost", 5006 ) )
 #open socket to send to visualisation
 udpVis = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpVis.connect( ( "localhost", 5013 ) )
-sendFps = 20 #fps of vis
+sendFps = 10 #fps of vis
 lastSendVis = 0;
 
 # initialize old values for change detection
@@ -202,6 +202,7 @@ while True:
 
 	#send distance to visualisation
 	if time.time() - lastSendVis > 1.0/sendFps:
+		#print isIdle
 		#print float(values[0])*0.9 + intensity*0.1
 		#print str(float(values[0])*0.80 + intensity*0.1) + ":" + str(isIdle) 
 		d = str(float(values[0])*0.80 + intensity*0.1);
