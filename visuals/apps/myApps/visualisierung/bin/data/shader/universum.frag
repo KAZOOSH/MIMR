@@ -14,6 +14,8 @@ uniform float detail; // 0.0 to 1.0   0.659
 uniform float center; //0.0 to 1.0  0.9
 uniform float centerBlur; //0.0 - 1.0
 
+uniform int colorSet;
+
 in vec2 texCoordVarying;
 
 out vec4 outputColor;
@@ -89,8 +91,23 @@ void main()
         fadeOut = 1-sqrt (1 - d*d);
     }
 
+    vec3 col;
+
+    if (colorSet == 0){ //normal
+    	col = vec3(c,  (v1+c)*.25,  v2);
+    }
+    else if (colorSet == 1){ //dark
+    	col = vec3((v1+c)*.4,  (v1+c)*.4,  (v1+c)*.4);
+    }
+    else if (colorSet == 2){ //green
+    	col = vec3(v2*.95,(v1+c)*.25,    (v1+c)*.35);
+    }
+    else if (colorSet == 3){ //pink
+    	col = vec3((v1+c)*.3,  v2*.7,  (v1+c)*.5);
+    }
+
     //mix final color
-    vec3 col = vec3(c,  (v1+c)*.25,  v2);
+    //vec3 col = vec3(c,  (v1+c)*.25,  v2);
     //col = vec3((v1+c)*.25,  (v1+c)*.25,  (v1+c)*.25);
     //col = vec3(v2,v2,v2);
     float alphaCenter = map (center,0.0,0.5,0.0,0.7);

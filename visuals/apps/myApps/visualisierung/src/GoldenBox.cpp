@@ -20,7 +20,7 @@ void GoldenBox::setup(RadarAttributes* params) {
     fbo.end();
     
     rMin = 150;
-    rMax = 400;
+    rMax = 350;
 }
 
 void GoldenBox::draw() {
@@ -35,9 +35,27 @@ void GoldenBox::draw() {
     abc.arcNegative( 512, 512, rMin, rMin, params->angle, params->lastAngle);
     abc.close();
     
+	ofColor color;
+	if (params->colorSet == 0)
+	{
+		color = ofColor(130, 180, 255,9);
+	}
+	else if (params->colorSet == 1)
+	{
+		color = ofColor(135, 255, 27,5);
+	}
+	else if (params->colorSet == 2)
+	{
+		color = ofColor(220, 220, 255,9);
+	}
+	else if (params->colorSet == 3)
+	{
+		color = ofColor(136, 255, 219,9);
+	}
+
     fbo.begin();
     ofFill();
-    ofSetColor(255,255,255, 1);
+    ofSetColor(color);
     ofDrawRectangle(0,0,1024,1024);
     
     //ofPushMatrix();
