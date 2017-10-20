@@ -58,7 +58,7 @@ while True:
 			for x in elements:
 				serial.write(chr(x))
 
-			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, 0 if isIdle else value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, 0 if isIdle else 127 )
 			udpOut.send( bytes )
 	# incoming UDP packets in buffer?
 	bufferClear = False
@@ -134,7 +134,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB0, 1, value )
 			udpOut.send( bytes )
 		#print serial.readline()
 
