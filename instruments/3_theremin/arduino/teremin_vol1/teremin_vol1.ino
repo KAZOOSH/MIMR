@@ -115,44 +115,23 @@ void loop()
      
      digitalWrite(pinLed,1);  // let LED blink
 
-      if ( tune < 0) tune*=-1;  // absolute value
-      //sprintf(st1, " %04d",tune);
-        /*
-      if(tune < minval){
-        minval = tune;
-      }
-      if(tune > maxval){
-        maxval = tune;
-      }
+      if ( tune < 0) tune*=-1;
       
-      range = maxval - minval;*/
-      
-      unsigned int vTemp = tune-minval;
+      uint16_t vTemp = tune-minval;
 
-        /*  LOWPASSFILTER   */
-  static uint32_t filter1;
-  filter1 = ((filter1 << 1) - filter1 + vTemp) >> 1; // simple hotstart
-      
-      //float vTemp = (tune-minval)*255.0/range;
-      //vTemp = max(vTemp,1);
-      float V2 = log10(vTemp-30) * 25;
-      
-      vTemp = min(max(V2,0),255);
+        /*  WURZEL ZIEHEN     */
+  while(int i = 0; i*i <= vTemp) 
+    i++;
 
-      
-      
-      value = vTemp;//average(vTemp);
+  value = i;
+  //value = average(value);
 
-      //Serial.print(tune);
-      //Serial.print(" ");
-      Serial.print(tune);
+      Serial.print(vTemp);
       Serial.print(" ");
-      Serial.print(filter1);
+      Serial.print(value);
       Serial.print(" ");
-      Serial.print(V2);
-      Serial.println("");
       
-      setColor(vTemp);
+      setColor(value);
       //sendValue();
       digitalWrite(pinLed,0);
   }
@@ -270,12 +249,6 @@ ISR(TIMER2_COMPA_vect) {
     mlt++;                  // count number of Counter1 overflows
     sbi(TIFR1,TOV1);        // clear Timer/Counter 1 overflow flag
   }
-
-  /*++updateLeds;
-  updateLeds%=20;
-  if(updateLeds == 0)
-    FastLED.show(); */
-
 }
 
 void doIdle(){
