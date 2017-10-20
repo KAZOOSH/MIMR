@@ -1,33 +1,60 @@
-/* Theremin Test
- *
- * Therremin with TTL Oscillator 4MHz
+/* 
  * Timer1 for freauency measurement
  * Timer2 for gate time
  * connect Oscillator on digital pin 5
- * connect Speaker with 1K Resistor in series on pin 8
-
  * KHM 2008 /  Martin Nawrath
  * Kunsthochschule fuer Medien Koeln
  * Academy of Media Arts Cologne
 
  */
-#include <Stdio.h>
+#include "Arduino.h"
+#include "FastLED.h"
+
+#define NUM_LEDS 39
+#define DATA_PIN 11
+CRGB leds[NUM_LEDS];
+
+#define PI 3.14159265359
+
+
+// dummy byte indicating start of Ableton data
+#define SYNC_BYTE 255
+
+// Arduino -> RasPi send interval (microseconds)
+#define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
+unsigned long lastSendTime = 0;
+
+// baud rate for USB communication with RasPi
+#define BAUD_RATE 115200L
+
+// intensity,color,isIdle
+byte serialIn[3] = {0,0,0};
+
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
 //! Macro that clears all Timer/Counter1 interrupt flags.
 #define CLEAR_ALL_TIMER1_INT_FLAGS    (TIFR1 = TIFR1)
 
-int pinLed = 13;                 // LED connected to digital pin 13
+int pinLed = 13;
 int pinFreq = 5;
+int pinEmitter = 7;
+int pin1KOhm = 2;
+
+
+int value = 0;
 
 void setup()
 {
-  pinMode(pinLed, OUTPUT);      // sets the digital pin as output
+  pinMode(pinLed, OUTPUT);
   pinMode(pinFreq, INPUT);
-  pinMode(8, OUTPUT);
+  pinMode(pinEmitter, OUTPUT);
+  pinMode(pin1KOhm, OUTPUT);
+  digitalWrite(pin1KOhm, HIGH);
 
-  Serial.begin(57600);        // connect to the serial port
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+
+  Serial.begin(BAUD_RATE);        // connect to the serial port
 
   // hardware counter setup ( refer atmega168.pdf chapter 16-bit counter1)
   TCCR1A=0;                   // reset timer/counter1 control register A
@@ -52,90 +79,161 @@ void setup()
   OCR2A = 124;                  // CTC at top of OCR2A / timer2 interrupt when coun value reaches OCR2A value
 
   // interrupt control
-
   sbi (TIMSK2,OCIE2A);          // enable Timer2 Interrupt
-
 }
+
+unsigned int minval = 30;
+unsigned int maxval = 18000;
+unsigned int range = maxval-minval;
 
 volatile byte i_tics;
 volatile byte f_ready ;
 volatile byte mlt ;
 unsigned int ww;
 
-int cal;
-int cal_max;
-
 char st1[32];
 long freq_in;
-long freq_zero;
-long freq_cal;
-
-unsigned int dds;
 int tune;
-
-int cnt=0;
 
 void loop()
 {
-  cnt++;
-  // add=analogRead(0);
+  // check serial buffer for input
+  int test = Serial.read();
 
-  f_meter_start();
-
-  tune=tune+1;
-  while (f_ready==0) {            // wait for period length end (100ms) by interrupt
-    PORTB=((dds+=tune) >> 15);    // kind of DDS tonegenerator / connect speaker to portb.0 = arduino pin8
-  }
- tune = freq_in-freq_zero;
- // use the tune value here for your own purposes like control of servos, midi etc.
-
-  // startup
-  if (cnt==10) {
-    freq_zero=freq_in;
-    freq_cal=freq_in;
-    cal_max=0;
-    //Serial.print("** START **");
+  // start byte received?
+  if( test == SYNC_BYTE )
+  {
+  // yes, read data bytes
+    Serial.readBytes( serialIn, 3 );
   }
 
-  // autocalibration
-  if (cnt % 20 == 0) {   // try autocalibrate after n cycles
-    //Serial.print("*");
-    if (cal_max <= 2) {
-      freq_zero=freq_in;
-      //Serial.print(" calibration");
-    }
-    freq_cal=freq_in;
-    cal_max=0;
-    //Serial.println("");
+  //if not idle proceed normal
+  if(serialIn[2] == 0){
+    f_meter_start();
+     while (f_ready==0);
+     tune = freq_in;
+     
+     digitalWrite(pinLed,1);  // let LED blink
+
+      if ( tune < 0) tune*=-1;  // absolute value
+      //sprintf(st1, " %04d",tune);
+        /*
+      if(tune < minval){
+        minval = tune;
+      }
+      if(tune > maxval){
+        maxval = tune;
+      }
+      
+      range = maxval - minval;*/
+      
+      unsigned int vTemp = tune-minval;
+
+        /*  LOWPASSFILTER   */
+  static uint32_t filter1;
+  filter1 = ((filter1 << 1) - filter1 + vTemp) >> 1; // simple hotstart
+      
+      //float vTemp = (tune-minval)*255.0/range;
+      //vTemp = max(vTemp,1);
+      float V2 = log10(vTemp-30) * 25;
+      
+      vTemp = min(max(V2,0),255);
+
+      
+      
+      value = vTemp;//average(vTemp);
+
+      //Serial.print(tune);
+      //Serial.print(" ");
+      Serial.print(tune);
+      Serial.print(" ");
+      Serial.print(filter1);
+      Serial.print(" ");
+      Serial.print(V2);
+      Serial.println("");
+      
+      setColor(vTemp);
+      //sendValue();
+      digitalWrite(pinLed,0);
   }
-  cal = freq_in-freq_cal;
-  if ( cal < 0) cal*=-1;  // absolute value
-  if (cal > cal_max) cal_max=cal;
-
-  digitalWrite(pinLed,1);  // let LED blink
-  Serial.print(cnt);
-  Serial.print("  "); 
-
-  if ( tune < 0) tune*=-1;  // absolute value
-   sprintf(st1, " %04d",tune);
+  else
+  {
+    doIdle();
+  }
   
-  //Serial.print(st1);
-  //Serial.print("  "); 
-
-  Serial.print(freq_in);
-  //Serial.print("  ");
-/*
-  Serial.print(freq_zero);
-  Serial.print("  ");
-  Serial.print(cal_max);
-*/
-  Serial.println("");
-  digitalWrite(pinLed,0);
-  
-  
-
+ 
 }
+
+void sendValue(){
+   /*// smoothen input value
+    int smoothed = average( value );
+  
+    // map sensor value to 0…127
+    // (multiply with >127 to use full range)
+    int mapped = min( (long)(smoothed) * (127+20) / 1024, 127 );
+  */
+  
+    // time to update RasPi with current value?
+    if ( micros() - lastSendTime > SEND_INTERVAL )
+    {
+      // remember time
+      lastSendTime = micros();
+      
+      // write start character
+      Serial.print( ":" );
+      
+      // write value as ASCII and append line break
+      Serial.println( value );
+  
+      // wait for transmission to finish
+      Serial.flush();
+    }
+  
+}
+
+// averaging function
+int average( int value )
+{
+  static const int length = 128;
+  static int buffer[length] = {0};
+  static int index = 0;
+  long output = 0;
+
+  // replace value at current index
+  buffer[index] = value;
+
+  // advance write index
+  index = ( index + 1 ) % length;
+
+  // sum buffered values
+  for ( int i = 0; i < length; i++ ) { output += buffer[i]; }
+
+  // divide by length and return
+  return output / length;
+}
+
 //******************************************************************
+
+void setColor( uint8_t brightness)
+{
+  CHSV spectrumcolor;
+
+    spectrumcolor.hue = serialIn[1]*2;
+    spectrumcolor.saturation = serialIn[2]*2;
+    if (serialIn[0] == 1){
+      spectrumcolor.value = serialIn[3]*2;
+    }
+    else{
+      spectrumcolor.value = brightness;
+    }
+    
+  
+    for( int i = 0; i < NUM_LEDS; i++) {
+        hsv2rgb_spectrum( spectrumcolor, leds[i] );
+    }
+    FastLED.show();
+}
+
 void f_meter_start() {
   f_ready=0;                      // reset period measure flag
   i_tics=0;                        // reset interrupt counter
@@ -173,4 +271,28 @@ ISR(TIMER2_COMPA_vect) {
     sbi(TIFR1,TOV1);        // clear Timer/Counter 1 overflow flag
   }
 
+  /*++updateLeds;
+  updateLeds%=20;
+  if(updateLeds == 0)
+    FastLED.show(); */
+
+}
+
+void doIdle(){
+  int pos = millis()%6000;
+  pos = pos%6000;
+  float p = pos/5000.0;
+
+  float maxBrightness = 45;
+  
+  int value = sin(p*PI)*maxBrightness;
+  if(p >1) value = 0;
+
+  for(int c = 0; c<NUM_LEDS; c++){
+      leds[c] = CRGB(value,value,value);
+
+    
+  }
+  
+  FastLED.show();
 }

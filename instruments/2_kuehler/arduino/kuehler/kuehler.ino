@@ -55,6 +55,11 @@ byte serialIn[4] = {0,0,255,1}; //value, hue, saturation, isIdle
 
 #include <Wire.h>
 
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
+
+
 int irqpin = 2;  // Digital 2
 boolean touchStates[12]; //to keep track of the previous touch states
 
@@ -83,6 +88,12 @@ void loop(){
     // yes, read data bytes
     Serial.readBytes( serialIn, 4 );
   }
+
+
+  if(serialIn[3] == 0 && lastState == 1){
+      lastActivated = millis();
+  }
+  lastState = serialIn[3];
 
   //if not idle proceed normal
   if(serialIn[3] == 0){
@@ -151,25 +162,46 @@ void readTouchInputs(){
 }
 
 void setLedColor(){
-  int hue = serialIn[1];
-  int value = 255 - serialIn[0];
-  int saturation = serialIn[2];
+  if(millis() - lastActivated <1000){
+    float p = (millis() - lastActivated)/1000.0;
 
-  CRGB color1 = CRGB::Black;
-  CRGB color2 = CHSV(hue, saturation, value);
+    float maxBrightness = 100;
 
-  for(int c = 0; c<NUM_LEDS; c++){
-    if(touchStates[nLedIndex[c]] == 0){
-      leds[c] = color1;
+  int value = 100;
+  if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
+  else if (p>0.5) value = sin(p*PI)*(maxBrightness-5)+5;
+   
+
+    for(int c = 0; c<NUM_LEDS; c++){
+        leds[c] = CRGB(value,value,value);
+
+      
     }
-    else {
-      leds[c] = color2;
-    }
-    
   }
-  
-  FastLED.show();
+  else{
+      int hue = serialIn[1];
+      int value = 255 - serialIn[0];
+      int saturation = serialIn[2];
+
+      CRGB color1 = CRGB(5,5,5);
+      CRGB color2 = CHSV(hue, saturation, value);
+
+      for(int c = 0; c<NUM_LEDS; c++){
+        if(touchStates[nLedIndex[c]] == 0){
+          leds[c] = color1;
+        }
+        else {
+          leds[c] = color2;
+        }
+        
+      }
+      
+      
+    }
+    FastLED.show();
 }
+
+  
 
 void sendTouchValues(){
       // time to update RasPi with current value?
@@ -314,4 +346,5 @@ void doIdle(){
   
   FastLED.show();
 }
+
 

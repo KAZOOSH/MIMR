@@ -136,7 +136,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 4, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB3, 0, value )
 			udpOut.send( bytes )
 
 
