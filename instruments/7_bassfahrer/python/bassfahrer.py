@@ -74,10 +74,14 @@ while True:
 		if sensorValue != idle:
 			lastSensorChangeTime = time()
 			idle = sensorValue
+
 			print "Idle state change:", idle
 			elements = [255,idle,midiVal]
 			for x in elements:
 				serial.write(chr(x))
+
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if idle else value )
+			udpOut.send( bytes )
 
 	# control command
 	if ord(data[0]) == 176:
@@ -129,5 +133,5 @@ while True:
 			print value
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, 0 if idle else value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if idle else value )
 			udpOut.send( bytes )
