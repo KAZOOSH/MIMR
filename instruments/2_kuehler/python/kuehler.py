@@ -46,7 +46,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 lastFootChange = 0
-minFootDwellTime = 5.0
+minFootDwellTime = 3.0
 isIdle = 1
 
 # loop infinitely
@@ -55,7 +55,7 @@ while True:
 	if time.time() - lastFootChange > minFootDwellTime:
 		tIdle = GPIO.input(footPin)
 		if tIdle != isIdle:
-			print ("idle " + str(tIdle) + "  " + str(isIdle))
+			print ("idle "+ str(isIdle))
 			isIdle = tIdle
 			lastFootChange = time.time()
 			elements = [255,intensity,hue,saturation,isIdle]
@@ -64,7 +64,7 @@ while True:
 				serial.write(chr(x))
 
 			for i in range(len(values)):
-				bytes = struct.pack( "BBBB", 0xaa, 0xB1, i, 0 if isIdle else values[i] )
+				bytes = struct.pack( "BBBB", 0xaa, 0xB1, i, 0 if isIdle else 127 )
 				udpOut.send( bytes )
 	
 	# incoming UDP packets in buffer?
@@ -142,7 +142,8 @@ while True:
 					oldValues[i] = values[i]
 
 					# on MIDI channel 4, set controller #1 to value
-					bytes = struct.pack( "BBBB", 0xaa, 0xB1, i, values[i] )
+					print values
+					bytes = struct.pack( "BBBB", 0xaa, 0xB1, i+1, values[i] )
 					udpOut.send( bytes )
 					#print ":".join(format(ord(c)) for c in bytes)	
 		safe = False

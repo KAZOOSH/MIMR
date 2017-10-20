@@ -42,7 +42,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 lastFootChange = 0
-minFootDwellTime = 5.0
+minFootDwellTime = 3.0
 isIdle = 1
 
 

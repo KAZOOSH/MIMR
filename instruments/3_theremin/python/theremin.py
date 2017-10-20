@@ -42,7 +42,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 lastFootChange = 0
-minFootDwellTime = 5.0
+minFootDwellTime = 3.0
 isIdle = 1
 
 
@@ -58,7 +58,7 @@ while True:
 			for x in elements:
 				serial.write(chr(x))
 
-			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, 0 if isIdle else value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, 0 if isIdle else 127 )
 			udpOut.send( bytes )
 	# incoming UDP packets in buffer?
 	bufferClear = False
@@ -134,7 +134,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 1, value )
 			udpOut.send( bytes )
 		#print serial.readline()
 
