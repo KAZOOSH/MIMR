@@ -12,7 +12,7 @@ print "Start Theremin				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01 )
+serial = Serial( "/dev/ttyUSB0", 115200, bytesize=8, parity='N', timeout=0.01 )
 
 
 # open UDP socket to listen raveloxmidi
@@ -55,6 +55,7 @@ while True:
 			isIdle = tIdle
 			lastFootChange = time.time()
 			elements = [255,intensity,hue,isIdle]
+			print "isIdle"
 			for x in elements:
 				serial.write(chr(x))
 
@@ -134,6 +135,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
+			print value
 			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 1, value )
 			udpOut.send( bytes )
 		#print serial.readline()

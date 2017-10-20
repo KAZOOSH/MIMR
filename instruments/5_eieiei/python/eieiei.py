@@ -32,7 +32,7 @@ udpOut.connect( ( "localhost", 5006 ) )
 #open socket to send to visualisation
 udpVis = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpVis.connect( ( "localhost", 5013 ) )
-sendFps = 10 #fps of vis
+sendFps = 7 #fps of vis
 lastSendVis = 0;
 
 # initialize old values for change detection
@@ -88,12 +88,8 @@ while True:
 		if tIdle != isIdle:
 			isIdle = tIdle
 			lastFootChange = time.time()
-			elements = [255,isIdle]
 
-			#print elements
-			for x in elements:
-				serial.write(chr(x))
-
+			print "isIdle" + str(isIdle)
 			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, 0 if isIdle else 127 )
 			udpOut.send( bytes )
 
@@ -171,8 +167,10 @@ while True:
 
 
 					# on MIDI channel 4, set controller #1 to value
-					bytes = struct.pack( "BBBB", 0xaa, 0xB4, 1, values[0] )
-					udpOut.send( bytes )
+					if isIdle == 0:
+						bytes = struct.pack( "BBBB", 0xaa, 0xB4, 1, values[0] )
+						udpOut.send( bytes )
+					
 			#spin
 			if len(values) >= 2:
 				#median filter spin values
@@ -190,10 +188,11 @@ while True:
 					oldValues[1] = values[1]
 
 					# on MIDI channel 4, set controller #1 to value
-					bytes = struct.pack( "BBBB", 0xaa, 0xB4, 2, values[1] )
-					udpOut.send( bytes )	
+					if isIdle == 0:
+						bytes = struct.pack( "BBBB", 0xaa, 0xB4, 2, values[1] )
+						udpOut.send( bytes )	
 			
-			#print values
+			print values
 
 		safe = False
 
