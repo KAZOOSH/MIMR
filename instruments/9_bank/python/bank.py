@@ -5,10 +5,11 @@ import sys
 import time
 from serial import Serial
 import struct
+import math
 
 import RPi.GPIO as GPIO
 
-print "Start Kurbel				"
+print "Start Bank				"
 
 '''init serial and network'''
 # open serial port to Arduino
@@ -64,35 +65,39 @@ while True:
 		if tIdle != isIdle:
 			isIdle = tIdle
 			lastFootChange = time.time()
+			#print "idle" + str(isIdle)
+			valueSend = False
 
 			#bytes = struct.pack( "BBBB", 0xaa, 0xB0, 0, 0 if isIdle else value )
 			#udpOut.send( bytes )
 
-	if isIdle and time.time()-lastFootChange < 2.0:
+	if not isIdle and time.time()-lastFootChange < 2.0:
 		p = (time.time()-lastFootChange)/2.0
 		p *= math.pi*0.5
-		val = math.sin(p)*127
-
+		val = int(math.sin(p)*127)
+		#print val
 		elements = [val,val,val,val]
 		for x in elements:
 			serial.write(chr(x))
 
 		if not valueSend and val > 100:
-			bytes = struct.pack( "BBBB", 0xaa, 0xB8, 0, 0)
+			bytes = struct.pack( "BBBB", 0xaa, 0xB8, 0, 1)
 			udpOut.send( bytes )
 			valueSend = True
 
-	elif not isIdle and time.time()-lastFootChange < 2.0:
+	elif isIdle and time.time()-lastFootChange < 2.0:
+		
 		p = (time.time()-lastFootChange)/2.0
 		p *= math.pi*0.5
-		val = math.cos(p)*127
+		val = int(math.cos(p)*127)
+		#print val
 
 		elements = [val,val,val,val]
 		for x in elements:
 			serial.write(chr(x))
 
-		if not valueSend and val > 100:
-			bytes = struct.pack( "BBBB", 0xaa, 0xB8, 1, 0)
+		if not valueSend and val < 30:
+			bytes = struct.pack( "BBBB", 0xaa, 0xB8, 0, 0)
 			udpOut.send( bytes )
 			valueSend = True
 
