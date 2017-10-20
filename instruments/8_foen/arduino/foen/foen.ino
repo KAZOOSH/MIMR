@@ -41,6 +41,11 @@ unsigned long lastSendTime = 0;
 #define BAUD_RATE 115200L
 
 
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
+
+
 void setup() {
   Serial.begin(BAUD_RATE);
 
@@ -74,24 +79,43 @@ void showAnalogRGB( const CRGB& rgb)
 }
 
 void setLedColor(int pos,byte button1, byte button2, byte button3){
-  //multiplier for midi value
-  float value = (255.0 - serialIn[0])/255.0;
+  int r,g,b;
 
-  //calculate min brightness
-  float minBrightness = 5;
-  float offset = (255.0-minBrightness)/255.0;
+  //hello animation
+  if(millis() - lastActivated <1500){
+    float p = (millis() - lastActivated)/1500.0;
 
-  //alltogether
-  int r = (button1*pos*offset + minBrightness)*value;
-  int g = (button2*pos/2*offset + minBrightness)*value;
-  int b = (button3*pos/4*offset + minBrightness)*value;
+    float maxBrightness = 255;
 
-  //flickering when switched led
-  if(micros() - lastSwitchTime < 10000)
-  {
-    r = 255;
-    g = 255;
-    b = 255;
+    int value = 255;
+    if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
+    else if (p>0.5) value = sin(p*PI)*(maxBrightness-5)+5;
+     
+    r = value;
+    g = value;
+    b = value;
+    
+  }
+  else{
+    //multiplier for midi value
+    float value = (255.0 - serialIn[0])/255.0;
+
+    //calculate min brightness
+    float minBrightness = 5;
+    float offset = (255.0-minBrightness)/255.0;
+
+    //alltogether
+    r = (button1*pos*offset + minBrightness)*value;
+    g = (button2*pos/2*offset + minBrightness)*value;
+    b = (button3*pos/4*offset + minBrightness)*value;
+
+    //flickering when switched led
+    if(micros() - lastSwitchTime < 10000)
+    {
+      r = 255;
+      g = 255;
+      b = 255;
+    }
   }
 
   showAnalogRGB( CRGB(r,g,b) );
@@ -131,6 +155,11 @@ void loop() {
     // yes, read data bytes
     Serial.readBytes( serialIn, 2 );
   }
+
+  if(serialIn[1] == 0 && lastState == 1){
+      lastActivated = millis();
+  }
+  lastState = serialIn[1];
 
 //idle
   if(serialIn[1] == 1){
