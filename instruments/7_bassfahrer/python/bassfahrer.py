@@ -2,11 +2,13 @@
 
 import socket
 import sys
-from time import sleep
+import time
 from serial import Serial
 import struct
 
-print "Start Bassfahrer"
+import RPi.GPIO as GPIO
+
+print "Start Bassfahrer				"
 
 '''init serial and network'''
 # open serial port to Arduino
@@ -19,7 +21,7 @@ udpIn.bind( ('', 5010 ) )
 udpIn.settimeout(0.01)
 
 # decrease receive buffer size
-udpIn.setsockopt( socket.SOL_SOCKET, socket.SO_RCVBUF, 128 )
+udpIn.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,128)
 
 # open UDP socket to send raveloxmidi
 udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -28,17 +30,35 @@ udpOut.connect( ( "localhost", 5006 ) )
 
 # initialize old value for change detection
 oldvalue = 0
+value = 0
 
 # midi values
-midiMode = 0
-midiHue = 0
-midiSat = 0
-midiVal = 0
+intensity = 0
+
+
+footPin = 21 #7 on pi1    21 on pi2
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+lastFootChange = 0
+minFootDwellTime = 5.0
+isIdle = 1
 
 
 # loop infinitely
 while True:
+	# foot sensor
+	if time.time() - lastFootChange > minFootDwellTime:
+		tIdle = GPIO.input(footPin)
+		if tIdle != isIdle:
+			isIdle = tIdle
+			lastFootChange = time.time()
+			elements = [255,intensity,isIdle]
+			for x in elements:
+				serial.write(chr(x))
 
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if isIdle else value )
+			udpOut.send( bytes )
 	# incoming UDP packets in buffer?
 	bufferClear = False
 
@@ -51,6 +71,8 @@ while True:
 		try:
 			# read UDP packet from socket
 			data, addr = udpIn.recvfrom(256)
+			#print ":".join(format(ord(c)) for c in data)
+			#print ":".join("{0:x}".format(ord(c)) for c in data)
 		except Exception:
 			# no more packets to read
 			bufferClear = True
@@ -58,27 +80,16 @@ while True:
 
 	# control command
 	if ord(data[0]) == 176:
-		#set mode
-		if ord(data[1]) == 14:
-			if ord(data[2]) <= 2:
-				midiMode = ord(data[2])
-			else:
-				midiMode = 0
-		#set hue
-		elif ord(data[1]) == 15:
-			midiHue = min(2*ord(data[2]),254)
-		#set saturation
-		elif ord(data[1]) == 16:
-			midiSat = min(2*ord(data[2]),254)
-		#set brightness
-		elif ord(data[1]) == 17:
-			midiVal = min(2*ord(data[2]),254)
+		#set intensity
+		if ord(data[1]) == 74:
+			intensity = min(2*ord(data[2]),254)
 
-		elements = [255,midiMode,midiHue,midiSat,midiVal]
+		elements = [255,intensity,isIdle]
 		print elements
 
-		for x in elements:
-			serial.write(chr(x))
+		if isIdle == 0:
+			for x in elements:
+				serial.write(chr(x))
 
 	safe = True
 
@@ -93,7 +104,7 @@ while True:
 
 				# get numeric value
 				value = int( line[1:-1] )
-
+				
 				# read was successfull
 				safe = True
 
@@ -106,9 +117,6 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
-			# scale value from 0..225 to 0..127
-			value = value * 127 / 225
-
 			# limit to 0..127
 			value = max( min( int(value), 127 ), 0 )
 
@@ -116,8 +124,14 @@ while True:
 			oldvalue = value
 
 			# log current value
-			print value
+			#print value
+			#sys.stdout.write( "%d   \r" % value )
+			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, value )
 			udpOut.send( bytes )
+		#print serial.readline()
+
+
+		#print ":".join("{0:x}".format(ord(c)) for c in data)
