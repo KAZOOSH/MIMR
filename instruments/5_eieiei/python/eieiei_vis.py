@@ -425,8 +425,8 @@ vec3 samplef(in vec2 uv)
     def draw_triangles(self,dist,isIdle):
 
         inIdle = isIdle
-        if time.time() - lastActive < 0.25:
-            p = (time.time() - lastActive)*4*2*math.pi
+        if time.time() - lastActive < 1.0:
+            p = (time.time() - lastActive)*math.pi
             inIdle = -math.cos(p);
         #print inIdle
 

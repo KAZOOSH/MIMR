@@ -2,21 +2,26 @@
 
 import socket
 import sys
-from time import sleep
+import time
 from serial import Serial
 import struct
 
-print "Start Theremin"
+import RPi.GPIO as GPIO
+
+print "Start Theremin				"
 
 '''init serial and network'''
 # open serial port to Arduino
-serial = Serial( "/dev/ttyUSB0", 57600, bytesize=8, parity='N', timeout=0 )
+serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01 )
 
 
 # open UDP socket to listen raveloxmidi
 udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
 udpIn.bind( ('', 5010 ) )
-udpIn.settimeout(0.1)
+udpIn.settimeout(0.01)
+
+# decrease receive buffer size
+udpIn.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,128)
 
 # open UDP socket to send raveloxmidi
 udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -25,59 +30,92 @@ udpOut.connect( ( "localhost", 5006 ) )
 
 # initialize old value for change detection
 oldvalue = 0
+value = 0
 
 # midi values
-midiMode = 0
-midiHue = 0
-midiSaturation = 0
-midiBrightness = 0
+hue = 0
+intensity = 0
+
+
+footPin = 21 #7 on pi1    21 on pi2
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+lastFootChange = 0
+minFootDwellTime = 5.0
+isIdle = 1
+
 
 # loop infinitely
 while True:
-	try:
-		data, addr = udpIn.recvfrom(1024)
-		print ":".join(format(ord(c)) for c in data)
-		#print ":".join("{0:x}".format(ord(c)) for c in data)
-
-		elements = [255,midiMode,midiHueMin,midiHueMax,midiBrightness]
-		# control command
-		if ord(data[0]) == 176:
-			#set mode
-			if ord(data[1]) == 34:
-				#print ord(data[2])
-				midiMode = max(ord(data[2]),1)
-			#set hue
-			elif ord(data[1]) == 35:
-				midiHue = min(2*ord(data[2]),254)
-			#set saturation
-			elif ord(data[1]) == 36:
-				midiSaturation = min(2*ord(data[2]),254)
-			#set saturation
-			elif ord(data[1]) == 37:
-				midiBrightness = min(2*ord(data[2]),254)
-
-			elements = [255,midiMode,midiHue,midiSaturation,midiBrightness]
-			print elements
-
+	# foot sensor
+	if time.time() - lastFootChange > minFootDwellTime:
+		tIdle = GPIO.input(footPin)
+		if tIdle != isIdle:
+			isIdle = tIdle
+			lastFootChange = time.time()
+			elements = [255,intensity,hue,isIdle]
 			for x in elements:
-				#sys.stdout.write(chr(x))
-				#sys.stdout.flush()
 				serial.write(chr(x))
 
+			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, 0 if isIdle else value )
+			udpOut.send( bytes )
+	# incoming UDP packets in buffer?
+	bufferClear = False
 
-	except Exception:
-		pass
+	# UDP data as string
+	data = chr(0)
 
-	# try to read value from Arduino
+	# as long as packets in buffer...
+	# (empty buffer, only forward latest packet)
+	if not bufferClear:
+		try:
+			# read UDP packet from socket
+			data, addr = udpIn.recvfrom(256)
+			#print ":".join(format(ord(c)) for c in data)
+			#print ":".join("{0:x}".format(ord(c)) for c in data)
+		except Exception:
+			# no more packets to read
+			bufferClear = True
+			pass
+
+	# control command
+	if ord(data[0]) == 176:
+		#set intensity
+		if ord(data[1]) == 34:
+			intensity = min(2*ord(data[2]),254)
+			#print intensity
+		#set hue
+		elif ord(data[1]) == 35:
+			hue = ord(data[2])*8/127
+
+		elements = [255,intensity,hue,isIdle]
+		print elements
+
+		if isIdle == 0:
+			for x in elements:
+				serial.write(chr(x))
+
 	safe = True
 
 	while safe:
 
 		try:
-			value = serial.readline().strip()
+			# try to read line from Arduino
+			line = serial.readline()
 
-			value = int(value)
-			safe = True
+			# got complete line with expected start and end character?
+			if line[:1] == ":" and line[-1:] == "\n":
+
+				# get numeric value
+				value = int( line[1:-1] )
+				
+				# read was successfull
+				safe = True
+
+			else:
+				safe = False
+
 		except Exception:
 			safe = False
 
@@ -91,8 +129,9 @@ while True:
 			oldvalue = value
 
 			# log current value
-			sys.stdout.write( "%d   \r" % value )
-			sys.stdout.flush()
+			#print value
+			#sys.stdout.write( "%d   \r" % value )
+			#sys.stdout.flush()
 
 			# on MIDI channel 1, set controller #1 to value
 			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, value )
