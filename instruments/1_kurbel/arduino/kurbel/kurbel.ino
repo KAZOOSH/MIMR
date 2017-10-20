@@ -32,6 +32,10 @@ byte serialIn[3] = {0,0,1}; //intensity, hue, isIdle
 #define SENSOR_PIN A1
 #define POWER_PIN A2
 
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
+
 
 void setup() {
   //set pins
@@ -79,12 +83,30 @@ void setLedColor(int value){
   if(!isRed && !isGreen && !isBlue){
     isRed = true; isGreen = true; isBlue = true;
   }
-  
-  int brightness = max(value - serialIn[0],0);
 
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    leds[dot].setRGB( isRed *brightness, isGreen *brightness, isBlue *brightness);
+
+  if(millis() - lastActivated <1500){
+    float p = (millis() - lastActivated)/1500.0;
+
+    float maxBrightness = 150;
+
+    int value = 150;
+    if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
+    else if (p>0.5) value = sin(p*PI)*(maxBrightness-5)+5;
+     
+
+    for(int c = 0; c<NUM_LEDS; c++){
+        leds[c] = CRGB(value,value,value);
+    }
   }
+  else{
+    int brightness = max(value - serialIn[0],0);
+
+    for(int dot = 0; dot < NUM_LEDS; dot++) { 
+      leds[dot].setRGB( min(isRed *brightness+5,255), min(isGreen *brightness+5,255), min(isBlue *brightness+5,255));
+    }
+  }
+  
   FastLED.show();
 }
 
@@ -100,6 +122,12 @@ void loop() {
     // yes, read data bytes
     Serial.readBytes( serialIn, 3 );
   }
+
+  if(serialIn[2] == 0 && lastState == 1){
+      lastActivated = millis();
+  }
+  lastState = serialIn[2];
+
 //idle
   if(serialIn[2] == 1){
     doIdle();

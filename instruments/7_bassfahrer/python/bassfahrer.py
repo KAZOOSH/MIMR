@@ -3,7 +3,9 @@
 import socket
 import sys
 from time import sleep
+from time import time
 from serial import Serial
+import RPi.GPIO as GPIO
 import struct
 
 print "Start Bassfahrer"
@@ -26,14 +28,24 @@ udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpOut.connect( ( "localhost", 5006 ) )
 
 
+# MIDI configuration
+midiInputChannel = 64
+
+
+# set up GPIO pin with pull-up for foot sensor
+footSensorPin = 21
+GPIO.setmode( GPIO.BCM )
+GPIO.setup( footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
+lastSensorChangeTime = time()
+sensorDebounceTime = 4.0
+
+
 # initialize old value for change detection
 oldvalue = 0
 
-# midi values
-midiMode = 0
-midiHue = 0
-midiSat = 0
+# MIDI and status values
 midiVal = 0
+idle = 0
 
 
 # loop infinitely
@@ -56,27 +68,29 @@ while True:
 			bufferClear = True
 			pass
 
+	# query foot sensor
+	if time() - lastSensorChangeTime > sensorDebounceTime:
+		sensorValue = GPIO.input( footSensorPin )
+		if sensorValue != idle:
+			lastSensorChangeTime = time()
+			idle = sensorValue
+
+			print "Idle state change:", idle
+			elements = [255,idle,midiVal]
+			for x in elements:
+				serial.write(chr(x))
+
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if idle else 127 )
+			udpOut.send( bytes )
+
 	# control command
 	if ord(data[0]) == 176:
-		#set mode
-		if ord(data[1]) == 14:
-			if ord(data[2]) <= 2:
-				midiMode = ord(data[2])
-			else:
-				midiMode = 0
-		#set hue
-		elif ord(data[1]) == 15:
-			midiHue = min(2*ord(data[2]),254)
-		#set saturation
-		elif ord(data[1]) == 16:
-			midiSat = min(2*ord(data[2]),254)
-		#set brightness
-		elif ord(data[1]) == 17:
+		# get value from defined channel
+		if ord(data[1]) == midiInputChannel:
 			midiVal = min(2*ord(data[2]),254)
 
-		elements = [255,midiMode,midiHue,midiSat,midiVal]
+		elements = [255,idle,midiVal]
 		print elements
-
 		for x in elements:
 			serial.write(chr(x))
 
@@ -106,8 +120,8 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
-			# scale value from 39..68
-			value = (value-39) * 127 / (68-39)
+			# scale value from 0..215 to 0..127
+			value = value * 127 / 215
 
 			# limit to 0..127
 			value = max( min( int(value), 127 ), 0 )
@@ -119,5 +133,5 @@ while True:
 			print value
 
 			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB1, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 1, 0 if idle else value )
 			udpOut.send( bytes )

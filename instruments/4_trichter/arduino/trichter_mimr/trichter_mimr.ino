@@ -67,6 +67,11 @@ int pos = 63;
 const int idleAnimationTime = 4500;
 const int maxIdleBrightness = 70;
 
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
+
+
 void setup() {
   //init serial
   Serial.begin( BAUD_RATE );
@@ -100,11 +105,29 @@ void sendValue(int value){
 }
 
 void setLedColor(){
-  int hue = map(pos,0,127,serialIn[1],serialIn[2]);
-  int value = 255 - serialIn[0];
+  if(millis() - lastActivated <2000){
+    float p = (millis() - lastActivated)/1000.0;
 
-  for(int dot = 0; dot < NUM_LEDS; dot++) { 
-    leds[dot].setHSV( hue, 255, value);
+    float maxBrightness = 200;
+
+  int value = 200;
+  if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
+  else if (p>0.5) value = cos((p-0.5)*PI)*maxBrightness;
+   
+
+    for(int c = 0; c<NUM_LEDS; c++){
+        leds[c] = CRGB(value,value,value);
+    }
+  }
+  else
+  {
+    int hue = map(pos,0,127,serialIn[1],serialIn[2]);
+    int value = 255 - serialIn[0];
+
+    for(int dot = 0; dot < NUM_LEDS; dot++) { 
+      leds[dot].setHSV( hue, 255, value);
+    }
+    
   }
   FastLED.show();
 }
@@ -200,6 +223,11 @@ void loop() {
     // yes, read data bytes
     Serial.readBytes( serialIn, 4 );
   }
+
+  if(serialIn[3] == 0 && lastState == 1){
+      lastActivated = millis();
+  }
+  lastState = serialIn[3];
 
   
   if(serialIn[3] == 1){

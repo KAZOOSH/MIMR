@@ -53,6 +53,8 @@ while True:
 			print ("idle " + str(tIdle) + "  " + str(isIdle))
 			isIdle = tIdle
 			lastFootChange = time.time()
+			bytes = struct.pack( "BBBB", 0xaa, 0xB3, 0, 0 if isIdle else 127  )
+			udpOut.send( bytes )
 			elements = [255,intensity,hueMin,hueMax,isIdle]
 			print elements
 			for x in elements:
@@ -136,7 +138,7 @@ while True:
 			#sys.stdout.flush()
 
 			# on MIDI channel 4, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, value )
+			bytes = struct.pack( "BBBB", 0xaa, 0xB3, 1, value )
 			udpOut.send( bytes )
 
 

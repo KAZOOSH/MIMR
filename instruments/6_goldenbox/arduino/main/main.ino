@@ -35,6 +35,12 @@ byte serialIn[2] = {0,1}; //intensity, isIdle
 #define BAUD_RATE 115200L
 
 
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
+
+
+
 BYTES_VAL_T pinValues;
   BYTES_VAL_T oldPinValues;
   byte sw,swOld;
@@ -121,34 +127,51 @@ inline void ledFlicker() {
 
 
 void setBulbBrightness(){
-  int t = millis() % bulbAnimationTime;
-  int activeLed = 0;
-  int tOffset = 0;
-  int valueChanged = 0;
 
-  if(t > bulbAnimationTime/3*2){
-    activeLed = 2;
-    tOffset = bulbAnimationTime/3*2;
-  }
-  else if(t > bulbAnimationTime/3){
-    activeLed = 1;
-    tOffset = bulbAnimationTime/3;
-  }
-  
+  //hello animation
+  if(millis() - lastActivated <1500){
+    float p = (millis() - lastActivated)/1500.0;
 
-  float brightness = sin((t-tOffset)*PI*3/bulbAnimationTime)*maxBrightness;
-  if(controlValueChanged + 50 > millis()) valueChanged = maxBrightness;
+    float maxBrightness = 120;
 
-  for (int i=0; i<3; ++i){
-    int base = serialIn[0] + bulbMinD[i];
-    if(i == activeLed){
-      analogWrite(bulbPins[i],min(base + min(brightness + valueChanged,maxBrightness),150));
+    int value = 120;
+    if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
+    else if (p>0.5) value = sin(p*PI)*(maxBrightness-5)+5;
+     
+    for (int i=0; i<3; ++i){
+        analogWrite(bulbPins[i],bulbMinD[i] + value);
     }
-    else{ 
-      analogWrite(bulbPins[i],min(base +min(valueChanged,maxBrightness),150));
+    
+  }
+  else{
+    int t = millis() % bulbAnimationTime;
+    int activeLed = 0;
+    int tOffset = 0;
+    int valueChanged = 0;
+
+    if(t > bulbAnimationTime/3*2){
+      activeLed = 2;
+      tOffset = bulbAnimationTime/3*2;
+    }
+    else if(t > bulbAnimationTime/3){
+      activeLed = 1;
+      tOffset = bulbAnimationTime/3;
+    }
+    
+
+    float brightness = sin((t-tOffset)*PI*3/bulbAnimationTime)*maxBrightness;
+    if(controlValueChanged + 50 > millis()) valueChanged = maxBrightness;
+
+    for (int i=0; i<3; ++i){
+      int base = serialIn[0] + bulbMinD[i];
+      if(i == activeLed){
+        analogWrite(bulbPins[i],min(base + min(brightness + valueChanged,maxBrightness),150));
+      }
+      else{ 
+        analogWrite(bulbPins[i],min(base +min(valueChanged,maxBrightness),150));
+      }
     }
   }
-  
 }
 
 
@@ -187,6 +210,8 @@ void setup()
 }
 
 void doIdle(){
+  SupplySetVoltage(0);
+
    int t = millis() % bulbAnimationTime;
   int activeLed = 0;
   int tOffset = 0;
@@ -228,6 +253,11 @@ void loop() {
       // yes, read data bytes
       Serial.readBytes( serialIn, 2 );
     }
+
+    if(serialIn[1] == 0 && lastState == 1){
+      lastActivated = millis();
+    }
+    lastState = serialIn[1];
 
     //check if idle
     if(serialIn[1] == 0 )
