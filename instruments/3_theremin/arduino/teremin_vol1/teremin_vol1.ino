@@ -205,14 +205,14 @@ void setColor(int value)
   }
 
   int vIn, vOut;
-
+  value*=2;
   if(value < 128){
       vIn = 0;
       vOut = (sin8(value/2) -128)*2;
   }
   else{
     vIn = sin8(value -128)*2;
-    int vTemp = (value -128)*100/120;
+    int vTemp = (value -128)*100/110;
     vOut = cos8(vTemp)*2;
   }
 
@@ -233,7 +233,9 @@ void setColor(int value)
     leds[c] = CRGB(vOut, vOut, vOut);
   }
 /*
-  Serial.print("vOut ");
+Serial.print("value ");
+  Serial.print(value);
+  Serial.print("   vOut ");
   Serial.print(vOut);
   Serial.print("   vIn ");
   Serial.println(vIn);
