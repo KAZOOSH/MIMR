@@ -29,6 +29,8 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
+    void onSceneChanged(int& nScene);
+    
     void newMidiMessage(ofxMidiMessage& eventArgs);
     
     
@@ -40,6 +42,7 @@ private:
     
     ofParameter<string> midiPort;
     ofxMidiIn midiIn;
+    ofxMidiOut midiOut;
     
     vector<Layer*> layer;
     
@@ -50,7 +53,6 @@ private:
     ofFbo fbo;
     float rotationFbo;
     
-    
-    //midi
+
     
 };

@@ -20,9 +20,12 @@ public:
     float angle; //in °
     float lastAngle; //in °
     float time;
-	float lastTime;
+    float lastTime;
     
-	ofParameter<int> colorSet;
+    float bpm;
+    float lastTick;
+    
+    ofParameter<int> colorSet;
     //values for objects
     ofParameter<int> v_kurbel;
     ofParameter<bool> v_kuehler1;
