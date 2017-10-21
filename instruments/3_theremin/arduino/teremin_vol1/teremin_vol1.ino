@@ -204,32 +204,40 @@ void setColor(int value)
     isRed = true; isGreen = true; isBlue = true;
   }
 
-  /*value -= serialIn[0];
-  value *= 2;*/
+  int vIn, vOut;
 
- /* if(millis() - lastActivated <1500){
-    float p = (millis() - lastActivated)/1500.0;
-    Serial.println(p);
-    float maxBrightness = 150;
-
-    int value = 150;
-    if (p<0.35) value = sin(p*2.857*PI*0.5)*maxBrightness;
-    else if (p>0.5) value = sin(p*PI)*(maxBrightness-5)+5;
-     
-
-    for(int c = 0; c<NUM_LEDS; c++){
-        leds[c] = CRGB(value,value,value);
-    }
+  if(value < 128){
+      vIn = 0;
+      vOut = (sin8(value/2) -128)*2;
   }
-  else{*/
-    
+  else{
+    vIn = sin8(value -128)*2;
+    int vTemp = (value -128)*100/120;
+    vOut = cos8(vTemp)*2;
+  }
+
+  vOut = max(vOut - serialIn[0],0);
+
+    /*
     int brightness = max(value*2 - serialIn[0],0);
-  //Serial.println(brightness);
+
     for(int dot = 0; dot < NUM_LEDS; dot++) { 
       leds[dot].setRGB( min(isRed *brightness+5,255), min(isGreen *brightness+5,255), min(isBlue *brightness+5,255));
-    //}
-  }
+    }*/
 
+
+  for (int c = 0; c < 8; c++) {
+     leds[c] = CRGB(vIn,vIn,vIn);
+  }
+  for (int c = 9; c < NUM_LEDS; c++) {
+    leds[c] = CRGB(vOut, vOut, vOut);
+  }
+/*
+  Serial.print("vOut ");
+  Serial.print(vOut);
+  Serial.print("   vIn ");
+  Serial.println(vIn);
+*/
   FastLED.show();
 }
 
@@ -272,23 +280,33 @@ ISR(TIMER2_COMPA_vect) {
 }
 
 void doIdle() {
-  int pos = millis() % 12000;
-  pos = pos % 12000;
-  float p = pos*8 / 12000.0;
+  int pos = millis() % 10000;
+  pos = pos % 10000;
+  float p = pos/ 10000.0;
 
-  float maxBrightness = 10;
+  float maxBrightness = 20;
 
-  int index = (pos / 120)%8;
- // Serial.println(index);
+  int vIn, vOut;
+
+  //inner ring
+  if(p < 0.5){
+      p *= 2.2;
+      vIn = max(0,sin(p*PI)*maxBrightness);
+      vOut = 0;
+  }
+  //outer ring
+  else{
+    p = (p-0.5)* 2.2;
+      vIn = 0;
+      vOut = max(0,sin(p*PI)*maxBrightness);
+  }
+
+ //; Serial.println(index)
   for (int c = 0; c < 8; c++) {
-    int value = sin(p-(float)c * PI /8) * maxBrightness;
-    
-     leds[c] = CRGB(value,value,value);
-    
+     leds[c] = CRGB(vIn,vIn,vIn);
   }
   for (int c = 9; c < NUM_LEDS; c++) {
-    int v = 0;
-    leds[c] = CRGB(v, v, v);
+    leds[c] = CRGB(vOut, vOut, vOut);
   }
 
   FastLED.show();
