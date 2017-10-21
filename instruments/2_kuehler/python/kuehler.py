@@ -88,7 +88,7 @@ while True:
 	# control command
 	if ord(data[0]) == 176:
 		#set intensity
-		if ord(data[1]) == 24:
+		if ord(data[1]) == 24 or ord(data[1]) == 3:
 			intensity = min(2*ord(data[2]),254)
 		#set hue
 		elif ord(data[1]) == 25:

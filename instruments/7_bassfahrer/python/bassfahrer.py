@@ -86,7 +86,7 @@ while True:
 	# control command
 	if ord(data[0]) == 176:
 		# get value from defined channel
-		if ord(data[1]) == midiInputChannel:
+		if ord(data[1]) == midiInputChannel  or ord(data[1]) == 3:
 			midiVal = min(2*ord(data[2]),254)
 
 		elements = [255,idle,midiVal]

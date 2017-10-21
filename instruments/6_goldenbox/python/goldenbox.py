@@ -109,7 +109,7 @@ while True:
 	# control command
 	if ord(data[0]) == 176:
 		#set brightness
-		if ord(data[1]) == 64:
+		if ord(data[1]) == 64 or ord(data[1]) == 3:
 			brightness = min(2*ord(data[2]),254)
 		if ord(data[1]) == 65:
 			midiMode = data[2]
