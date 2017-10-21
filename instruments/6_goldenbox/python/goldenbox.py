@@ -31,6 +31,7 @@ oldvalue = 0
 
 value = 0
 midiMode = 0
+midiSendAddress = 0xB5
 
 # midi values
 brightness = 0;
@@ -81,7 +82,7 @@ while True:
 		print "Idle state changed:", isIdle
 
 		# send MIDI update
-		bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if isIdle else 127 )
+		bytes = struct.pack( "BBBB", 0xaa, midiSendAddress, 0, 0 if isIdle else 127 )
 		udpOut.send( bytes )
 
 		# update Arduino
@@ -166,10 +167,10 @@ while True:
 			else:
 				for x in xrange(0,11):
 					if x == oldvalue:
-						bytes = struct.pack( "BBBB", 0xaa, 0xB5, x+1, 0 )
+						bytes = struct.pack( "BBBB", 0xaa, midiSendAddress, x+1, 0 )
 						udpOut.send( bytes )
 					elif x == value:
-						bytes = struct.pack( "BBBB", 0xaa, 0xB5, x+1, 127 )
+						bytes = struct.pack( "BBBB", 0xaa, midiSendAddress, x+1, 127 )
 						udpOut.send( bytes )
 
 			# update cached value
