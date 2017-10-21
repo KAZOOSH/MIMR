@@ -427,7 +427,7 @@ vec3 samplef(in vec2 uv)
         inIdle = isIdle
         if time.time() - lastActive < 1.0:
             p = (time.time() - lastActive)*math.pi
-            inIdle = -math.cos(p);
+            inIdle = -math.sin(p);
         #print inIdle
 
         # Now render to the main frame buffer
