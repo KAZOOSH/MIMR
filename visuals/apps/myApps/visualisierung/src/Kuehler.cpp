@@ -38,6 +38,7 @@ void Kuehler::draw() {
     shader.setUniform1i("kuehler3",params->v_kuehler3);
     shader.setUniform1i("kuehler4",params->v_kuehler4);
     shader.setUniform1i("kuehler5",params->v_kuehler5);
+	shader.setUniform1i("colorSet", params->colorSet);
     ofSetColor(255);
     img.draw(0, 0);
     shader.end();

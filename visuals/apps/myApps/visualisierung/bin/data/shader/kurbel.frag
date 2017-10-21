@@ -9,6 +9,7 @@ uniform sampler2DRect tex0;
 uniform float speed;
 uniform float angle;
 uniform float time;
+uniform int colorSet;
 
 in vec2 texCoordVarying;
 
@@ -186,11 +187,16 @@ void main()
 
     float brightness = max(texture(tex0, pTex).r  -decay,0);
 
+    vec3 ccolor;
+    if(colorSet == 0) ccolor = vec3(0.04,0.2,1.0);
+    else if(colorSet == 1) ccolor = vec3(0.5,1,0.12);
+    else if(colorSet == 2) ccolor = vec3(0.7,0,0.2);
+    else if(colorSet == 3) ccolor = vec3(0.1,.9,0.8);
 
     float b = 0;
     for(int i=0; i<3; ++i){
         if(distance >= radius[i] && distance <= radius[i] + widthLine){
-            color = vec4(1,1,1,brightness);
+            color = vec4(ccolor,brightness);
             //b+= brightness;
             
         }

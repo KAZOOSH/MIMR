@@ -47,8 +47,27 @@ void Radar::draw() {
     ofVec2f start = ofVec2f(px0,py0);
     ofVec2f part = (ofVec2f(px1,py1)-start)/nSegments;
     
+	ofColor color;
+	if (params->colorSet == 0)
+	{
+		color = ofColor(150, 200, 255);
+	}
+	else if (params->colorSet == 1)
+	{
+		color = ofColor(135, 255, 27);
+	}
+	else if (params->colorSet == 2)
+	{
+		color = ofColor(220, 220, 255);
+	}
+	else if (params->colorSet == 3)
+	{
+		color = ofColor(136, 255, 219);
+	}
+
+
     for (int i=0; i<nSegments; ++i) {
-        ofSetColor(255,255,255, 255);
+        ofSetColor(color);
         ofVec2f end = start + part;
         end.x += ofRandom(-params->v_theremin/20,params->v_theremin/20);
         end.y += ofRandom(-params->v_theremin/20,params->v_theremin/20);
@@ -59,7 +78,7 @@ void Radar::draw() {
     for(int e=0; e<nElements; ++e){
         start = begin;
         for (int i=0; i<nSegments; ++i) {
-            ofSetColor(255,255,255, 130);
+            ofSetColor(color.r,color.g,color.b, 130);
             ofVec2f end = start + part;
             end.x += ofRandom(-params->v_theremin/10,params->v_theremin/10 );
             end.y += ofRandom(-params->v_theremin/10,params->v_theremin/10 );
