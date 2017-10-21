@@ -30,6 +30,7 @@ udpOut.connect( ( "localhost", 5006 ) )
 oldvalue = 0
 
 value = 0
+midiMode = 0
 
 # midi values
 brightness = 0;
@@ -110,6 +111,8 @@ while True:
 		#set brightness
 		if ord(data[1]) == 64:
 			brightness = min(2*ord(data[2]),254)
+		if ord(data[1]) == 65:
+			midiMode = data[2]
 
 		elements = [255,brightness,isIdle]
 
@@ -144,21 +147,34 @@ while True:
 		# value available and different from old one?
 		if safe and value != oldvalue:
 
-			value = value * 127 /12
-			# limit to 0..127
-			value = max( min( int(value), 127 ), 0 )
+			if midiMode == 0:
+
+				value = value * 127 /12
+				# limit to 0..127
+				value = max( min( int(value), 127 ), 0 )
+
+				
+
+				# log current value
+				print value
+				#sys.stdout.write( "%d   \r" % value )
+				#sys.stdout.flush()
+
+				# on MIDI channel 1, set controller #1 to value
+				bytes = struct.pack( "BBBB", 0xaa, 0xB5, 1, value )
+				udpOut.send( bytes )
+			else:
+				for x in xrange(0,11):
+					if x == oldvalue:
+						bytes = struct.pack( "BBBB", 0xaa, 0xB5, x+1, 0 )
+						udpOut.send( bytes )
+					elif x == value:
+						bytes = struct.pack( "BBBB", 0xaa, 0xB5, x+1, 127 )
+						udpOut.send( bytes )
 
 			# update cached value
-			oldvalue = value
+				oldvalue = value
 
-			# log current value
-			print value
-			#sys.stdout.write( "%d   \r" % value )
-			#sys.stdout.flush()
-
-			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB5, 1, value )
-			udpOut.send( bytes )
 		#print serial.readline()
 		#safe = False
 
