@@ -279,7 +279,7 @@ void doIdle() {
   float maxBrightness = 10;
 
   int index = (pos / 120)%8;
-  Serial.println(index);
+ // Serial.println(index);
   for (int c = 0; c < 8; c++) {
     int value = sin(p-(float)c * PI /8) * maxBrightness;
     
