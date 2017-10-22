@@ -10,13 +10,16 @@
 #include "Universum.h"
 #include "Foehn.h"
 #include "Kurbel.h"
+#include "ofxOscParameterSync.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener{
 public:
     
     void setup();
+	void setupGui();
     void update();
     void draw();
+	void drawGui(ofEventArgs & args);
     void exit();
     
     void keyPressed(int key);
@@ -35,6 +38,8 @@ public:
     
     
     void initMidi();
+
+	ofxOscParameterSync sync;
     
 private:
     ofxPanel gui;
@@ -46,7 +51,7 @@ private:
     
     vector<Layer*> layer;
     
-    
+	bool isGuiVisible;
     
     RadarAttributes params;
     

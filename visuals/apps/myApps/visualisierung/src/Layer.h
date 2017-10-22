@@ -44,6 +44,7 @@ public:
     ofParameter<bool> v_foehn_schalter1;
     ofParameter<bool> v_foehn_schalter2;
     ofParameter<bool> v_foehn_schalter3;
+
     
 };
 
