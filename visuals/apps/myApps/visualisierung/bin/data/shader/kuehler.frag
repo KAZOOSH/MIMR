@@ -14,6 +14,8 @@ uniform int kuehler3;
 uniform int kuehler4;
 uniform int kuehler5;
 
+uniform int colorSet;
+
 in vec2 texCoordVarying;
 
 out vec4 outputColor;
@@ -176,13 +178,24 @@ void main()
 
 	vec4 color = vec4(1,1,1,0);
 
-	
+	vec4 interferenceColor;
+    vec4 whiteColor = vec4(1,1,1,0.7);
+    if( colorSet == 0){
+        interferenceColor = vec4(0.95,0.35,0.12,1);
+        whiteColor = vec4(1,1,1,0.6);
+    } 
+    else if( colorSet == 1) interferenceColor = vec4(0.5,1,0.12,1);
+    else if( colorSet == 2) {
+        interferenceColor = vec4(0.8,.8,1,1);
+        whiteColor = vec4(1,1,1,0.5);
+    }
+    else if( colorSet == 3) interferenceColor = vec4(0.1,.9,0.8,1);
 
     int interference = 0;
 	for(int i=0; i<5; ++i){
 		if(distance >= radius[i] && distance <= radius[i] + widthLine){
-            if(interference > 0) color = vec4(1,0,0.12,1);
-            else color = vec4(1,1,1,0.7);
+            if(interference > 0) color = interferenceColor;
+            else color = whiteColor;
             
             interference++;
 		}

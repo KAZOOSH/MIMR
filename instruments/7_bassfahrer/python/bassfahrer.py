@@ -2,7 +2,6 @@
 
 import socket
 import sys
-from time import sleep
 from time import time
 from serial import Serial
 import RPi.GPIO as GPIO
@@ -30,26 +29,72 @@ udpOut.connect( ( "localhost", 5006 ) )
 
 # MIDI configuration
 midiInputChannel = 64
+midiOutputChannel = 0xB6
 
 
 # set up GPIO pin with pull-up for foot sensor
 footSensorPin = 21
 GPIO.setmode( GPIO.BCM )
 GPIO.setup( footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
-lastSensorChangeTime = time()
-sensorDebounceTime = 4.0
+
+releasing = False
+releaseStart = 0
+releaseTime = 2.0
+
+isIdle = 1
 
 
 # initialize old value for change detection
 oldvalue = 0
 
-# MIDI and status values
+# MIDI values
 midiVal = 0
-idle = 0
 
 
 # loop infinitely
 while True:
+
+	# query sensor state
+	footState = GPIO.input(footSensorPin)
+
+	sendIdleUpdate = False
+
+	# idle to active?
+	if not footState:
+		# accept immediately
+		releasing = False
+		if isIdle:
+			isIdle = 0
+			sendIdleUpdate = True
+
+	# about to go from active to idle?
+	if not isIdle and footState:
+		# not yet releasing?
+		if not releasing:
+			# remember start
+			releaseStart = time()
+			releasing = True
+			print "Foot released..."
+		# already releasing, time elapsed?
+		elif time()-releaseStart > releaseTime:
+			# finally, turn idle!
+			isIdle = 1
+			sendIdleUpdate = True
+			releasing = False
+
+	# state changed?
+	if sendIdleUpdate:
+
+		print "Idle state:", isIdle
+
+		# send MIDI update
+		bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 0, 0 if isIdle else 127 )
+		udpOut.send( bytes )
+
+		# update Arduino
+		elements = [255,isIdle,midiVal]
+		for x in elements:
+			serial.write(chr(x))
 
 	# incoming UDP packets in buffer?
 	bufferClear = False
@@ -68,28 +113,13 @@ while True:
 			bufferClear = True
 			pass
 
-	# query foot sensor
-	if time() - lastSensorChangeTime > sensorDebounceTime:
-		sensorValue = GPIO.input( footSensorPin )
-		if sensorValue != idle:
-			lastSensorChangeTime = time()
-			idle = sensorValue
-
-			print "Idle state change:", idle
-			elements = [255,idle,midiVal]
-			for x in elements:
-				serial.write(chr(x))
-
-			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if idle else value )
-			udpOut.send( bytes )
-
 	# control command
 	if ord(data[0]) == 176:
 		# get value from defined channel
-		if ord(data[1]) == midiInputChannel:
+		if ord(data[1]) == midiInputChannel  or ord(data[1]) == 3:
 			midiVal = min(2*ord(data[2]),254)
 
-		elements = [255,idle,midiVal]
+		elements = [255,isIdle,midiVal]
 		print elements
 		for x in elements:
 			serial.write(chr(x))
@@ -132,6 +162,6 @@ while True:
 			# log current value
 			print value
 
-			# on MIDI channel 1, set controller #1 to value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB6, 0, 0 if idle else value )
+			# send via MIDI
+			bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 1, 0 if isIdle else value )
 			udpOut.send( bytes )

@@ -64,6 +64,7 @@ void Kurbel::draw() {
     shader.setUniform1f("speed", 2.0);
     shader.setUniform1f("angle", params->angle);
     shader.setUniform1f("time", params->time);
+	shader.setUniform1i("colorSet", params->colorSet);
     //shader.setUniformTexture("tex0", fbo.getTexture(), 1);
     shader.setUniformTexture("tex0", valueFbo.getTexture(), 1);
     img.draw(0,0);

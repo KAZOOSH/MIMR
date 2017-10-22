@@ -2,7 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-    ofSetWindowShape(1024,1024);
+    ofSetWindowShape(1920,1080);
+    ofLogToConsole();
     
     p.add(params.v_kuehler1.set("kuehler 1",false));
     p.add(params.v_kuehler2.set("kuehler 2",false));
@@ -21,8 +22,14 @@ void ofApp::setup() {
     p.add(params.v_foehn_schalter1.set("foehn schalter 1",false));
     p.add(params.v_foehn_schalter2.set("foehn schalter 2",false));
     p.add(params.v_foehn_schalter3.set("foehn schalter 3",false));
+    p.add(params.colorSet.set("colorSet", 0, 0, 3));
     
-    midiPort.set("midiPort","Netzwerk Session 1");
+    params.bpm = 100;
+    params.colorSet.addListener(this, &ofApp::onSceneChanged);
+    
+    //midiPort.set("midiPort","mimr_instrumente 1");
+    midiPort.set("midiPort","Netzwerk Session 2");
+    midiOut.openPort(midiPort.get());
     //midiPort.set("midiPort","nanoKONTROL2 SLIDER/KNOB");
     initMidi();
     
@@ -57,16 +64,23 @@ void ofApp::setup() {
 void ofApp::update() {
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
+    float bpmMultiplier = pow(params.bpm / 100,2.2); //100 base rate
+    
+    params.lastTime = params.time;
+    
+    params.time += ofGetLastFrameTime()*20*bpmMultiplier;
+    
+    
     params.lastAngle = params.angle;
-    params.angle = ofGetElapsedTimef()*20;
+    params.angle += ofGetLastFrameTime()*20*bpmMultiplier;
     int tAngle = params.angle/360;
     params.angle = params.angle - tAngle*360;
-    params.time = ofGetElapsedTimef()*20;
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    ofBackground(80);
+    ofBackground(0);
     
     fbo.begin();
     ofClear(255,255,255, 0);
@@ -76,10 +90,11 @@ void ofApp::draw() {
     fbo.end();
     
     float sizeFbo = Layer::map(params.v_bassfahrer,0,127,1024,512,1.0);
-    rotationFbo += ofMap(params.v_bassfahrer,0,127,0,params.angle - params.lastAngle);
+    rotationFbo += ofMap(params.v_bassfahrer,0,127,0,params.time - params.lastTime);
     
     ofPushMatrix();
-    ofTranslate(512,512);
+    ofTranslate(900, 540);
+    //ofTranslate(512,512);
     ofPushMatrix();
     ofScale(-1,1);
     ofRotateDeg(rotationFbo);
@@ -121,25 +136,55 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::newMidiMessage(ofxMidiMessage& msg) {
+    
     switch (msg.channel) {
         case 1:
-            params.v_kurbel = msg.value;
+            switch (msg.control) {
+                case 0:
+                    if(msg.value == 0) params.v_kurbel = 0;
+                    break;
+                case 1:
+                    params.v_kurbel = msg.value;
+                    break;
+                    //beat
+                case 3:
+                    if(msg.value > 0){
+                        float tTemp = ofGetElapsedTimef();
+                        params.bpm = params.bpm*0.5 + 0.5*( 60.0/(tTemp - params.lastTick));
+                        params.lastTick = tTemp;
+                        //cout << bpm <<endl;
+                    }
+                    break;
+                    //scene
+                case 119:
+                    params.colorSet = msg.value;
+                    break;
+            }
             break;
         case 2:
             switch (msg.control) {
                 case 0:
-                    params.v_kuehler1 = msg.value;
+                    if (msg.value == 0) {
+                        params.v_kuehler1 = 0;
+                        params.v_kuehler2 = 0;
+                        params.v_kuehler3 = 0;
+                        params.v_kuehler4 = 0;
+                        params.v_kuehler5 = 0;
+                    }
                     break;
                 case 1:
-                    params.v_kuehler2 = msg.value;
+                    params.v_kuehler1 = msg.value;
                     break;
                 case 2:
-                    params.v_kuehler3 = msg.value;
+                    params.v_kuehler2 = msg.value;
                     break;
                 case 3:
-                    params.v_kuehler4 = msg.value;
+                    params.v_kuehler3 = msg.value;
                     break;
                 case 4:
+                    params.v_kuehler4 = msg.value;
+                    break;
+                case 5:
                     params.v_kuehler5 = msg.value;
                     break;
                 default:
@@ -147,14 +192,27 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
             }
             break;
         case 3:
-            params.v_theremin = msg.value;
+            switch (msg.control) {
+                case 0:
+                    if (msg.value == 0) params.v_theremin = 0;
+                    break;
+                case 1:
+                    params.v_theremin = msg.value;
+                    break;
+            }
             break;
         case 4:
             switch (msg.control) {
                 case 0:
-                    params.v_trichter_rot = msg.value;
+                    if (msg.value == 0) {
+                        params.v_trichter_rot = 0;
+                        params.v_trichter_mic = 0;
+                    }
                     break;
                 case 1:
+                    params.v_trichter_rot = msg.value;
+                    break;
+                case 2:
                     params.v_trichter_mic = msg.value;
                     break;
             }
@@ -162,35 +220,71 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
         case 5:
             switch (msg.control) {
                 case 0:
-                    params.v_eieiei_membrane = msg.value;
+                    if (msg.value == 0) {
+                        params.v_eieiei_membrane = 0;
+                        params.v_eieiei_spin = 0;
+                    }
                     break;
                 case 1:
+                    params.v_eieiei_membrane = msg.value;
+                    break;
+                case 2:
                     params.v_eieiei_spin = msg.value;
                     break;
             }
             break;
         case 6:
-            params.v_goldenBox = msg.value;
+            switch (msg.control) {
+                case 0:
+                    if (msg.value == 0) params.v_goldenBox = 0;
+                    break;
+                case 1:
+                    params.v_goldenBox = msg.value/12;
+                    if (msg.value == 127)
+                    {
+                        params.v_goldenBox = 0;
+                    }
+                    break;
+            }
+            for (int i = 2; i < 12; i++)
+            {
+                if (msg.control == i && msg.value == 127)
+                    params.v_goldenBox = i - 2;
+            }
             break;
         case 7:
-            params.v_bassfahrer = msg.value;
+            switch (msg.control) {
+                case 0:
+                    if (msg.value == 0) params.v_bassfahrer = 0;
+                    break;
+                case 1:
+                    params.v_bassfahrer = msg.value;
+                    break;
+            }
             break;
         case 8:
             switch (msg.control) {
                 case 0:
-                    params.v_foehn_schalter1 = msg.value;
+                    if (msg.value == 0) {
+                        params.v_foehn_schalter1 = 0;
+                        params.v_foehn_schalter2 = 0;
+                        params.v_foehn_schalter3 = 0;
+                        params.v_foehn = 0;
+                    }
                     break;
                 case 1:
-                    params.v_foehn_schalter2 = msg.value;
+                    params.v_foehn_schalter1 = msg.value;
                     break;
                 case 2:
-                    params.v_foehn_schalter3 = msg.value;
+                    params.v_foehn_schalter2 = msg.value;
                     break;
                 case 3:
+                    params.v_foehn_schalter3 = msg.value;
+                    break;
+                case 4:
                     params.v_foehn = msg.value;
                     break;
             }
-            break;
             break;
         default:
             break;
@@ -199,6 +293,9 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    if (key == 'f') {
+        ofToggleFullscreen();
+    }
     if(key == 'r'){
         for (auto& l:layer) {
             l->reload();
@@ -259,4 +356,24 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
     
+}
+
+void ofApp::onSceneChanged(int& nScene){
+    switch (nScene) {
+        case 0:
+            midiOut.sendControlChange(16, 1, 1);
+            break;
+        case 1:
+            
+            break;
+        case 2:
+            
+            break;
+        case 3:
+            
+            break;
+            
+        default:
+            break;
+    }
 }

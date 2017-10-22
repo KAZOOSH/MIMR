@@ -61,6 +61,7 @@ void Foehn::draw() {
     ofClear(0, 0);
     ofSetColor(255);
     shader.begin();
+	shader.setUniform1i("colorSet", params->colorSet);
     currentTexture.bind();
     billboards.draw();
     currentTexture.unbind();

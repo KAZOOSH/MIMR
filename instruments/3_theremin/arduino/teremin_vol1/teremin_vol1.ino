@@ -21,14 +21,14 @@ CRGB leds[NUM_LEDS];
 #define SYNC_BYTE 255
 
 // Arduino -> RasPi send interval (microseconds)
-#define SEND_INTERVAL 20*1000L // 20 ms = 50 fps
+#define SEND_INTERVAL 2*1000L // 20 ms = 50 fps
 unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
 #define BAUD_RATE 115200L
 
 // intensity,color,isIdle
-byte serialIn[3] = {0, 0, 0};
+byte serialIn[3] = {0, 0, 1};
 
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
@@ -43,6 +43,10 @@ int pin1KOhm = 2;
 
 
 int value = 0;
+
+//variables for hello animation
+unsigned long lastActivated = 0;
+int lastState = 1;
 
 void setup()
 {
@@ -105,8 +109,19 @@ void loop()
     Serial.readBytes( serialIn, 3 );
   }
 
+   if(serialIn[2] == 0 && lastState == 1){
+      lastActivated = millis();
+      sei();
+  }
+  else if (serialIn[2] == 1 && lastState == 0){
+    cli();
+  }
+  
+  lastState = serialIn[2];
+
   //if not idle proceed normal
   if (serialIn[2] == 0) {
+
     f_meter_start();
     while (f_ready == 0); //warte! INT2
     tune = freq_in;
@@ -123,20 +138,15 @@ void loop()
     value = 2*average(value);
     value = value-7;
     if(value < 0)value = 0;
-    
-    
-
-    Serial.print(tune);
-    Serial.print(" ");
-    Serial.print(value);
-    Serial.println(" ");
+    value = min(value, 127);
 
     setColor(value);
-    //sendValue();
+    sendValue();
     digitalWrite(pinLed, 0);
   }
   else
   {
+    
     doIdle();
   }
 }
@@ -184,23 +194,52 @@ int average( int value )
 
 //******************************************************************
 
-void setColor( uint8_t brightness)
+void setColor(int value)
 {
-  CHSV spectrumcolor;
+  bool isRed = bitRead(serialIn[1],0);
+  bool isGreen = bitRead(serialIn[1],1);
+  bool isBlue = bitRead(serialIn[1],2);
 
-  spectrumcolor.hue = serialIn[1] * 2;
-  spectrumcolor.saturation = serialIn[2] * 2;
-  if (serialIn[0] == 1) {
-    spectrumcolor.value = serialIn[3] * 2;
-  }
-  else {
-    spectrumcolor.value = brightness;
+  if(!isRed && !isGreen && !isBlue){
+    isRed = true; isGreen = true; isBlue = true;
   }
 
-
-  for ( int i = 0; i < NUM_LEDS; i++) {
-    hsv2rgb_spectrum( spectrumcolor, leds[i] );
+  int vIn, vOut;
+  value*=2;
+  if(value < 128){
+      vIn = 0;
+      vOut = (sin8(value/2) -128)*2;
   }
+  else{
+    vIn = sin8(value -128)*2;
+    int vTemp = (value -128)*100/110;
+    vOut = cos8(vTemp)*2;
+  }
+
+  vOut = max(vOut - serialIn[0],0);
+
+    /*
+    int brightness = max(value*2 - serialIn[0],0);
+
+    for(int dot = 0; dot < NUM_LEDS; dot++) { 
+      leds[dot].setRGB( min(isRed *brightness+5,255), min(isGreen *brightness+5,255), min(isBlue *brightness+5,255));
+    }*/
+
+
+  for (int c = 0; c < 8; c++) {
+     leds[c] = CRGB(vIn,vIn,vIn);
+  }
+  for (int c = 9; c < NUM_LEDS; c++) {
+    leds[c] = CRGB(vOut, vOut, vOut);
+  }
+/*
+Serial.print("value ");
+  Serial.print(value);
+  Serial.print("   vOut ");
+  Serial.print(vOut);
+  Serial.print("   vIn ");
+  Serial.println(vIn);
+*/
   FastLED.show();
 }
 
@@ -243,19 +282,33 @@ ISR(TIMER2_COMPA_vect) {
 }
 
 void doIdle() {
-  int pos = millis() % 6000;
-  pos = pos % 6000;
-  float p = pos / 5000.0;
+  int pos = millis() % 10000;
+  pos = pos % 10000;
+  float p = pos/ 10000.0;
 
-  float maxBrightness = 45;
+  float maxBrightness = 20;
 
-  int value = sin(p * PI) * maxBrightness;
-  if (p > 1) value = 0;
+  int vIn, vOut;
 
-  for (int c = 0; c < NUM_LEDS; c++) {
-    leds[c] = CRGB(value, value, value);
+  //inner ring
+  if(p < 0.5){
+      p *= 2.2;
+      vIn = max(0,sin(p*PI)*maxBrightness);
+      vOut = 0;
+  }
+  //outer ring
+  else{
+    p = (p-0.5)* 2.2;
+      vIn = 0;
+      vOut = max(0,sin(p*PI)*maxBrightness);
+  }
 
-
+ //; Serial.println(index)
+  for (int c = 0; c < 8; c++) {
+     leds[c] = CRGB(vIn,vIn,vIn);
+  }
+  for (int c = 9; c < NUM_LEDS; c++) {
+    leds[c] = CRGB(vOut, vOut, vOut);
   }
 
   FastLED.show();

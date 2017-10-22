@@ -1,6 +1,7 @@
 #version 150
 
 uniform sampler2D tex;
+uniform int colorSet;
 in  float		rotAngle;
 
 in vec4 colorVarying;
@@ -31,7 +32,7 @@ void main (void) {
 	vec2 newcoords = ((v2-offset) * (rotationMatrix));
 	newcoords += offset;
 	
+	vec4 color = texture(tex, newcoords) * colorVarying;
 	
-	
-	fragColor = texture(tex, newcoords) * colorVarying;
+	fragColor = color;
 }

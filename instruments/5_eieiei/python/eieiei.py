@@ -2,7 +2,7 @@
 
 import socket
 import sys
-import time
+from time import time
 from time import sleep
 from serial import Serial
 import struct
@@ -32,8 +32,25 @@ udpOut.connect( ( "localhost", 5006 ) )
 #open socket to send to visualisation
 udpVis = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 udpVis.connect( ( "localhost", 5013 ) )
-sendFps = 10 #fps of vis
+sendFps = 7 #fps of vis
 lastSendVis = 0;
+
+
+# MIDI configuration
+midiOutputChannel = 0xB4
+
+
+# set up GPIO pin with pull-up for foot sensor
+footSensorPin = 21
+GPIO.setmode( GPIO.BCM )
+GPIO.setup( footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
+
+releasing = False
+releaseStart = 0
+releaseTime = 2.0
+
+isIdle = 1
+
 
 # initialize old values for change detection
 oldValues = [0,0]
@@ -58,13 +75,6 @@ for i in range(15):
 # midi values
 intensity = 0
 
-footPin = 21 #7 on pi1    21 on pi2
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-lastFootChange = 0
-minFootDwellTime = 5.0
-isIdle = 1
 
 def mapValue(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
@@ -79,24 +89,46 @@ def mapValue(value, leftMin, leftMax, rightMin, rightMax):
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
 
+
 # loop infinitely
 while True:
 
-	# foot sensor
-	if time.time() - lastFootChange > minFootDwellTime:
-		tIdle = GPIO.input(footPin)
-		if tIdle != isIdle:
-			isIdle = tIdle
-			lastFootChange = time.time()
-			elements = [255,isIdle]
+	# query sensor state
+	footState = GPIO.input(footSensorPin)
 
-			#print elements
-			for x in elements:
-				serial.write(chr(x))
+	sendIdleUpdate = False
 
-			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, 0 if isIdle else int(values[0]) )
-			bytes = struct.pack( "BBBB", 0xaa, 0xB4, 1, 0 if isIdle else values[1] )
-			udpOut.send( bytes )
+	# idle to active?
+	if not footState:
+		# accept immediately
+		releasing = False
+		if isIdle:
+			isIdle = 0
+			sendIdleUpdate = True
+
+	# about to go from active to idle?
+	if not isIdle and footState:
+		# not yet releasing?
+		if not releasing:
+			# remember start
+			releaseStart = time()
+			releasing = True
+			print "Foot released..."
+		# already releasing, time elapsed?
+		elif time()-releaseStart > releaseTime:
+			# finally, turn idle!
+			isIdle = 1
+			sendIdleUpdate = True
+			releasing = False
+
+	# state changed?
+	if sendIdleUpdate:
+
+		print "Idle state:", isIdle
+
+		# send MIDI update
+		bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 0, 0 if isIdle else 127 )
+		udpOut.send( bytes )
 
 	# incoming UDP packets in buffer?
 	bufferClear = False
@@ -120,9 +152,9 @@ while True:
 	# control command
 	if ord(data[0]) == 176:
 		#set intensity
-		if ord(data[1]) == 54:
+		if ord(data[1]) == 54 or ord(data[1]) == 3:
 			intensity = min(2*ord(data[2]),254)
-		
+
 		'''
 		#elements = [255,intensity,hue,saturation]
 		#print elements
@@ -172,8 +204,10 @@ while True:
 
 
 					# on MIDI channel 4, set controller #1 to value
-					bytes = struct.pack( "BBBB", 0xaa, 0xB4, 0, values[0] )
-					udpOut.send( bytes )
+					if isIdle == 0:
+						bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 1, values[0] )
+						udpOut.send( bytes )
+
 			#spin
 			if len(values) >= 2:
 				#median filter spin values
@@ -191,21 +225,21 @@ while True:
 					oldValues[1] = values[1]
 
 					# on MIDI channel 4, set controller #1 to value
-					bytes = struct.pack( "BBBB", 0xaa, 0xB4, 1, values[1] )
-					udpOut.send( bytes )	
-			
+					if isIdle == 0:
+						bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 2, values[1] )
+						udpOut.send( bytes )
+
 			#print values
 
 		safe = False
 
-		
 
 	#send distance to visualisation
-	if time.time() - lastSendVis > 1.0/sendFps:
+	if time() - lastSendVis > 1.0/sendFps:
 		#print isIdle
 		#print float(values[0])*0.9 + intensity*0.1
-		#print str(float(values[0])*0.80 + intensity*0.1) + ":" + str(isIdle) 
+		#print str(float(values[0])*0.80 + intensity*0.1) + ":" + str(isIdle)
 		d = str(float(values[0])*0.80 + intensity*0.1);
 		if (isIdle == 1): d = "127"
 		udpVis.send( d + ":" + str(isIdle) )
-		lastSendVis = time.time();
+		lastSendVis = time();
