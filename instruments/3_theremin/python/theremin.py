@@ -2,7 +2,7 @@
 
 import socket
 import sys
-import time
+from time import time
 from serial import Serial
 import struct
 
@@ -36,31 +36,66 @@ value = 0
 hue = 0
 intensity = 0
 
+# MIDI configuration
+midiOutputChannel = 0xB2
 
-footPin = 21 #7 on pi1    21 on pi2
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(footPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# set up GPIO pin with pull-up for foot sensor
+footSensorPin = 21
+GPIO.setmode( GPIO.BCM )
+GPIO.setup( footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
 
-lastFootChange = 0
-minFootDwellTime = 3.0
+releasing = False
+releaseStart = 0
+releaseTime = 2.0
+
 isIdle = 1
 
 
 # loop infinitely
 while True:
-	# foot sensor
-	if time.time() - lastFootChange > minFootDwellTime:
-		tIdle = GPIO.input(footPin)
-		if tIdle != isIdle:
-			isIdle = tIdle
-			lastFootChange = time.time()
-			elements = [255,intensity,hue,isIdle]
-			print "isIdle"
-			for x in elements:
-				serial.write(chr(x))
 
-			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 0, 0 if isIdle else 127 )
-			udpOut.send( bytes )
+	# query sensor state
+	footState = GPIO.input(footSensorPin)
+
+	sendIdleUpdate = False
+
+	# idle to active?
+	if not footState:
+		# accept immediately
+		releasing = False
+		if isIdle:
+			isIdle = 0
+			sendIdleUpdate = True
+
+	# about to go from active to idle?
+	if not isIdle and footState:
+		# not yet releasing?
+		if not releasing:
+			# remember start
+			releaseStart = time()
+			releasing = True
+			print "Foot released..."
+		# already releasing, time elapsed?
+		elif time()-releaseStart > releaseTime:
+			# finally, turn idle!
+			isIdle = 1
+			sendIdleUpdate = True
+			releasing = False		
+
+	# state changed?
+	if sendIdleUpdate:
+
+		print "Idle state:", isIdle
+
+		# send MIDI update
+		bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 0, 0 if isIdle else 127 )
+		udpOut.send( bytes )
+
+		# update Arduino
+		elements = [255,intensity,hue,isIdle]
+		for x in elements:
+			serial.write(chr(x))
+
 	# incoming UDP packets in buffer?
 	bufferClear = False
 
@@ -129,16 +164,7 @@ while True:
 			# update cached value
 			oldvalue = value
 
-			# log current value
-			#print value
-			#sys.stdout.write( "%d   \r" % value )
-			#sys.stdout.flush()
-
-			# on MIDI channel 1, set controller #1 to value
+			# log current value and send via MIDI
 			print value
-			bytes = struct.pack( "BBBB", 0xaa, 0xB2, 1, value )
+			bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, 1, 0 if isIdle else value )
 			udpOut.send( bytes )
-		#print serial.readline()
-
-
-		#print ":".join("{0:x}".format(ord(c)) for c in data)

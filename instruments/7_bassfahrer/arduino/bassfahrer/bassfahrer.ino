@@ -123,7 +123,7 @@ void loop()
       MeterPin2.write( HIGH );
       BacklightPin1.write( HIGH );
       BacklightPin2.write( HIGH );
-      delay( 500 );
+      delay( 200 );
     }
 
     // save idle state
