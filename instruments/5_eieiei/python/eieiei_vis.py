@@ -196,6 +196,7 @@ class demo():
 	uniform vec2 offset;
 	varying vec2 tcoord;
 
+uniform int colorSet;
 uniform float iTime;
 uniform float depth;
 uniform float isIdle;
@@ -235,17 +236,45 @@ vec3 iLerp(in vec3 a, in vec3 b, in float x)
 vec3 vLerp(float x){
     x = abs(x);
 
+    vec3 color1,color2,color3,color4;
+
+    if(colorSet == 0){
+        color1 = PURPLE;
+        color2 = PINK;
+        color3 = TURQUOISE;
+        color4 = BLUE;
+    }
+    else if(colorSet == 1){
+        color1 = vec3(0.09,1.0,0.0);
+        color2 = vec3(0.2,1.0,0.0);
+        color3 = vec3(0.3,0.3,0.3);
+        color4 = vec3(0.1,0.1,0.1);
+    }
+    else if(colorSet == 2){
+        color1 = vec3(.95,.05,.01);
+        color2 = vec3(.7,.1,.15);
+        color3 = vec3(.1,.25,.4);
+        color4 = vec3(0.1,0.12,0.17);
+    }
+    else if(colorSet == 3){
+        color1 = vec3(.08,.4,.17);
+        color2 = vec3(.2,.35,.39);
+        color3 = vec3(.3,.17,.4);
+        color4 = vec3(.07,.06,.11);
+    }
+
+
     if (x < 0.25){
-        return iLerp(PURPLE, PINK, x*4.0);
+        return iLerp(color1, color2, x*4.0);
     }
     else if (x < 0.5){
-        return iLerp(PINK, TURQUOISE, (x-0.25)*4.0);
+        return iLerp(color2, color3, (x-0.25)*4.0);
     }
     else if (x < 0.75){
-        return iLerp(TURQUOISE, BLUE, (x-0.5)*4.0);
+        return iLerp(color3, color4, (x-0.5)*4.0);
     }
     else{
-        return iLerp(BLUE, PURPLE, (x-0.75)*4.0);
+        return iLerp(color4, color1, (x-0.75)*4.0);
     }
 }
 
@@ -372,6 +401,7 @@ vec3 samplef(in vec2 uv)
         self.unif_time = opengles.glGetUniformLocation(program, "iTime");
         self.unif_depth = opengles.glGetUniformLocation(program, "depth");
         self.unif_idle = opengles.glGetUniformLocation(program, "isIdle");
+        self.unif_colorSet = opengles.glGetUniformLocation(program, "colorSet");
         self.unif_tex = opengles.glGetUniformLocation(program, "tex");
         
 
@@ -422,7 +452,7 @@ vec3 samplef(in vec2 uv)
         opengles.glEnableVertexAttribArray(self.attr_vertex);
         self.check()
         
-    def draw_triangles(self,dist,isIdle):
+    def draw_triangles(self,dist,isIdle,colorSet):
 
         inIdle = isIdle
         if time.time() - lastActive < 1.0:
@@ -448,6 +478,8 @@ vec3 samplef(in vec2 uv)
         opengles.glUniform1f(self.unif_depth, eglfloat(dist));
         self.check()
         opengles.glUniform1f(self.unif_idle, eglfloat(inIdle));
+        self.check()
+        opengles.glUniform1f(self.unif_colorSet, eglfloat(colorSet));
         self.check()
         opengles.glUniform1i(self.unif_tex, 0); # I don't really understand this part, perhaps it relates to active texture?
         self.check()
@@ -488,6 +520,7 @@ if __name__ == "__main__":
     distance = 0.0
     isIdle = 1
     lastActive = 0
+    colorSet = 0
     while 1:
         #t = time.time()-tl;
         #tl = time.time();
@@ -504,15 +537,16 @@ if __name__ == "__main__":
             
             if isIdle == 1 and int(value[1]) == 0:
                 lastActive = time.time();
-
             isIdle = int(value[1])
+
+            colorSet = int(value[2])
             #print distance
 
         except Exception:
             pass
 
         #draw vis
-        d.draw_triangles(distance,isIdle)
+        d.draw_triangles(distance,isIdle,colorSet)
     showerror()
 
 
