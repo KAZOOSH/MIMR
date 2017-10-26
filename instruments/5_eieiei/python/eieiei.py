@@ -157,6 +157,7 @@ while True:
 			intensity = min(2*ord(data[2]),254)
 		if ord(data[1]) == 55 and ord(data[2]) != colorSet:
 			colorSet = ord(data[2])
+			print("colorset: " + str(colorSet))
 
 		'''
 		#elements = [255,intensity,hue,saturation]
