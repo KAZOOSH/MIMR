@@ -12,14 +12,27 @@
 #include "Kurbel.h"
 #include "ofxOscParameterSync.h"
 
+class MidiMessage{
+public:
+    MidiMessage(uint8_t type_,uint8_t channel_, uint8_t message_){
+        type = type_;
+        channel = channel_;
+        message = message_;
+    }
+    uint8_t type;
+    uint8_t channel;
+    uint8_t message;
+};
+
+
 class ofApp : public ofBaseApp, public ofxMidiListener{
 public:
     
     void setup();
-	void setupGui();
+    void setupGui();
     void update();
     void draw();
-	void drawGui(ofEventArgs & args);
+    void drawGui(ofEventArgs & args);
     void exit();
     
     void keyPressed(int key);
@@ -38,8 +51,8 @@ public:
     
     
     void initMidi();
-
-	ofxOscParameterSync sync;
+    
+    ofxOscParameterSync sync;
     
 private:
     ofxPanel gui;
@@ -51,13 +64,14 @@ private:
     
     vector<Layer*> layer;
     
-	bool isGuiVisible;
+    bool isGuiVisible;
     
     RadarAttributes params;
     
     ofFbo fbo;
     float rotationFbo;
     
-
+    unsigned long lastMessageSend;
+    std::deque<MidiMessage> midiMessageQueue;
     
 };
