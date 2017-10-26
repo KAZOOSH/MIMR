@@ -143,8 +143,8 @@ while True:
 		try:
 			# read UDP packet from socket
 			data, addr = udpIn.recvfrom(256)
-			#print ":".join(format(ord(c)) for c in data)
-			#print ":".join("{0:x}".format(ord(c)) for c in data)
+			print ":".join(format(ord(c)) for c in data)
+			print ":".join("{0:x}".format(ord(c)) for c in data)
 		except Exception:
 			# no more packets to read
 			bufferClear = True

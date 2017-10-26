@@ -121,7 +121,7 @@ class EGL(object):
         assert s>=0
         dispman_display = bcm.vc_dispmanx_display_open(0)
         dispman_update = bcm.vc_dispmanx_update_start( 0 )
-        dst_rect = eglints( (0,0,600,600) )
+        dst_rect = eglints( (0,0,480,480) )
         #dst_rect = eglints( (0,0,width.value,height.value) )
         #src_rect = eglints( (0,0,width.value<<16, height.value<<16) )
         src_rect = eglints( (0,0,480<<16, 480<<16) )
@@ -191,10 +191,10 @@ class demo():
 #define TURQUOISE vec3(0,0.73,0.83) 
 #define BLUE vec3(0,0.38,0.68) 
 
-	uniform vec4 color;
-	uniform vec2 scale;
-	uniform vec2 offset;
-	varying vec2 tcoord;
+    uniform vec4 color;
+    uniform vec2 scale;
+    uniform vec2 offset;
+    varying vec2 tcoord;
 
 uniform int colorSet;
 uniform float iTime;
@@ -204,6 +204,7 @@ uniform float isIdle;
 #define DSP_STR 1.5
 #define PI_HALF 1.57079632679
 
+vec3 color1,color2,color3,color4;
 
 float getsat(vec3 c)
 {
@@ -236,7 +237,7 @@ vec3 iLerp(in vec3 a, in vec3 b, in float x)
 vec3 vLerp(float x){
     x = abs(x);
 
-    vec3 color1,color2,color3,color4;
+    
 
     if(colorSet == 0){
         color1 = PURPLE;
@@ -257,10 +258,10 @@ vec3 vLerp(float x){
         color4 = vec3(0.1,0.12,0.17);
     }
     else if(colorSet == 3){
-        color1 = vec3(.08,.4,.17);
-        color2 = vec3(.2,.35,.39);
-        color3 = vec3(.3,.17,.4);
-        color4 = vec3(.07,.06,.11);
+        color1 = vec3(.09,.5,.17);
+        color2 = vec3(.3,.65,.69);
+        color3 = vec3(.4,.27,.6);
+        color4 = vec3(.2,.2,.5);
     }
 
 
@@ -329,8 +330,12 @@ vec3 samplef(in vec2 uv)
     //vec3 bg = vLerp( cos(depth*PI_HALF));
     vec3 bg = vLerp( depth*0.9/127.0);
 
-    vec3 col = vec3(0.0,1.0,0.0);//vLerp(sin(iTime/9.0));
+    vec3 col;
 
+    if(depth < 30.0) col = color3;
+    else if(depth < 60.0) col = color4;
+    else if(depth < 90.0) col = color1;
+    else col = color2;
 
     vec3 c = bg;
 
@@ -348,8 +353,8 @@ vec3 samplef(in vec2 uv)
     return c;
 }
 
-	uniform sampler2D tex;
-	void main(void) {
+    uniform sampler2D tex;
+    void main(void) {
     vec2 fragCoord = vec2(gl_FragCoord.x,gl_FragCoord.y);
     vec2 iResolution = vec2(480.0,480.0);
 
@@ -371,7 +376,7 @@ vec3 samplef(in vec2 uv)
     col = clamp(col,0.0,1.0);
     
     gl_FragColor = vec4(col, 1.0);}
-	}""")
+    }""")
 
         vshader = opengles.glCreateShader(GL_VERTEX_SHADER);
         opengles.glShaderSource(vshader, 1, ctypes.byref(self.vshader_source), 0)
@@ -479,7 +484,7 @@ vec3 samplef(in vec2 uv)
         self.check()
         opengles.glUniform1f(self.unif_idle, eglfloat(inIdle));
         self.check()
-        opengles.glUniform1f(self.unif_colorSet, eglfloat(colorSet));
+        opengles.glUniform1i(self.unif_colorSet, eglint(colorSet));
         self.check()
         opengles.glUniform1i(self.unif_tex, 0); # I don't really understand this part, perhaps it relates to active texture?
         self.check()
