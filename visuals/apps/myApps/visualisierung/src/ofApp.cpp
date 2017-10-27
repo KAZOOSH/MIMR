@@ -3,8 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
     ofSetWindowShape(1920,1200);
-	ofSetWindowPosition(1280, 0);
-	//ofSetFullscreen(true);
+    ofSetWindowPosition(1280, 0);
+    //ofSetFullscreen(true);
     ofLogToConsole();
     
     p.add(params.v_kuehler1.set("kuehler 1",false));
@@ -28,8 +28,8 @@ void ofApp::setup() {
     
     params.bpm = 100;
     params.colorSet.addListener(this, &ofApp::onSceneChanged);
-
-	isGuiVisible = false;
+    
+    isGuiVisible = false;
     
     
     //midiPort.set("midiPort","nanoKONTROL2 SLIDER/KNOB");
@@ -37,7 +37,7 @@ void ofApp::setup() {
     
     gui.setup("panel");
     gui.add(p);
-	sync.setup((ofParameterGroup&)gui.getParameter(), 6667, "localhost", 6666);
+    sync.setup((ofParameterGroup&)gui.getParameter(), 6667, "localhost", 6666);
     
     fbo.allocate(1024,1024,GL_RGBA32F_ARB);
     
@@ -60,12 +60,13 @@ void ofApp::setup() {
     ofEnableAntiAliasing();
     
     rotationFbo = 0;
+    lastMessageSend = 0;
 }
 
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	sync.update();
+    sync.update();
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
     float bpmMultiplier = pow(params.bpm / 100,2.2); //100 base rate
@@ -80,6 +81,11 @@ void ofApp::update() {
     int tAngle = params.angle/360;
     params.angle = params.angle - tAngle*360;
     
+    if(midiMessageQueue.size()>0 && ofGetElapsedTimeMillis() - lastMessageSend > 50){
+        midiOut << StartMidi() << midiMessageQueue[0].type << midiMessageQueue[0].channel << midiMessageQueue[0].message << FinishMidi();
+        lastMessageSend = ofGetElapsedTimeMillis();
+        midiMessageQueue.pop_front();
+    }
 }
 
 //--------------------------------------------------------------
@@ -108,11 +114,11 @@ void ofApp::draw() {
     ofPopMatrix();
     ofPopMatrix();
     ofPopMatrix();
-
-	if (isGuiVisible)
-	{
-		gui.draw();
-	}
+    
+    if (isGuiVisible)
+    {
+        gui.draw();
+    }
     
 }
 
@@ -120,21 +126,21 @@ void ofApp::initMidi(){
     // print input ports to console
     midiIn.listPorts(); // via instance
     //ofxMidiIn::listPorts(); // via static as well
-
-	//hack for finding the correct midi port automatically
-	midiOut.listPorts();
-	if (!midiOut.openPort("Netzwerk Session 1")) {
-		if (!midiOut.openPort("Netzwerk Session 0")) {
-			midiOut.openPort("Netzwerk Session 2");
-		}
-	}
+    
+    //hack for finding the correct midi port automatically
+    midiOut.listPorts();
+    if (!midiOut.openPort("Netzwerk Session 1")) {
+        if (!midiOut.openPort("Netzwerk Session 0")) {
+            midiOut.openPort("Netzwerk Session 2");
+        }
+    }
     
     // open port by number (you may need to change this)
-	if (!midiIn.openPort("Netzwerk Session 1")) {
-		if (!midiIn.openPort("Netzwerk Session 0")) {
-			midiIn.openPort("Netzwerk Session 2");
-		}
-	}
+    if (!midiIn.openPort("Netzwerk Session 1")) {
+        if (!midiIn.openPort("Netzwerk Session 0")) {
+            midiIn.openPort("Netzwerk Session 2");
+        }
+    }
     //midiIn.openPort("IAC Pure Data In");	// by name
     //midiIn.openVirtualPort("ofxMidiIn Input"); // open a virtual port
     
@@ -178,8 +184,8 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
                     break;
                     //scene
                 case 119:
-					if(msg.value< 5)
-						params.colorSet = msg.value;
+                    if(msg.value< 5)
+                        params.colorSet = msg.value;
                     break;
             }
             break;
@@ -315,22 +321,22 @@ void ofApp::newMidiMessage(ofxMidiMessage& msg) {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	if (key == '0')
-	{
-		params.colorSet = 0;
-	}
-	if (key == '1')
-	{
-		params.colorSet = 1;
-	}
-	if (key == '2')
-	{
-		params.colorSet = 2;
-	}
-	if (key == '3')
-	{
-		params.colorSet = 3;
-	}
+    if (key == '0')
+    {
+        params.colorSet = 0;
+    }
+    if (key == '1')
+    {
+        params.colorSet = 1;
+    }
+    if (key == '2')
+    {
+        params.colorSet = 2;
+    }
+    if (key == '3')
+    {
+        params.colorSet = 3;
+    }
     if (key == 'f') {
         ofToggleFullscreen();
     }
@@ -339,7 +345,7 @@ void ofApp::keyPressed(int key){
             l->reload();
         }
     }
-	if (key == 'g') { isGuiVisible != isGuiVisible; }
+    if (key == 'g') { isGuiVisible != isGuiVisible; }
     if(key == 's'){
         ofFbo fbo;
         fbo.allocate(1024, 1024);
@@ -398,91 +404,70 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 }
 
 void ofApp::onSceneChanged(int& nScene){
-	vector<uint8_t> bytes;
-
-	int kurbelColor;
-	uint8_t kuehlerHue;
-	uint8_t kuehlerSat;
-	int theremin;
-	uint8_t trichter1;
-	uint8_t trichter2;
-	uint8_t goldenBoxMode;
-
+    vector<uint8_t> bytes;
+    
+    int kurbelColor;
+    uint8_t kuehlerHue;
+    uint8_t kuehlerSat;
+    int theremin;
+    uint8_t trichter1;
+    uint8_t trichter2;
+    uint8_t eieieiColorSet;
+    uint8_t goldenBoxMode;
+    
     switch (nScene) {
         case 0:
-			kurbelColor = 5;
-			kuehlerHue = 10;
-			kuehlerSat = 127;
-			theremin = 7;
-			trichter1 = 10;
-			trichter2 = 80;
-			goldenBoxMode = 127;
-			
+            kurbelColor = 5;
+            kuehlerHue = 10;
+            kuehlerSat = 127;
+            theremin = 7;
+            trichter1 = 10;
+            trichter2 = 80;
+            eieieiColorSet = 0;
+            goldenBoxMode = 127;
+            
             break;
         case 1:
-			kurbelColor = 3;
-			kuehlerHue = 40;
-			kuehlerSat = 255;
-			theremin = 3;
-			trichter1 = 20;
-			trichter2 = 50;
-			goldenBoxMode = 0;
+            kurbelColor = 3;
+            kuehlerHue = 40;
+            kuehlerSat = 255;
+            theremin = 3;
+            trichter1 = 20;
+            trichter2 = 50;
+            eieieiColorSet = 1;
+            goldenBoxMode = 0;
             break;
         case 2:
-			kurbelColor = 2;
-			kuehlerHue = 0;
-			kuehlerSat = 255;
-			theremin = 6;
-			trichter1 = 0;
-			trichter2 = 20;
-			goldenBoxMode = 0;
+            kurbelColor = 2;
+            kuehlerHue = 0;
+            kuehlerSat = 255;
+            theremin = 6;
+            trichter1 = 0;
+            trichter2 = 20;
+            eieieiColorSet = 2;
+            goldenBoxMode = 0;
             break;
         case 3:
-			kurbelColor = 7;
-			kuehlerHue = 65;
-			kuehlerSat = 255;
-			theremin = 4;
-			trichter1 = 60;
-			trichter2 = 80;
-			goldenBoxMode = 127;
+            kurbelColor = 7;
+            kuehlerHue = 65;
+            kuehlerSat = 255;
+            theremin = 4;
+            trichter1 = 60;
+            trichter2 = 80;
+            eieieiColorSet = 3;
+            goldenBoxMode = 127;
             break;
             
         default:
             break;
     }
-
-	bytes.push_back(0xB0);
-	bytes.push_back(15);
-	bytes.push_back((uint8_t)(kurbelColor*127/8));
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(25);
-	bytes.push_back(kuehlerHue);
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(26);
-	bytes.push_back(kuehlerSat);
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(35);
-	bytes.push_back((uint8_t)(theremin * 127 / 8));
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(45);
-	bytes.push_back(trichter1);
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(46);
-	bytes.push_back(trichter2);
-	midiOut.sendMidiBytes(bytes);
-	bytes.clear();
-	bytes.push_back(0xB0);
-	bytes.push_back(65);
-	bytes.push_back(goldenBoxMode);
-	midiOut.sendMidiBytes(bytes);
+    
+    midiMessageQueue.push_back(MidiMessage(0xB0,15,(uint8_t)(kurbelColor*127/8)));
+    midiMessageQueue.push_back(MidiMessage(0xB0,25,kuehlerHue));
+    midiMessageQueue.push_back(MidiMessage(0xB0,26,kuehlerSat));
+    midiMessageQueue.push_back(MidiMessage(0xB0,35,(uint8_t)(theremin * 127 / 8)));
+    midiMessageQueue.push_back(MidiMessage(0xB0,45,trichter1));
+    midiMessageQueue.push_back(MidiMessage(0xB0,46,trichter2));
+    midiMessageQueue.push_back(MidiMessage(0xB0,55,eieieiColorSet));
+    midiMessageQueue.push_back(MidiMessage(0xB0,65,goldenBoxMode));
 }

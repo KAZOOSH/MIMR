@@ -44,6 +44,8 @@ int pin1KOhm = 2;
 
 int value = 0;
 
+byte pIdle = 0;
+
 //variables for hello animation
 unsigned long lastActivated = 0;
 int lastState = 1;
@@ -111,20 +113,19 @@ void loop()
 
    if(serialIn[2] == 0 && lastState == 1){
       lastActivated = millis();
-      sei();
   }
-  else if (serialIn[2] == 1 && lastState == 0){
-    cli();
-  }
+
   
   lastState = serialIn[2];
 
+  f_meter_start();
+    while (f_ready == 0); //warte! INT2
+    tune = freq_in;
+    
   //if not idle proceed normal
   if (serialIn[2] == 0) {
 
-    f_meter_start();
-    while (f_ready == 0); //warte! INT2
-    tune = freq_in;
+    
 
     digitalWrite(pinLed, 1); // let LED blink
     
@@ -208,29 +209,23 @@ void setColor(int value)
   value*=2;
   if(value < 128){
       vIn = 0;
-      vOut = (sin8(value/2) -128)*2;
+      //vOut = (sin8(value/2) -128)*2;
+      vOut = max(0,sin8(value/2-20)*2);
   }
   else{
-    vIn = sin8(value -128)*2;
-    int vTemp = (value -128)*100/110;
-    vOut = cos8(vTemp)*2;
+    vIn = sin8((value -128)/2)*2;
+    //int vTemp = (value -128)*100/110;
+    vOut = 255;
   }
 
   vOut = max(vOut - serialIn[0],0);
 
-    /*
-    int brightness = max(value*2 - serialIn[0],0);
-
-    for(int dot = 0; dot < NUM_LEDS; dot++) { 
-      leds[dot].setRGB( min(isRed *brightness+5,255), min(isGreen *brightness+5,255), min(isBlue *brightness+5,255));
-    }*/
-
 
   for (int c = 0; c < 8; c++) {
-     leds[c] = CRGB(vIn,vIn,vIn);
+     leds[c] = CRGB(vIn*isRed,vIn*isGreen,vIn*isBlue);
   }
   for (int c = 9; c < NUM_LEDS; c++) {
-    leds[c] = CRGB(vOut, vOut, vOut);
+    leds[c] = CRGB(vOut*isRed, vOut*isGreen, vOut*isBlue);
   }
 /*
 Serial.print("value ");
@@ -282,9 +277,10 @@ ISR(TIMER2_COMPA_vect) {
 }
 
 void doIdle() {
-  int pos = millis() % 10000;
-  pos = pos % 10000;
-  float p = pos/ 10000.0;
+  //int pos = millis() % 10000;
+  //pos = pos % 10000;
+  ++pIdle;
+  float p = pIdle/ 256.0;
 
   float maxBrightness = 20;
 
