@@ -74,6 +74,7 @@ for i in range(15):
 
 # midi values
 intensity = 0
+colorSet = 0
 
 
 def mapValue(value, leftMin, leftMax, rightMin, rightMax):
@@ -142,8 +143,8 @@ while True:
 		try:
 			# read UDP packet from socket
 			data, addr = udpIn.recvfrom(256)
-			#print ":".join(format(ord(c)) for c in data)
-			#print ":".join("{0:x}".format(ord(c)) for c in data)
+			print ":".join(format(ord(c)) for c in data)
+			print ":".join("{0:x}".format(ord(c)) for c in data)
 		except Exception:
 			# no more packets to read
 			bufferClear = True
@@ -154,6 +155,9 @@ while True:
 		#set intensity
 		if ord(data[1]) == 54 or ord(data[1]) == 3:
 			intensity = min(2*ord(data[2]),254)
+		if ord(data[1]) == 55 and ord(data[2]) != colorSet:
+			colorSet = ord(data[2])
+			print("colorset: " + str(colorSet))
 
 		'''
 		#elements = [255,intensity,hue,saturation]
@@ -241,5 +245,5 @@ while True:
 		#print str(float(values[0])*0.80 + intensity*0.1) + ":" + str(isIdle)
 		d = str(float(values[0])*0.80 + intensity*0.1);
 		if (isIdle == 1): d = "127"
-		udpVis.send( d + ":" + str(isIdle) )
+		udpVis.send( d + ":" + str(isIdle) + ":" + str(colorSet) )
 		lastSendVis = time();

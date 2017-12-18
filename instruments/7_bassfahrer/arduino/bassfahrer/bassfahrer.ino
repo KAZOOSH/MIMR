@@ -22,6 +22,10 @@ FastPin LampPin( 13, OUTPUT );
 // sensor reading noise range
 #define SENSOR_NOISE 1
 
+// sensor value correction
+#define SENSOR_SCALE 2
+#define SENSOR_OFFSET 1
+
 // PWM configuration
 #define PWM_STEPS 24
 
@@ -146,12 +150,16 @@ void loop()
     // HACK: treat 255 as 0 (bug in sensor)
     if ( sensorValue == 255 ) { sensorValue = 0; }
 
-    // HACK: coerce 1 to 0 (to reduce idle noise)
+    // HACK: coerce low values to 0 (to reduce idle noise)
     if ( sensorValue <= SENSOR_NOISE ) { sensorValue = 0; }
+
+    // offset value
+    sensorValue *= SENSOR_SCALE;
+    sensorValue += SENSOR_OFFSET;
   }
 
   // visualize data: show sensor value with meter, MIDI data dims light
-  driveOutputs( sensorValue+20, 255-serialIn[1] );
+  driveOutputs( sensorValue+20, 255-serialIn[1]/2 );
 
   // flicker everything for high values
   if ( sensorValue > FLICKER_THRESHOLD )

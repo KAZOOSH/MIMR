@@ -48,29 +48,42 @@ void ofApp::exit() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     
-    // send a note on if the key is a letter or a number
-    if(isalnum((unsigned char) key)) {
+    if(key == 'p'){
         
-        // scale the ascii values to midi velocity range 0-127
-        // see an ascii table: http://www.asciitable.com/
-        note = ofMap(key, 48, 122, 0, 127);
-        velocity = 64;
-        midiOut.sendNoteOn(channel, note,  velocity);
-        
-        // print out both the midi note and the frequency
-        ofLogNotice() << "note: " << note
-        << " freq: " << ofxMidi::mtof(note) << " Hz";
+        midiOut << StartMidi() << 0xB0 << 15 << 123 << FinishMidi();
+        // midiOut << StartMidi() << 0xB0 << 16 << 122 << FinishMidi();
+        // midiOut << StartMidi() << 0xB0 << 17 << 121 << FinishMidi();
     }
     
-    if(key == 'l') {
-        ofxMidiOut::listPorts();
-    }
+    
+    
+    
+    /*
+     
+     // send a note on if the key is a letter or a number
+     if(isalnum((unsigned char) key)) {
+     
+     // scale the ascii values to midi velocity range 0-127
+     // see an ascii table: http://www.asciitable.com/
+     note = ofMap(key, 48, 122, 0, 127);
+     velocity = 64;
+     midiOut.sendNoteOn(channel, note,  velocity);
+     
+     // print out both the midi note and the frequency
+     ofLogNotice() << "note: " << note
+     << " freq: " << ofxMidi::mtof(note) << " Hz";
+     }
+     
+     if(key == 'l') {
+     ofxMidiOut::listPorts();
+     }*/
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
     
     switch(key) {
+            
             
             // send pgm change on arrow keys
         case OF_KEY_UP:
@@ -203,7 +216,7 @@ void ofApp::mouseDragged(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-    midiOut.sendControlChange(74, 0, ofMap(x,0,ofGetWidth(), 0, 127));
+    // midiOut.sendControlChange(74, 0, ofMap(x,0,ofGetWidth(), 0, 127));
 }
 
 //--------------------------------------------------------------
