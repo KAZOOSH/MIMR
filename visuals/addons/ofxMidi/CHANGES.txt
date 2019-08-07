@@ -1,3 +1,25 @@
+1.1.1: 2018 Jul 28
+
+* fixed RtMidi.h missing ofxMidiConstants.h include (reported by Nicola Pisanti)
+
+1.1.0: 2018 Jul 24
+
+* added backend api type and constructor arguments (Sol Bekic)
+* added MIDI clock & timecode parsers and midiTimingExample
+
+* updated for OF 0.10.0
+* updated to RtMidi 3.0.0
+* readme consistency fixes (tpltnt)
+* moved input parsing to ofxMidiMessage to ease raw byte handling
+  (reported by Damian Stewart)
+
+* fixed ofxMidiOut crash in a multi-thread context (reported by Hiroshi Matoba)
+
+* removed static port info functions as a in/out port instance api might be
+  different than the default (listPorts, getPortList, getNumPorts, getPortName)
+* renamed port info functions to *InPort and *OutPort naming (ie. listInPorts,
+  listOutPorts, etc)
+
 1.0.6: 2016 Oct 24
 
 * added ProjectGenerator usage info to readme

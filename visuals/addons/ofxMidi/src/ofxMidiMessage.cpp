@@ -10,13 +10,15 @@
  */
 #include "ofxMidiMessage.h"
 
+#include "ofxMidi.h"
+
 // -----------------------------------------------------------------------------
 ofxMidiMessage::ofxMidiMessage() {
 	clear();
 }
 
 // -----------------------------------------------------------------------------
-ofxMidiMessage::ofxMidiMessage(vector<unsigned char>* rawBytes) {
+ofxMidiMessage::ofxMidiMessage(std::vector<unsigned char>* rawBytes) {
 	fromBytes(rawBytes);
 }
 
@@ -50,7 +52,7 @@ void ofxMidiMessage::copy(const ofxMidiMessage& from) {
 }
 
 // -----------------------------------------------------------------------------
-void ofxMidiMessage::fromBytes(vector<unsigned char> *rawBytes) {
+void ofxMidiMessage::fromBytes(std::vector<unsigned char> *rawBytes) {
 
 	// copy bytes
 	clear();
@@ -110,21 +112,17 @@ void ofxMidiMessage::clear() {
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiMessage::toString() {
-	stringstream stream;
+std::string ofxMidiMessage::toString() {
+	std::stringstream stream;
 	stream << portName << ": " << getStatusString(status) << " "
 		   << channel << " [ ";
-	for(unsigned int i = 0; i < bytes.size(); ++i) {
-		stream << std::hex << std::uppercase << std::setw(2) << std::setfill('0')
-			   << (int) bytes[i] << " "
-			   << std::dec << std::nouppercase << std::setw(1) << std::setfill(' ');
-	}
+	stream << ofxMidi::bytesToString(bytes);
 	stream << "] " << deltatime;
 	return stream.str();
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiMessage::getStatusString(MidiStatus status) {
+std::string ofxMidiMessage::getStatusString(MidiStatus status) {
 	switch(status) {
 		case MIDI_NOTE_OFF:
 			return "Note Off";

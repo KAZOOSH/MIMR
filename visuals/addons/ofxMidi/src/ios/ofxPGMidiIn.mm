@@ -10,6 +10,8 @@
  */
 #include "ofxPGMidiIn.h"
 
+#include "ofLog.h"
+
 #import "ofxPGMidiContext.h"
 #import "ofxPGMidiSourceDelegate.h"
 
@@ -19,7 +21,7 @@ struct ofxPGMidiIn::InputDelegate {
 };
 
 // -----------------------------------------------------------------------------
-ofxPGMidiIn::ofxPGMidiIn(const string name) : ofxBaseMidiIn(name) {
+ofxPGMidiIn::ofxPGMidiIn(const std::string name, ofxMidiApi api) : ofxBaseMidiIn(name, MIDI_API_COREMIDI) {
 
 	// setup global midi instance
 	ofxPGMidiContext::setup();
@@ -37,7 +39,7 @@ ofxPGMidiIn::~ofxPGMidiIn() {
 }
 
 // -----------------------------------------------------------------------------
-void ofxPGMidiIn::listPorts() {
+void ofxPGMidiIn::listInPorts() {
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 	int count = [midi.sources count];
 	ofLogNotice("ofxMidiIn") << count << " ports available";
@@ -48,9 +50,9 @@ void ofxPGMidiIn::listPorts() {
 }
 
 // -----------------------------------------------------------------------------
-vector<string>& ofxPGMidiIn::getPortList() {
+std::vector<std::string> ofxPGMidiIn::getInPortList() {
 	PGMidi *midi = ofxPGMidiContext::getMidi();
-	portList.clear();
+	std::vector<std::string> portList;
 	for(PGMidiSource *source in midi.sources) {
 		portList.push_back([source.name UTF8String]);
 	}
@@ -58,12 +60,12 @@ vector<string>& ofxPGMidiIn::getPortList() {
 }
 
 // -----------------------------------------------------------------------------
-int ofxPGMidiIn::getNumPorts() {
+int ofxPGMidiIn::getNumInPorts() {
 	return [ofxPGMidiContext::getMidi().sources count];
 }
 
 // -----------------------------------------------------------------------------
-string ofxPGMidiIn::getPortName(unsigned int portNumber) {
+std::string ofxPGMidiIn::getInPortName(unsigned int portNumber) {
 
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 
@@ -103,7 +105,7 @@ bool ofxPGMidiIn::openPort(unsigned int portNumber) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxPGMidiIn::openPort(string deviceName) {
+bool ofxPGMidiIn::openPort(std::string deviceName) {
 
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 
@@ -127,7 +129,7 @@ bool ofxPGMidiIn::openPort(string deviceName) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxPGMidiIn::openVirtualPort(string portName) {
+bool ofxPGMidiIn::openVirtualPort(std::string portName) {
 	ofLogWarning("ofxMidiIn") << "couldn't open virtual port \"" << portName << "\"";
 	ofLogWarning("ofxMidiIn") << "virtual ports are currently not supported on iOS";
 	return false;
@@ -166,7 +168,7 @@ void ofxPGMidiIn::ignoreTypes(bool midiSysex, bool midiTiming, bool midiSense) {
 }
 
 // -----------------------------------------------------------------------------
-void ofxPGMidiIn::messageReceived(double deltatime, vector<unsigned char> *message) {
+void ofxPGMidiIn::messageReceived(double deltatime, std::vector<unsigned char> *message) {
 	manageNewMessage(deltatime, message);
 }
 

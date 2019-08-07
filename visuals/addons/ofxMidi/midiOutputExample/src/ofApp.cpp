@@ -18,8 +18,7 @@ void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	// print the available output ports to the console
-	midiOut.listPorts(); // via instance
-	//ofxMidiOut::listPorts(); // via static too
+	midiOut.listOutPorts();
 	
 	// connect
 	midiOut.openPort(0); // by number
@@ -69,6 +68,9 @@ void ofApp::exit() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 
+	// ignore shift+s since it is used in keyReleased for sysex sending
+	if(key == 'S') return;
+
 	// send a note on if the key is a letter or a number
 	if(isalnum((unsigned char) key)) {
 	
@@ -81,10 +83,6 @@ void ofApp::keyPressed(int key) {
 		// print out both the midi note and the frequency
 		ofLogNotice() << "note: " << note
 		              << " freq: " << ofxMidi::mtof(note) << " Hz";
-	}
-	
-	if(key == 'l') {
-		ofxMidiOut::listPorts();
 	}
 }
 
@@ -185,7 +183,7 @@ void ofApp::keyReleased(int key) {
 		
 		// print the port list
 		case '?':
-			midiOut.listPorts();
+			midiOut.listOutPorts();
 			break;
 		
 		// note off using raw bytes

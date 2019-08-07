@@ -4,7 +4,7 @@ ofxMidi
 <img src="https://raw.github.com/danomatika/ofxMidi/master/res/midi_din.png"/>
 </p>
 
-Midi input and output addon for openFrameworks
+MIDI input and output addon for openFrameworks
 
 Copyright (c) [Dan Wilcox](danomatika.com) 2011-2013  
 (original implementation by Chris O'Shea, Arturo Castro, Kyle McDonald)
@@ -14,27 +14,29 @@ BSD Simplified License.
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see the file, "LICENSE.txt," in this distribution.
 
-See Documentation on [Github](https://github.com/danomatika/ofxMidi) and the [OpenFrameworks Forum post](https://forum.openframeworks.cc/t/ofxmidi-updates/2435).
+See Documentation on [Github](https://github.com/danomatika/ofxMidi) and the [openFrameworks Forum post](https://forum.openframeworks.cc/t/ofxmidi-updates/2435).
 
 OpenFrameworks is a cross platform open source toolkit for creative coding in C++.
 
 [http://www.openframeworks.cc](http://www.openframeworks.cc)
 
+This project has been supported by the CMU [Frank-Ratchye STUDIO for Creative Inquiry](http://studioforcreativeinquiry.org), the DU [Emergent Digital Practices Program](https://www.du.edu/ahss/edp/), and my time at the [ZKM | Hertz-Lab](https://zkm.de/en/about-the-zkm/organisation/hertz-lab).
+
 Description
 -----------
 
-ofxMidi provides [Music Instrument Digital Interface](http://en.wikipedia.org/wiki/Musical_Instrument_Digital_Interface) IO capability to an OpenFrameworks app
+ofxMidi provides [Music Instrument Digital Interface](http://en.wikipedia.org/wiki/Musical_Instrument_Digital_Interface) IO capability to an openFrameworks app
 
-* ofxMidiIn: a single midi input port, derive from the ofxMidiListener class to receive messages
-* ofxMidiMessage: a received midi message
-* ofxMidiOut: a single midi output port, includes a stream << interface
+* ofxMidiIn: a single MIDI input port, derive from the ofxMidiListener class to receive messages
+* ofxMidiMessage: a received MIDI message
+* ofxMidiOut: a single MIDI output port, includes a stream << interface
 
 This project utilizes [RtMidi](http://www.music.mcgill.ca/~gary/rtmidi/) for Mac, Windows, & Linux and [PGMidi](https://github.com/petegoodliffe/PGMidi) on iOS.
 
 Installation
 ------------
 
-To use ofxMidi, first you need to download and install OpenFrameworks. ofxMidi is currently developed against the current stable version of Open Frameworks on github.
+To use ofxMidi, first you need to download and install openFrameworks. ofxMidi is currently developed against the current stable version of openFrameworks on github.
 
 To get a copy of the repository you can download the source from [http://github.com/danomatika/ofxMidi/zipball/master](http://github.com/danomatika/ofxMidi/zipball/master) or, alternatively, you can use git clone:
 
@@ -44,30 +46,30 @@ The addon should sit in `openFrameworks/addons/ofxMidi/`.
 
 ### Which version to use?
 
-The master branch of ofxMidi will work with the current stable version of OpenFrameworks and can be considered *relatively* stable.
+The master branch of ofxMidi will work with the current stable version of openFrameworks and can be considered *relatively* stable.
 
-Previous versions are tagged using [Semantic Versioning](http://semver.org) with the updates to newer versions of OpenFrameworks and MIDI libraries noted in the changelog, CHANGES.txt. You can select the tag in the Github "Current Branch" menu or clone and check it out using git.
+Previous versions are tagged using [Semantic Versioning](http://semver.org) with the updates to newer versions of openFrameworks and MIDI libraries noted in the changelog, CHANGES.txt. You can select the tag in the Github "Current Branch" menu or clone and check it out using git.
 
-If you want to use ofxMidi with a previous version of OpenFrameworks, checkout the corresponding version tag after cloning:
+If you want to use ofxMidi with a previous version of openFrameworks, checkout the corresponding version tag after cloning:
 
     git clone git://github.com/danomatika/ofxMidi.git
     cd ofxMidi
     git checkout 1.0.5
 
-Midi Routing
+MIDI Routing
 ------------
 
-### Mac OSX
+### macOS
 
-Checkout a useful app for midi port routing called [MIDI Patchbay](http://notahat.com/midi_patchbay).
+Checkout a useful app for MIDI port routing called [MIDI Patchbay](http://notahat.com/midi_patchbay).
 
 ### Linux
 
-Check out the Alsa utility apps aconnect & aconnectgui as well as the qjackctl gui for midi port routing control.
+Check out the Alsa utility apps aconnect & aconnectgui as well as the qjackctl gui for MIDI port routing control.
 
 ### Windows
 
-Windows does not come with a virtual MIDI routing system like Linux (ALSA) and OSX (CoreMIDI).
+Windows does not come with a virtual MIDI routing system like Linux (ALSA) and macOS (CoreMIDI).
 
 If you want to connect your ofxMidi app to other software (synths, DAWs, etc) check out [loopMIDI](http://www.tobias-erichsen.de/loopMIDI.html). Run the app and create a few virtual ports which you can then connect to within your software.
 
@@ -76,7 +78,7 @@ Running an Example Projects
 
 The example projects are in the `ofxMidi/midiInputExample`, `ofxMidi/midiOutputExample`, & `ofxMidi/midiExampleIOS` folders.
 
-Project files for the examples are not included so you will need to generate the project files for your operating system and development environment using the OF ProjectGenerator which is included with the OpenFrameworks distribution.
+Project files for the examples are not included so you will need to generate the project files for your operating system and development environment using the OF ProjectGenerator which is included with the openFrameworks distribution.
 
 To (re)generate project files for an *existing* project:
 
@@ -86,7 +88,7 @@ To (re)generate project files for an *existing* project:
 
 If everything went ok, you should now be able to open the generated project and build/run the example.
 
-### OSX
+### macOS
 
 Open the Xcode project, select the project scheme, and hit "Run".
 
@@ -110,13 +112,13 @@ _Note: These instructions are for manually creating a new project. You do not ne
 
 To develop your own project based on ofxMidi, simply copy an example project and rename it. You probably want to put it in your apps folder, for example, after copying:
 
-    openFrameworks/addons/ofxPd/midiExampleInput/ => openFrameworks/apps/myApps/midiExampleInput/
+    openFrameworks/addons/ofxMidi/midiExampleInput/ => openFrameworks/apps/myApps/midiExampleInput/
 
-It must be 3 levels down in the OpenFrameworks folder structure.
+It must be 3 levels down in the openFrameworks folder structure.
 
 Then rename the folder:
 
-    openFrameworks/apps/myApps/myPdProject/
+    openFrameworks/apps/myApps/myMidiProject/
 
 #### Xcode
 
@@ -126,7 +128,7 @@ Rename the project in Xcode (do not rename the .xcodeproj file in Finder!):
 
 #### Codeblocks (Win & Linux)
 
-* rename the *.cbp and *.workspace files
+* rename the \*.cbp and \*.workspace files
 * open the workspace and readd the renamed project file by dragging it onto the project tree (it will complain about the missing project you renamed)
 * if you renamed the project *folder* make sure to set the project name to this folder name or C::B will not be able to run the binary:
 	* right click on project in the tree (not the workspace)
@@ -134,9 +136,9 @@ Rename the project in Xcode (do not rename the .xcodeproj file in Finder!):
 
 #### Visual Studio
 
-* rename the *.sln, *.vcxproj, & *.vcxproj.filters files
+* rename the \*.sln, \*.vcxproj, & \*.vcxproj.filters files
 * open the solution and delete the old project from the projects tree
-* go to File->Add->Existing Projects/Solutions and select the *.vcxproj file
+* go to File->Add->Existing Projects/Solutions and select the \*.vcxproj file
 * right click on the project in the projects tree and rename it
 
 Adding ofxMidi to an Existing Project
@@ -149,7 +151,7 @@ _Note: These instructions are for manually adding ofxMidi to a project. You do n
 * create a new group "ofxMidi" in the "addons" group
 * drag these directories from ofxMidi into this new group: `ofxMidi/src` & `ofxMidi/libs`
   * in the Add dialog: add to your current project target, uncheck "Copy items if needed" & select "Create groups"
-  * if building for OSX, remove the src/ios & libs/pgmidi folder references
+  * if building for macOS, remove the src/ios & libs/pgmidi folder references
   * if building for iOS, remove the src/desktop & libs/rtmidi folder references
 * add the CoreMIDI framework to your project
   * click on your project in the sidebar
@@ -195,7 +197,7 @@ KNOWN ISSUES
 
 ### Using static ofxMidi objects on Linux causes seg faults
 
-Avoid creating static ofxMidiIn / ofxMidiOut objects on Linux as the compiler seems to set creation order so they are created *before* ALSA is ready. This leads to a confirmed seg fault on Ubuntu and probably all other flavors of Linux using ALSA. The midi apis on Windows and OSX do not share this problem. 
+Avoid creating static ofxMidiIn / ofxMidiOut objects on Linux as the compiler seems to set creation order so they are created *before* ALSA is ready. This leads to a confirmed seg fault on Ubuntu and probably all other flavors of Linux using ALSA. The midi apis on Windows and macOS do not share this problem. 
 
 Instead create a static ofPtr and initialize it later:
 
@@ -205,7 +207,7 @@ Instead create a static ofPtr and initialize it later:
     
         ...
 
-        static ofPtr<ofxMidiOut> s_midiOut;
+        static std::shared_ptr<ofxMidiOut> s_midiOut;
     
         ...
 
@@ -213,14 +215,14 @@ Instead create a static ofPtr and initialize it later:
 
     // in .cpp:
 
-    ofPtr<ofxMidiOut> MyClass::s_midiOut;
+    std::shared_ptr<ofxMidiOut> MyClass::s_midiOut;
     
     ...
     
     // initialize somewhere else
     void MyClass::setup() {
 	    if(s_midiOut == NULL) {
-	        s_midiOut = ofPtr<ofxMidiOut>(new ofxMidiOut("ofxMidi Client"));
+	        s_midiOut = std::shared_ptr<ofxMidiOut>(new ofxMidiOut("ofxMidi Client"));
 	    }
     }
 

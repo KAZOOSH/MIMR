@@ -12,7 +12,7 @@
 
 #include "ofxBaseMidi.h"
 
-// choose the midi backend
+// choose the MIDI backend
 #ifdef TARGET_OF_IPHONE
 	#include "ios/ofxPGMidiIn.h"
 	#define OFX_MIDI_IN_TYPE ofxPGMidiIn
@@ -22,30 +22,30 @@
 #endif
 
 ///
-/// a midi input port
+/// a MIDI input port
 ///
 /// create multiple instances to connect to multiple ports
 ///
 /// *do not* create static instances as this will lead to a crash on Linux,
-/// instead create a static ofPtr and initialize it later:
+/// instead create a static std::shared_pttr and initialize it later:
 ///
 /// in .h:
 ///    class MyClass {
 ///
 ///        ...
 ///
-///        static ofPtr<ofxMidiIn> s_midiIn;
+///        static std::shared_ptr<ofxMidiIn> s_midiIn;
 ///    }
 ///
 /// in .cpp:
-///    ofPtr<ofxMidiIn> MyClass::s_midiIn;
+///    std::shared_ptr<ofxMidiIn> MyClass::s_midiIn;
 ///
 ///    ...
 ///
 ///    // initialize somewhere else
 ///    void MyClass::setup() {
 ///        if(s_midiIn == NULL) {
-///            s_midiIn = ofPtr<ofxMidiIn>(new ofxMidiIn("ofxMidi Client"));
+///            s_midiIn = std::shared_ptr<ofxMidiIn>(new ofxMidiIn("ofxMidi Client"));
 ///        }
 ///    }
 ///
@@ -53,43 +53,43 @@ class ofxMidiIn {
 
 public:
 
-	/// set the input client name (optional)
-	ofxMidiIn(const string name="ofxMidiIn Client");
+	/// set the input client name (optional) and api (optional)
+	ofxMidiIn(const std::string name="ofxMidiIn Client", ofxMidiApi api=MIDI_API_DEFAULT);
 	virtual ~ofxMidiIn();
 	
 /// \section Global Port Info
 	
-	/// print the connected output ports
-	static void listPorts();
+	/// print the connected input ports
+	void listInPorts();
 	
-	/// get a list of output port names
+	/// get a list of input port names
 	/// 
 	/// the vector index corresponds with the name's port number
 	///
 	/// note: this order may change when new devices are added/removed
 	///       from the system
 	///
-	static vector<string>& getPortList();
+	std::vector<std::string> getInPortList();
 	
-	/// get the number of output ports
-	static int getNumPorts();
+	/// get the number of input ports
+	int getNumInPorts();
 	
-	/// get the name of an output port by it's number
+	/// get the name of an input port by it's number
 	///
 	/// returns "" if number is invalid
 	///
-	static string getPortName(unsigned int portNumber);
+	std::string getInPortName(unsigned int portNumber);
 
 /// \section Connection
 	
-	/// connect to an output port
+	/// connect to an input port
 	///
 	/// setting port = 0 will open the first available
 	///
 	bool openPort(unsigned int portNumber=0);
-	bool openPort(string deviceName);
+	bool openPort(std::string deviceName);
 	
-	/// create and connect to a virtual output port (MacOS and Linux ALSA only)
+	/// create and connect to a virtual output port (macOS and Linux ALSA only)
 	///
 	/// allows for connections between software
 	///
@@ -97,7 +97,7 @@ public:
 	/// note: an open virtual port ofxMidiIn object cannot see it's virtual
 	///       own virtual port when listing ports
 	///
-	bool openVirtualPort(string portName="ofxMidi Virtual Input");
+	bool openVirtualPort(std::string portName="ofxMidi Virtual Input");
 	
 	/// close the port connection
 	void closePort();
@@ -108,11 +108,11 @@ public:
 	///
 	int getPort();
 	
-	/// get the connected output port name
+	/// get the connected input port name
 	///
 	/// returns "" if not connected
 	///
-	string getName();
+	std::string getName();
 	
 	/// returns true if connected
 	bool isOpen();
@@ -131,9 +131,9 @@ public:
 	///
 	void ignoreTypes(bool midiSysex=true, bool midiTiming=true, bool midiSense=true);
 
-	/// add/remove listener for incoming midi events
+	/// add/remove listener for incoming MIDI events
 	///
-	/// listeners receive from *all* incoming midi channels
+	/// listeners receive from *all* incoming MIDI channels
 	///
 	void addListener(ofxMidiListener* listener);
 	void removeListener(ofxMidiListener* listener);
@@ -141,11 +141,11 @@ public:
 	/// set to verbose = true to print received byte info
 	///
 	/// warning: this will impact performance with large numbers
-	///          of midi messages
+	///          of MIDI messages
 	///
 	void setVerbose(bool verbose);
 
 private:
 
-	ofPtr<ofxBaseMidiIn> midiIn;
+	std::shared_ptr<ofxBaseMidiIn> midiIn;
 };

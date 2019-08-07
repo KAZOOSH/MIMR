@@ -11,47 +11,31 @@
 #include "ofxMidiIn.h"
 
 // -----------------------------------------------------------------------------
-ofxMidiIn::ofxMidiIn(const string name) {
-	midiIn = ofPtr<ofxBaseMidiIn>(new OFX_MIDI_IN_TYPE(name));
+ofxMidiIn::ofxMidiIn(const std::string name, ofxMidiApi api) {
+	midiIn = std::shared_ptr<ofxBaseMidiIn>(new OFX_MIDI_IN_TYPE(name, api));
 }
 
 // -----------------------------------------------------------------------------
 ofxMidiIn::~ofxMidiIn() {}
 
 // -----------------------------------------------------------------------------
-void ofxMidiIn::listPorts() {
-	#ifdef TARGET_OF_IPHONE
-		ofxPGMidiIn::listPorts();
-	#else
-		ofxRtMidiIn::listPorts();
-	#endif
+void ofxMidiIn::listInPorts() {
+	midiIn->listInPorts();
 }
 
 // -----------------------------------------------------------------------------
-vector<string>& ofxMidiIn::getPortList() {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiIn::getPortList();
-	#else
-		return ofxRtMidiIn::getPortList();
-	#endif
+std::vector<std::string> ofxMidiIn::getInPortList() {
+	return midiIn->getInPortList();
 }
 
 // -----------------------------------------------------------------------------
-int ofxMidiIn::getNumPorts() {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiIn::getNumPorts();
-	#else
-		return ofxRtMidiIn::getNumPorts();
-	#endif
+int ofxMidiIn::getNumInPorts() {
+	return midiIn->getNumInPorts();
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiIn::getPortName(unsigned int portNumber) {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiIn::getPortName(portNumber);
-	#else
-		return ofxRtMidiIn::getPortName(portNumber);
-	#endif
+std::string ofxMidiIn::getInPortName(unsigned int portNumber) {
+	return midiIn->getInPortName(portNumber);
 }
 
 // -----------------------------------------------------------------------------
@@ -60,12 +44,12 @@ bool ofxMidiIn::openPort(unsigned int portNumber) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxMidiIn::openPort(string deviceName) {
+bool ofxMidiIn::openPort(std::string deviceName) {
 	return midiIn->openPort(deviceName);
 }
 
 // -----------------------------------------------------------------------------
-bool ofxMidiIn::openVirtualPort(string portName) {
+bool ofxMidiIn::openVirtualPort(std::string portName) {
 	return midiIn->openVirtualPort(portName);
 }
 
@@ -80,7 +64,7 @@ int ofxMidiIn::getPort() {
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiIn::getName() {
+std::string ofxMidiIn::getName() {
 	return midiIn->getName();
 }
 

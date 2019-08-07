@@ -40,6 +40,7 @@ midiExampleIOS/config.make
 midiExampleIOS/midiExampleIOS.xcodeproj
 midiExampleIOS/ofxiOS-Info.plist
 midiExampleIOS/ofxiOS_Prefix.pch
+midiExampleIOS/mediaAssets
 
 midiInputExample/Makefile
 midiInputExample/Project.xcconfig
@@ -52,3 +53,9 @@ midiOutputExample/Project.xcconfig
 midiOutputExample/config.make
 midiOutputExample/midiOutputExample.xcodeproj
 midiOutputExample/openFrameworks-Info.plist
+
+midiTimingExample/Makefile
+midiTimingExample/Project.xcconfig
+midiTimingExample/config.make
+midiTimingExample/midiTimingExample.xcodeproj
+midiTimingExample/openFrameworks-Info.plist
