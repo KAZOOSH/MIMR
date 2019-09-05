@@ -2,4 +2,4 @@
 
 LDIR="$(cd `dirname $0` && cd .. && pwd)"
 
-cp v1.1/* /opt/mimr/python
+cp $LDIR/v1.1/* /opt/mimr/python
