@@ -59,7 +59,16 @@ sudo hostname -bF /etc/hostname
 
 
 
-
+function pythonStuff() {
+     $APT install -y python3 python3-pip python3-venv
+     python3 -m venv $INSTALLDIR/python
+     #maybe change this stuff and install packages globel
+     #change env ...
+     (
+          source  $INSTALLDIR/python/bin/activate
+          pip install pyserial
+     )
+}
 
 
 ############################################################################
@@ -109,3 +118,4 @@ createDirs
 cloneRepo
 netConfig
 installRav
+pythonStuff
