@@ -1,7 +1,7 @@
 from instrument import InstrumentConfig
 from instrument import Instrument
 import argparse
-
+import socket
 
 def createConfig(name):
     config = InstrumentConfig()
@@ -52,12 +52,16 @@ def createConfig(name):
 # parse the instrument input
 parser = argparse.ArgumentParser(description='Optional app description')
 parser.add_argument('instrument', type=str,
-                    help='the instrument, either : kurbel, kuehler, theremin, trichter, eieiei, golden_box, bassfahrer or foen')
+                    help='the instrument, either : kurbel, kuehler, theremin, trichter, eieiei, golden_box, bassfahrer, foen OR auto - for automatic')
 
 args = parser.parse_args()
 
 # create the instrument
-config = createConfig(args.instrument)
+if(args.instrument=="auto"):
+    print("detected hostname: %s" % socket.gethostname())
+    config = createConfig(socket.gethostname())
+else:
+    config = createConfig(args.instrument)
 
 device = Instrument(config)
 
