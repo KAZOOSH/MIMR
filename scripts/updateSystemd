@@ -1,9 +1,12 @@
 #!/bin/bash
+
+
+
 SYSTEMCTL="systemctl"
 CP="cp"
 RM="rm"
 
-SDIR="$(cd `dirname $0` && cd ../systemd/ && pwd)"
+SDIR="$(cd `dirname $0` && cd ./systemd/ && pwd)"
 DDIR="/lib/systemd/system"
 
 function uninstallU {
