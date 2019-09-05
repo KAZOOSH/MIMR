@@ -67,6 +67,7 @@ function pythonStuff() {
      (
           source  $INSTALLDIR/python/bin/activate
           pip install pyserial
+          pip install platformio 
      )
 }
 
