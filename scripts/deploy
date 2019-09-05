@@ -1,0 +1,4 @@
+#!/bin/bash
+
+LDIR="$(cd `dirname $0` && cd .. && pwd)"
+

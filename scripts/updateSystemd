@@ -1,0 +1,41 @@
+#!/bin/bash
+SYSTEMCTL="systemctl"
+CP="cp"
+RM="rm"
+
+SDIR="$(cd `dirname $0` && cd ../systemd/ && pwd)"
+DDIR="/lib/systemd/system"
+
+function uninstallU {
+	$SYSTEMCTL stop $1
+	$SYSTEMCTL disable $1
+	$RM "$DDIR/$1"
+}
+
+function installU {
+	$CP "$SDIR/$1" "$DDIR/$1"
+	$SYSTEMCTL enable $1
+	$SYSTEMCTL start $1
+}
+
+
+
+
+for file in `find $SDIR -type f -name "*.service"`
+do
+	f=$(basename $file)
+	echo $f
+	case "$1" in
+		install)
+			installU "$f"
+		;;
+
+		uninstall)
+			uninstallU "$f"
+		;;
+		*)
+			echo "usage $0 install|unistall"
+		;;
+	esac
+	echo ""
+done
