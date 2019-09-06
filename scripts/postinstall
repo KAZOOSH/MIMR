@@ -53,14 +53,17 @@ address 192.168.1.$IP
 netmask 255.255.255.0
 EOT
 
+
+CURRENT_HOSTNAME=$(cat /etc/hostname | tr -d " \t\n\r")
 echo $INSTRUMENTNAME | sudo tee /etc/hostname
 sudo hostname -bF /etc/hostname
+sudo sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$INSTRUMENTNAME/g" /etc/hosts
 }
 
 
 
 function pythonStuff() {
-     $APT install -y python3 python3-pip python3-venv
+     $APT install -y python3 python3-pip python3-venv python3-rpi.gpio
      python3 -m venv $INSTALLDIR/python
      python3 -m venv --system-site-packages $INSTALLDIR/python
      #maybe change this stuff and install packages globel
