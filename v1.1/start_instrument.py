@@ -31,11 +31,12 @@ def createConfig(name):
         config.midiOutputChannel = 4
         config.nMidiInputValues = 2
         config.inputNValues = [254,254]
-    elif name == 'golden_box':
+    elif name == 'goldenbox':
         config.midiInputStartChannel = 64
         config.midiOutputChannel = 5
         config.nMidiInputValues = 2
         config.inputNValues = [254,254]
+        config.isPi1 = True
     elif name == 'bassfahrer':
         config.midiInputStartChannel = 64
         config.midiOutputChannel = 6
@@ -46,6 +47,7 @@ def createConfig(name):
         config.midiOutputChannel = 7
         config.nMidiInputValues = 1
         config.inputNValues = [254]
+        config.nMidiOutputValues = 5
     return config
 
 

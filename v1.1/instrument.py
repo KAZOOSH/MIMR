@@ -163,8 +163,7 @@ class Instrument:
                 line = self.serial.readline()
 
                 # got complete line with expected start and end character?
-                if line[:1] == ":" and line[-1:] == "\n":
-
+                if line[:1] == b":" and line[-1:] == b"\n":
                     # get numeric values
                     value = line[1:-1]
                     #create array of values
@@ -187,8 +186,6 @@ class Instrument:
                     if serialReadValues[i] != self.outputValues[i+1]:
                         # update cached value
                         self.outputValues[i+1] = serialReadValues[i]
-
-                        
                         logging.info("new value on channel " + str(i+1) + " : " + str(self.outputValues[i+1]))
                         
                         #send value
@@ -216,7 +213,8 @@ class Instrument:
             elements.append(0)
 
         #write values to serial port
+        
         for x in elements:
-            self.serial.write(chr(x))
+            self.serial.write(bytes([x]))
 
     
