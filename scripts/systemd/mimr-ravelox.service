@@ -1,0 +1,15 @@
+[Unit]
+Description=mimr raveloxmidi
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/mimr/
+ExecStart=/opt/mimr/bin/raveloxmidi -c /opt/mimr/etc/raveloxmidi.config
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

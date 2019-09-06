@@ -1,0 +1,123 @@
+#!/bin/bash
+
+APT="sudo apt-get"
+MKDIR="sudo mkdir"
+CHOWN="sudo chown"
+
+
+INSTALLDIR="/opt/mimr"
+
+
+function updateAndInstall() {
+	echo "do updateAndInstall ..."
+	$APT update -y
+	$APT upgrade -y
+
+	$APT install -y screen vim mc git htop wget curl \
+	libavahi-client-dev build-essential make gcc \
+	python-pip
+}
+
+function createDirs() {
+	echo "do createDirs ..."
+	$MKDIR -p $INSTALLDIR/bin $INSTALLDIR/etc
+	$CHOWN -R pi $INSTALLDIR $INSTALLDIR/*
+}
+
+function cloneRepo() {
+	echo "do clone repo ..."
+	cd /home/pi
+	git clone https://github.com/KAZOOSH/MIMR
+}
+
+function installRav() {
+	echo "do installRav ..."
+
+	RAVFILE="$INSTALLDIR/bin/raveloxmidi"
+	curl -L https://github.com/KAZOOSH/MIMR/releases/download/ravelox/raveloxmidi \
+	| sudo cat > $RAVFILE
+	sudo chmod +x $RAVFILE
+
+	echo "service.name = MIMR_$INSTRUMENTNAME" > $INSTALLDIR/etc/raveloxmidi.config
+}
+
+function netConfig() {
+	echo "do netConfig ..."
+
+#no idention here !!!
+cat <<EOT | sudo tee /etc/network/interfaces
+auto eth0
+allow-hotplug eth0
+iface eth0 inet static
+address 192.168.1.$IP
+netmask 255.255.255.0
+EOT
+
+echo $INSTRUMENTNAME | sudo tee /etc/hostname
+sudo hostname -bF /etc/hostname
+}
+
+
+
+function pythonStuff() {
+     $APT install -y python3 python3-pip python3-venv
+     python3 -m venv $INSTALLDIR/python
+     python3 -m venv --system-site-packages $INSTALLDIR/python
+     #maybe change this stuff and install packages globel
+     #change env ...
+     (
+          source  $INSTALLDIR/python/bin/activate
+          pip install pyserial
+          pip install platformio 
+     )
+}
+
+
+############################################################################
+
+if [ "$(id -u)" -eq 0 ]; then
+        echo 'This script should be run as user pi' >&2
+        exit 1
+fi
+
+INSTRUMENTNAME=$1
+
+
+case $INSTRUMENTNAME in
+     kurbel)
+	IP="51"
+	;;
+     kuehler)
+	IP="52"
+	;;
+     theremin)
+	IP="53"
+	;;
+     trichter)
+	IP="54"
+	;; 
+     eieiei)
+	IP="55"
+	;; 
+     goldenbox)
+	IP="56"
+	;; 
+     bassfahrer)
+	IP="57"
+	;; 
+     foen)
+	IP="58"
+	;; 
+     *)
+	echo "no such instrument $INSTRUMENTNAME" >&2
+	exit 2
+	;;
+esac
+
+
+updateAndInstall
+createDirs
+cloneRepo
+netConfig
+installRav
+pythonStuff
