@@ -13,12 +13,14 @@ function uninstallU {
 	$SYSTEMCTL stop $1
 	$SYSTEMCTL disable $1
 	$RM "$DDIR/$1"
+	$SYSTEMCTL daemon-reload
 }
 
 function installU {
 	$CP "$SDIR/$1" "$DDIR/$1"
 	$SYSTEMCTL enable $1
 	$SYSTEMCTL start $1
+	$SYSTEMCTL daemon-reload
 }
 
 
