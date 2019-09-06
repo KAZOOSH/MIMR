@@ -7,18 +7,20 @@ CP="cp"
 RM="rm"
 
 SDIR="$(cd `dirname $0` && cd ./systemd/ && pwd)"
-DDIR="/lib/systemd/system"
+DDIR="/etc/systemd/system"
 
 function uninstallU {
 	$SYSTEMCTL stop $1
 	$SYSTEMCTL disable $1
 	$RM "$DDIR/$1"
+	$SYSTEMCTL daemon-reload
 }
 
 function installU {
 	$CP "$SDIR/$1" "$DDIR/$1"
 	$SYSTEMCTL enable $1
 	$SYSTEMCTL start $1
+	$SYSTEMCTL daemon-reload
 }
 
 
