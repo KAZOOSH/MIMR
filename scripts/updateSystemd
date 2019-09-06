@@ -7,7 +7,7 @@ CP="cp"
 RM="rm"
 
 SDIR="$(cd `dirname $0` && cd ./systemd/ && pwd)"
-DDIR="/lib/systemd/system"
+DDIR="/etc/systemd/system"
 
 function uninstallU {
 	$SYSTEMCTL stop $1
