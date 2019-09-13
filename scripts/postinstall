@@ -124,7 +124,7 @@ esac
 updateAndInstall
 createDirs
 cloneRepo
-if [ "$INSTRUMENTNAME" != "NONE" ]; then
+if [ "$INSTRUMENTNAME" != "none" ]; then
 	netConfig
 fi
 installRav
