@@ -1,0 +1,79 @@
+#!/bin/bash
+
+function configureRav() {
+	echo "service.name = MIMR_$INSTRUMENTNAME" > $INSTALLDIR/etc/raveloxmidi.config
+}
+
+function netConfig() {
+	echo "do netConfig ..."
+
+#no idention here !!!
+cat <<EOT | sudo tee /etc/network/interfaces
+auto eth0
+allow-hotplug eth0
+iface eth0 inet static
+address 192.168.1.$IP
+netmask 255.255.255.0
+dns-nameservers 192.168.1.1
+gateway 192.168.1.1
+EOT
+
+
+CURRENT_HOSTNAME=$(cat /etc/hostname | tr -d " \t\n\r")
+echo $INSTRUMENTNAME | sudo tee /etc/hostname
+sudo hostname -bF /etc/hostname
+sudo sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$INSTRUMENTNAME/g" /etc/hosts
+}
+
+
+
+
+INSTRUMENTNAME=$1
+
+case $INSTRUMENTNAME in
+     kurbel)
+		IP="51"
+	;;
+     kuehler)
+		IP="52"
+	;;
+     theremin)
+		IP="53"
+	;;
+     trichter)
+		IP="54"
+	;; 
+     eieiei)
+		IP="55"
+	;; 
+     goldenbox)
+		IP="56"
+	;; 
+     bassfahrer)
+		IP="57"
+	;; 
+     foen)
+		IP="58"
+	;;
+	 auto)
+	 	INSTRUMENTNAME=$HOSTNAME
+	;; 
+     *)
+	echo "no such instrument $INSTRUMENTNAME" >&2
+	exit 2
+	;;
+esac
+
+echo "Configuring network for: $INSTRUMENTNAME"
+echo "IP will be: 192.168.1.$IP"
+
+
+read -p "reconfigure are you sure (y/n)?: " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    # do dangerous stuff
+    echo "DO"
+    netConfig
+    configureRav
+fi
