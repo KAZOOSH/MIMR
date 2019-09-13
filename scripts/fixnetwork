@@ -1,5 +1,7 @@
 #!/bin/bash
 
+INSTALLDIR="/opt/mimr"
+
 function configureRav() {
 	echo "service.name = MIMR_$INSTRUMENTNAME" > $INSTALLDIR/etc/raveloxmidi.config
 }
