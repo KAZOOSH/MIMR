@@ -88,28 +88,31 @@ INSTRUMENTNAME=$1
 
 case $INSTRUMENTNAME in
      kurbel)
-	IP="51"
+		IP="51"
 	;;
      kuehler)
-	IP="52"
+		IP="52"
 	;;
      theremin)
-	IP="53"
+		IP="53"
 	;;
      trichter)
-	IP="54"
+		IP="54"
 	;; 
      eieiei)
-	IP="55"
+		IP="55"
 	;; 
      goldenbox)
-	IP="56"
+		IP="56"
 	;; 
      bassfahrer)
-	IP="57"
+		IP="57"
 	;; 
      foen)
-	IP="58"
+		IP="58"
+	;;
+	 none)
+	 	IP=""
 	;; 
      *)
 	echo "no such instrument $INSTRUMENTNAME" >&2
@@ -121,6 +124,8 @@ esac
 updateAndInstall
 createDirs
 cloneRepo
-netConfig
+if [ "$INSTRUMENTNAME" != "NONE" ]; then
+	netConfig
+fi
 installRav
 pythonStuff
