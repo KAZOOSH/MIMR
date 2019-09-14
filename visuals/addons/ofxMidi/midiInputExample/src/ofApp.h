@@ -32,8 +32,7 @@ public:
 	
 	void newMidiMessage(ofxMidiMessage& eventArgs);
 	
-	stringstream text;
-	
 	ofxMidiIn midiIn;
-	ofxMidiMessage midiMessage;
+	std::vector<ofxMidiMessage> midiMessages;
+	std::size_t maxMessages = 10; //< max number of messages to keep track of
 };

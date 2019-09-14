@@ -17,17 +17,17 @@ class ofxRtMidiIn : public ofxBaseMidiIn {
 
 public:
 
-	ofxRtMidiIn(const string name);
+	ofxRtMidiIn(const std::string name, ofxMidiApi api=MIDI_API_DEFAULT);
 	virtual ~ofxRtMidiIn();
 
-	static void listPorts();
-	static vector<string>& getPortList();
-	static int getNumPorts();
-	static string getPortName(unsigned int portNumber);
+	void listInPorts();
+	std::vector<std::string> getInPortList();
+	int getNumInPorts();
+	std::string getInPortName(unsigned int portNumber);
 
 	bool openPort(unsigned int portNumber);
-	bool openPort(string deviceName);
-	bool openVirtualPort(string portName);
+	bool openPort(std::string deviceName);
+	bool openVirtualPort(std::string portName);
 	void closePort();
 
 	void ignoreTypes(bool midiSysex, bool midiTiming, bool midiSense);
@@ -35,8 +35,7 @@ public:
 private:
 	
 	RtMidiIn midiIn;
-	static ofPtr<RtMidiIn> s_midiIn; //< for static calls (a little kludgey, I know)
 	
-	/// static callback for rtmidi
-	static void _midiMessageCallback(double deltatime, vector<unsigned char> *message, void *userData);
+	/// static callback for RtMidi
+	static void _midiMessageCallback(double deltatime, std::vector<unsigned char> *message, void *userData);
 };

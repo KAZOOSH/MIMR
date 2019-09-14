@@ -14,17 +14,31 @@
 
 #include "ofConstants.h"
 
-// for rtmidi
-#ifdef TARGET_LINUX
-    #define __LINUX_ALSA__
+// for RtMidi
+#if defined(TARGET_LINUX)
+    #ifndef __LINUX_ALSA__
+        #define __LINUX_ALSA__
+    #endif
 #elif defined(TARGET_WIN32)
-    #define __WINDOWS_MM__
+    #ifndef __WINDOWS_MM__
+        #define __WINDOWS_MM__
+    #endif
 #elif defined(TARGET_MACOSX)
-    #define __MACOSX_CORE__
+    #ifndef __MACOSX_CORE__
+        #define __MACOSX_CORE__
+    #endif
 #endif
 
-// MIDI status bytes
+// api types, most of these match RtMidi::Api enums
+enum ofxMidiApi {
+	MIDI_API_DEFAULT,      // choose platform default
+	MIDI_API_COREMIDI,     // CoreMidi macOS or iOS
+	MIDI_API_ALSA,         // ALSA Linux
+	MIDI_API_JACK,         // JACK
+	MIDI_API_WINDOWS_MM    // Windows Multimedia MIDI
+};
 
+// MIDI status bytes
 enum MidiStatus {
 
     MIDI_UNKNOWN            = 0x00,

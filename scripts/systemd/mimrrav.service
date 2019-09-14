@@ -1,0 +1,17 @@
+[Unit]
+Description=mimr raveloxmidi
+After=network.target
+
+[Service]
+Type=forking
+User=pi
+Group=pi
+WorkingDirectory=/opt/mimr/
+PIDFile=/opt/mimr/ravelox.pid
+ExecStart=/opt/mimr/bin/raveloxmidi -c /opt/mimr/etc/raveloxmidi.config -P /opt/mimr/ravelox.pid
+ExecStop=kill - $MAINPID
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

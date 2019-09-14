@@ -14,39 +14,51 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 
+class InstrumentConfig:
+    def __init__(self):
+        self.midiInputStartChannel = 0
+        self.midiOutputChannel = 0
+        self.nMidiInputValues = 1
+        self.nMidiOutputValues = 2
+        self.isPi1 = False
+        self.inputNValues= [254]
+
 class Instrument:
-    def __init__(self,midiInputStartChannel,midiOutputChannel,nMidiInputValues = 1, nMidiOutpuValues = 2, isPi1 = False):
+    def __init__(self,config):
 
         # MIDI configuration
-        self.midiOutputChannel = midiInputStartChannel
-        self.midiInputStartChannel = midiOutputChannel
+        # starting with 0xB0 -> 178  
+        self.midiOutputChannel = 178 + config.midiOutputChannel
+        self.midiInputStartChannel = config.midiInputStartChannel
 
         #beat channel
         self.beatChannel = 3
 
         #init input values [intensity/beat, ... , value n]
         self.inputValues = []
+        self.inputNValues = []
 
-        for i in range(nMidiInputValues):
+        for i in range(config.nMidiInputValues):
             self.inputValues.append(0)
+            self.inputNValues.append(config.inputNValues[i])
 
         #init output values [isIdle,value1, ... , value n]
         self.outputValues = []
 
-        for i in range(nMidiOutpuValues):
+        for i in range(config.nMidiOutputValues):
             self.outputValues.append(0)
 
         #init foot sensor
-        GPIO.setmode( GPIO.BCM )
-        GPIO.setup( footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
-
         self.footSensorPin = 21
-        if (isPi1): 
+        if (config.isPi1): 
             self.footSensorPin = 7
+
+        GPIO.setmode( GPIO.BCM )
+        GPIO.setup( self.footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
 
         self.releasing = False
         self.releaseStart = 0
-        self.releaseTime = 2.0
+        self.releaseTime = 0.01
 
         # open serial port to Arduino
         self.serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01 )
@@ -61,48 +73,48 @@ class Instrument:
         # open UDP socket to send raveloxmidi
         self.udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
         self.udpOut.connect( ( "localhost", 5006 ) )
-        
+
     def update(self):
-        updateFootState()
-        readMidiInput()
-        readSerialInput()  
+        self.updateFootState()
+        self.readMidiInput()
+        self.readSerialInput()  
 
     def updateFootState(self):
 
         #outputValues[0] is the active state 0-idle 127-active
 
         # query sensor state
-        footState = GPIO.input(footSensorPin)
+        footActive = not GPIO.input(self.footSensorPin)
 
         sendIdleUpdate = False
 
         # idle to active?
-        if not footState:
+        if footActive:
             # accept immediately
-            releasing = False
-            if not outputValues[0]:
+            self.releasing = False
+            if self.outputValues[0] != 127:
                 sendIdleUpdate = True
-                outputValues[0] = 127
+                self.outputValues[0] = 127
                 logging.info("Instrument active")
         # about to go from active to idle?
-        if not outputValues[0] and footState:
+        if self.outputValues[0] == 127 and not footActive:
             # not yet releasing?
-            if not releasing:
+            if not self.releasing:
                 # remember start
-                releaseStart = time()
-                releasing = True
-                logging.info("Instrument inactive")
+                self.releaseStart = time()
+                self.releasing = True
             # already releasing, time elapsed?
-            elif time()-releaseStart > releaseTime:
+            if self.releasing and time()-self.releaseStart > self.releaseTime:
                 # finally, turn idle!
                 sendIdleUpdate = True
-                outputValues[0] = 0
-                releasing = False
+                self.outputValues[0] = 0
+                self.releasing = False
+                logging.info("Instrument inactive")
 
         # state changed? then send midi active message
         if sendIdleUpdate:
-            sendMidiMessage(0)
-            sendSerial()
+            self.sendMidiMessage(0)
+            self.sendSerial()
     
     def readMidiInput(self):
         # incoming UDP packets in buffer?
@@ -116,7 +128,8 @@ class Instrument:
         if not bufferClear:
             try:
                 # read UDP packet from socket
-                data, addr = udpIn.recvfrom(256)
+                data, addr = self.udpIn.recvfrom(256)
+                print (":".join(format(ord(c)) for c in data))
             except Exception:
                 # no more packets to read
                 bufferClear = True
@@ -124,16 +137,21 @@ class Instrument:
 
         # control command
         if ord(data[0]) == 176:
+            isUpdated = False
             # check if message is beat signal
             if ord(data[1]) == 3:
-                inputValues[0] = min(2*ord(data[2]),254)
-            # get value from defined channel
-            for x in xrange(0,len(midiInputChannel)):
-                if ord(data[1]) == x:
-                    inputValues[x] = min(2*ord(data[2]),254)
-
+                self.inputValues[0] = min(2*ord(data[2]),254)
+                isUpdated = True
+            elif ord(data[1]) - self.midiInputStartChannel < self.inputValues and ord(data[1]) - self.midiInputStartChannel >= 0:
+                # get value from defined channel
+                index = ord(data[1]) - self.midiInputStartChannel
+                self.inputValues[index] = min(2*ord(data[2])*self.inputNValues[index]/254,254)
+                print(str(index) + "  " + str(self.inputValues[index]))
+                isUpdated = True
+            
             #send new state to serial
-            sendSerial()
+            if isUpdated:
+                self.sendSerial()
     
     def readSerialInput(self):
         safe = True
@@ -142,11 +160,10 @@ class Instrument:
         while safe:
             try:
                 # try to read line from Arduino
-                line = serial.readline()
+                line = self.serial.readline()
 
                 # got complete line with expected start and end character?
-                if line[:1] == ":" and line[-1:] == "\n":
-
+                if line[:1] == b":" and line[-1:] == b"\n":
                     # get numeric values
                     value = line[1:-1]
                     #create array of values
@@ -168,34 +185,36 @@ class Instrument:
                     #using i+1 because index 0 is active state
                     if serialReadValues[i] != self.outputValues[i+1]:
                         # update cached value
-                        outputValues[i+1] = serialReadValues[i]
-
-                        
-                        logging.info("new value on channel " + str(i+1) + " : " + str(outputValues[i+1]))
+                        self.outputValues[i+1] = serialReadValues[i]
+                        logging.info("new value on channel " + str(i+1) + " : " + str(self.outputValues[i+1]))
                         
                         #send value
-                        sendMidiMessage(i+1)
+                        self.sendMidiMessage(i+1)
                         
             safe = False
 
     def sendMidiMessage(self,attribute):
-        # send MIDI update
-        bytes = struct.pack( "BBBB", 0xaa, midiOutputChannel, attribute, outputValues[attribute])
-        udpOut.send( bytes )    
+        bytes = struct.pack( "BBBB", 0xaa, self.midiOutputChannel, attribute, int(self.outputValues[attribute]))
+        self.udpOut.send( bytes )    
 
     def sendSerial(self):
         # update Arduino, first add sync byte
         elements = [255]
 
-        # add idle state
-        elements.append(outputValues[0])
-
         # add all input values
-        for i in range(len(inputValues)):
-            elements.append(min(2*ord(self.inputValues[i]),254))
+        for i in range(len(self.inputValues)):
+            #elements.append(min(2*ord(self.inputValues[i]),254))
+            elements.append(min(2*self.inputValues[i],254))
+
+        # add idle state, arduino uses inverse value
+        if self.outputValues[0] == 0:
+            elements.append(1)
+        else: 
+            elements.append(0)
 
         #write values to serial port
+        
         for x in elements:
-            serial.write(chr(x))
+            self.serial.write(bytes([x]))
 
     

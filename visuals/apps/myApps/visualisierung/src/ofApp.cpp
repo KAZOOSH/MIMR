@@ -3,8 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
     ofSetWindowShape(1920,1200);
-    ofSetWindowPosition(1280, 0);
-    //ofSetFullscreen(true);
+    //ofSetWindowPosition(1280, 0);
+    //ofSetFullscreen(false);
     ofLogToConsole();
     
     p.add(params.v_kuehler1.set("kuehler 1",false));
@@ -61,6 +61,8 @@ void ofApp::setup() {
     
     rotationFbo = 0;
     lastMessageSend = 0;
+
+	isGuiVisible = true;
 }
 
 
@@ -124,21 +126,22 @@ void ofApp::draw() {
 
 void ofApp::initMidi(){
     // print input ports to console
-    midiIn.listPorts(); // via instance
+    midiIn.listInPorts(); // via instance
     //ofxMidiIn::listPorts(); // via static as well
+	
     
     //hack for finding the correct midi port automatically
-    midiOut.listPorts();
-    if (!midiOut.openPort("Netzwerk Session 1")) {
-        if (!midiOut.openPort("Netzwerk Session 0")) {
-            midiOut.openPort("Netzwerk Session 2");
+    midiOut.listOutPorts();
+    if (!midiOut.openPort("mimr_in 1")) {
+        if (!midiOut.openPort("mimr_in 0")) {
+            midiOut.openPort("mimr_in 2");
         }
     }
     
     // open port by number (you may need to change this)
-    if (!midiIn.openPort("Netzwerk Session 1")) {
-        if (!midiIn.openPort("Netzwerk Session 0")) {
-            midiIn.openPort("Netzwerk Session 2");
+    if (!midiIn.openPort("mimr_in 0")) {
+        if (!midiIn.openPort("mimr_in 0")) {
+            midiIn.openPort("mimr_in 2");
         }
     }
     //midiIn.openPort("IAC Pure Data In");	// by name
@@ -163,7 +166,7 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::newMidiMessage(ofxMidiMessage& msg) {
-    
+	cout << ofxMidiMessage::getStatusString(msg.status) << endl;
     switch (msg.channel) {
         case 1:
             switch (msg.control) {
@@ -345,7 +348,9 @@ void ofApp::keyPressed(int key){
             l->reload();
         }
     }
-    if (key == 'g') { isGuiVisible != isGuiVisible; }
+    if (key == 'g') { 
+		isGuiVisible != isGuiVisible; 
+	}
     if(key == 's'){
         ofFbo fbo;
         fbo.allocate(1024, 1024);
@@ -420,7 +425,7 @@ void ofApp::onSceneChanged(int& nScene){
             kurbelColor = 5;
             kuehlerHue = 10;
             kuehlerSat = 127;
-            theremin = 7;
+            theremin = 5;
             trichter1 = 10;
             trichter2 = 80;
             eieieiColorSet = 0;
@@ -441,7 +446,7 @@ void ofApp::onSceneChanged(int& nScene){
             kurbelColor = 2;
             kuehlerHue = 0;
             kuehlerSat = 255;
-            theremin = 6;
+            theremin = 2;
             trichter1 = 0;
             trichter2 = 20;
             eieieiColorSet = 2;
@@ -451,7 +456,7 @@ void ofApp::onSceneChanged(int& nScene){
             kurbelColor = 7;
             kuehlerHue = 65;
             kuehlerSat = 255;
-            theremin = 4;
+            theremin = 7;
             trichter1 = 60;
             trichter2 = 80;
             eieieiColorSet = 3;

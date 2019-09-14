@@ -10,6 +10,8 @@
  */
 #include "ofxPGMidiOut.h"
 
+#include "ofLog.h"
+
 #import "ofxPGMidiContext.h"
 
 // PIMPL wrapper from http://stackoverflow.com/questions/7132755/wrapping-objective-c-in-objective-c-c
@@ -18,7 +20,7 @@ struct ofxPGMidiOut::Destination {
 };
 
 // -----------------------------------------------------------------------------
-ofxPGMidiOut::ofxPGMidiOut(const string name) : ofxBaseMidiOut(name) {
+ofxPGMidiOut::ofxPGMidiOut(const std::string name, ofxMidiApi api) : ofxBaseMidiOut(name, MIDI_API_COREMIDI) {
 	
 	// setup global midi instance
 	ofxPGMidiContext::setup();
@@ -35,7 +37,7 @@ ofxPGMidiOut::~ofxPGMidiOut() {
 }
 
 // -----------------------------------------------------------------------------
-void ofxPGMidiOut::listPorts() {
+void ofxPGMidiOut::listOutPorts() {
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 	int count = [midi.destinations count]; 
 	ofLogNotice("ofxMidiOut") << count << " ports available";
@@ -46,9 +48,9 @@ void ofxPGMidiOut::listPorts() {
 }
 
 // -----------------------------------------------------------------------------
-vector<string>& ofxPGMidiOut::getPortList() {
+std::vector<std::string> ofxPGMidiOut::getOutPortList() {
 	PGMidi *midi = ofxPGMidiContext::getMidi();
-	portList.clear();
+	std::vector<std::string> portList;
 	for(PGMidiDestination *dest in midi.destinations) {
 		portList.push_back([dest.name UTF8String]);
 	}
@@ -56,12 +58,12 @@ vector<string>& ofxPGMidiOut::getPortList() {
 }
 
 // -----------------------------------------------------------------------------
-int ofxPGMidiOut::getNumPorts() {
+int ofxPGMidiOut::getNumOutPorts() {
 	return [ofxPGMidiContext::getMidi().destinations count];
 }
 
 // -----------------------------------------------------------------------------
-string ofxPGMidiOut::getPortName(unsigned int portNumber) {
+std::string ofxPGMidiOut::getOutPortName(unsigned int portNumber) {
 	
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 	
@@ -101,7 +103,7 @@ bool ofxPGMidiOut::openPort(unsigned int portNumber) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxPGMidiOut::openPort(string deviceName) {
+bool ofxPGMidiOut::openPort(std::string deviceName) {
 	
 	PGMidi *midi = ofxPGMidiContext::getMidi();
 	
@@ -125,7 +127,7 @@ bool ofxPGMidiOut::openPort(string deviceName) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxPGMidiOut::openVirtualPort(string portName) {
+bool ofxPGMidiOut::openVirtualPort(std::string portName) {
 	ofLogWarning("ofxMidiOut") << "couldn't open virtual port \"" << portName << "\"";
 	ofLogWarning("ofxMidiOut") << "virtual ports are currently not supported on iOS";
 	return false;
@@ -148,7 +150,7 @@ void ofxPGMidiOut::closePort() {
 // PRIVATE
 // -----------------------------------------------------------------------------
 // adapted from PGMidi sendBytes
-void ofxPGMidiOut::sendMessage() {
+void ofxPGMidiOut::sendMessage(std::vector<unsigned char> &message) {
 
     Byte packetBuffer[message.size()+100];
     MIDIPacketList *packetList = (MIDIPacketList*)packetBuffer;
@@ -157,5 +159,4 @@ void ofxPGMidiOut::sendMessage() {
     packet = MIDIPacketListAdd(packetList, sizeof(packetBuffer), packet, 0, message.size(), &message[0]);
 
 	[destination->d sendPacketList:packetList];
-	bMsgInProgress = false;
 }

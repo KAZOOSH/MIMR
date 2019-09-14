@@ -16,22 +16,22 @@ class ofxPGMidiOut : public ofxBaseMidiOut {
 
 public:
 
-	ofxPGMidiOut(const string name);
+	ofxPGMidiOut(const std::string name, ofxMidiApi api);
 	virtual ~ofxPGMidiOut();
 	
-	static void listPorts();
-	static vector<string>& getPortList();
-	static int getNumPorts();
-	static string getPortName(unsigned int portNumber);
+	void listOutPorts();
+	std::vector<std::string> getOutPortList();
+	int getNumOutPorts();
+	std::string getOutPortName(unsigned int portNumber);
 	
 	bool openPort(unsigned int portNumber);
-	bool openPort(string deviceName);
-	bool openVirtualPort(string portName); ///< currently noop on iOS
+	bool openPort(std::string deviceName);
+	bool openVirtualPort(std::string portName); ///< currently noop on iOS
 	void closePort();
 	
 private:
 	
-	void sendMessage();
+	void sendMessage(std::vector<unsigned char> &message);
 
 	struct Destination; // forward declaration for Obj-C wrapper
 	Destination * destination; ///< output destination

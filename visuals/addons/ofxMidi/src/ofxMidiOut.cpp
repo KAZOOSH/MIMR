@@ -11,47 +11,31 @@
 #include "ofxMidiOut.h"
 
 // -----------------------------------------------------------------------------
-ofxMidiOut::ofxMidiOut(const string name) {
-	midiOut = ofPtr<ofxBaseMidiOut>(new OFX_MIDI_OUT_TYPE(name));
+ofxMidiOut::ofxMidiOut(const std::string name, ofxMidiApi api) {
+	midiOut = std::shared_ptr<ofxBaseMidiOut>(new OFX_MIDI_OUT_TYPE(name, api));
 }
 
 // -----------------------------------------------------------------------------
 ofxMidiOut::~ofxMidiOut() {}
 
 // -----------------------------------------------------------------------------
-void ofxMidiOut::listPorts() {
-	#ifdef TARGET_OF_IPHONE
-		ofxPGMidiOut::listPorts();
-	#else
-		ofxRtMidiOut::listPorts();
-	#endif
+void ofxMidiOut::listOutPorts() {
+	midiOut->listOutPorts();
 }
 
 // -----------------------------------------------------------------------------
-vector<string>& ofxMidiOut::getPortList() {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiOut::getPortList();
-	#else
-		return ofxRtMidiOut::getPortList();
-	#endif
+std::vector<std::string> ofxMidiOut::getOutPortList() {
+	return midiOut->getOutPortList();
 }
 
 // -----------------------------------------------------------------------------
-int ofxMidiOut::getNumPorts() {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiOut::getNumPorts();
-	#else
-		return ofxRtMidiOut::getNumPorts();
-	#endif
+int ofxMidiOut::getNumOutPorts() {
+	return midiOut->getNumOutPorts();
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiOut::getPortName(unsigned int portNumber) {
-	#ifdef TARGET_OF_IPHONE
-		return ofxPGMidiOut::getPortName(portNumber);
-	#else
-		return ofxRtMidiOut::getPortName(portNumber);
-	#endif
+std::string ofxMidiOut::getOutPortName(unsigned int portNumber) {
+	return midiOut->getOutPortName(portNumber);
 }
 
 // -----------------------------------------------------------------------------
@@ -60,12 +44,12 @@ bool ofxMidiOut::openPort(unsigned int portNumber) {
 }
 
 // -----------------------------------------------------------------------------
-bool ofxMidiOut::openPort(string deviceName) {
+bool ofxMidiOut::openPort(std::string deviceName) {
 	return midiOut->openPort(deviceName);
 }
 
 // -----------------------------------------------------------------------------
-bool ofxMidiOut::openVirtualPort(string portName) {
+bool ofxMidiOut::openVirtualPort(std::string portName) {
 	return midiOut->openVirtualPort(portName);
 }
 
@@ -80,7 +64,7 @@ int ofxMidiOut::getPort() {
 }
 
 // -----------------------------------------------------------------------------
-string ofxMidiOut::getName() {
+std::string ofxMidiOut::getName() {
 	return midiOut->getName();
 }
 
@@ -139,7 +123,7 @@ void ofxMidiOut::sendMidiByte(unsigned char byte) {
 }
 
 //----------------------------------------------------------
-void ofxMidiOut::sendMidiBytes(vector<unsigned char>& bytes) {
+void ofxMidiOut::sendMidiBytes(std::vector<unsigned char>& bytes) {
 	midiOut->sendMidiBytes(bytes);
 }
 

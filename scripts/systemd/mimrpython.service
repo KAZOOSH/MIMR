@@ -1,0 +1,15 @@
+[Unit]
+Description=mimr instrument
+After=network.target mimr-ravelox.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/mimr/
+ExecStart=/opt/mimr/python/bin/python /opt/mimr/python/start_instrument.py auto
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

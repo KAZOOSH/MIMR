@@ -1,3 +1,0 @@
-ofxGui
-ofxIO
-ofxPoco

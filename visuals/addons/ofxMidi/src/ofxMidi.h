@@ -12,8 +12,10 @@
 
 #include "ofxMidiIn.h"
 #include "ofxMidiOut.h"
+#include "ofxMidiClock.h"
+#include "ofxMidiTimecode.h"
 
-/// receives iOS midi device (dis)connection events
+/// receives iOS MIDI device (dis)connection events
 class ofxMidiConnectionListener {
 
 public:
@@ -21,27 +23,28 @@ public:
 	ofxMidiConnectionListener() {}
 	virtual ~ofxMidiConnectionListener() {}
 	
-	virtual void midiInputAdded(string name, bool isNetwork=false);
-	virtual void midiInputRemoved(string name, bool isNetwork=false);
+	virtual void midiInputAdded(std::string name, bool isNetwork=false);
+	virtual void midiInputRemoved(std::string name, bool isNetwork=false);
 	
-	virtual void midiOutputAdded(string nam, bool isNetwork=false);
-	virtual void midiOutputRemoved(string name, bool isNetwork=false);
+	virtual void midiOutputAdded(std::string nam, bool isNetwork=false);
+	virtual void midiOutputRemoved(std::string name, bool isNetwork=false);
 };
 
-// global static access
-class ofxMidi {
-	
-public:
+// global access
+namespace ofxMidi {
 
 /// \section Util
 
-	/// convert midi note to frequency in Hz
+	/// convert MIDI note to frequency in Hz
 	/// ala the [mtof] object in Max & Pure Data
-	static float mtof(float note);
+	float mtof(float note);
 
 	/// convert a frequency in Hz to a MIDI note
 	/// ala the [ftom] object in Max & Pure Data
-	static float ftom(float frequency);
+	float ftom(float frequency);
+
+	/// convert raw MIDI bytes to a printable string, ex. "F0 0C 33"
+	std::string bytesToString(std::vector<unsigned char> &bytes);
 
 /// \section iOS Specific
 	
@@ -51,12 +54,12 @@ public:
 	///
 	/// note: these are noops on Mac, Win, & Linux
 	///
-	static void setConnectionListener(ofxMidiConnectionListener *listener);
+	void setConnectionListener(ofxMidiConnectionListener *listener);
 
 	/// clear iOS device event receiver
-	static void clearConnectionListener();
+	void clearConnectionListener();
 	
-	/// enables the network midi session between iOS and macOS on a
+	/// enables the network MIDI session between iOS and macOS on a
 	/// local wifi network
 	///
 	/// in ofxMidi: open the input/outport network ports named "Session 1"
@@ -65,5 +68,5 @@ public:
 	///
 	/// note: this is a noop on Mac, Win, & Linux
 	///
-	static void enableNetworking();
+	void enableNetworking();
 };
