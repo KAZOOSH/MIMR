@@ -6,6 +6,8 @@ instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bas
 
 for i in "${instruments[@]}"
 do
+
+	
 	#konsole --new-tab --hold -e ssh pi@$i
 	screen -t $i
 	screen -p $i -X stuff "ssh pi@$i\n"
