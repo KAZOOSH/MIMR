@@ -16,7 +16,7 @@ from egl import *
 from gl2 import *
 from gl2ext import *
 
-print "Starting Eieiei Visualization"
+print("Starting Eieiei Visualization")
 
 
 # Define verbose=True to get debug messages
@@ -66,7 +66,7 @@ def check(e):
     """Checks that error is zero"""
     if e==0: return
     if verbose:
-        print 'Error code',hex(e&0xffffffff)
+        print('Error code',hex(e&0xffffffff))
     raise ValueError
 
 class EGL(object): 
@@ -107,7 +107,7 @@ class EGL(object):
         r = openegl.eglBindAPI(EGL_OPENGL_ES_API)
         assert r
         if verbose:
-            print 'numconfig=',numconfig
+            print('numconfig=',numconfig)
         context_attribs = eglints( (EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE) )
         self.context = openegl.eglCreateContext(self.display, config,
                                         EGL_NO_CONTEXT,
@@ -151,7 +151,7 @@ class demo():
         log=(ctypes.c_char*N)()
         loglen=ctypes.c_int()
         opengles.glGetShaderInfoLog(shader,N,ctypes.byref(loglen),ctypes.byref(log))
-        print log.value
+        print (log.value)
 
     def showprogramlog(self,shader):
         """Prints the compile log for a program"""
@@ -159,7 +159,7 @@ class demo():
         log=(ctypes.c_char*N)()
         loglen=ctypes.c_int()
         opengles.glGetProgramInfoLog(shader,N,ctypes.byref(loglen),ctypes.byref(log))
-        print log.value
+        print (log.value)
             
     def __init__(self):
         self.vertex_data = eglfloats((-1.0,-1.0,1.0,1.0,
@@ -504,12 +504,12 @@ vec3 samplef(in vec2 uv)
     def check(self):
         e=opengles.glGetError()
         if e:
-            print hex(e)
+            print (hex(e))
             raise ValueError
         
 def showerror():
     e=opengles.glGetError()
-    print hex(e)
+    print (hex(e))
     
 if __name__ == "__main__":
 
