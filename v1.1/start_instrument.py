@@ -34,6 +34,7 @@ def createConfig(name):
         config.midiOutputChannel = 4
         config.nMidiInputValues = 2
         config.inputNValues = [254,254]
+        config.nMidiOutputValues = 3
     elif name == 'goldenbox':
         config.midiInputStartChannel = 64
         config.midiOutputChannel = 5
