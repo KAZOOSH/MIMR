@@ -1,5 +1,6 @@
 from instrument import InstrumentConfig
 from instrument import Instrument
+from bank import Bank
 import argparse
 import socket
 
@@ -26,8 +27,8 @@ def createConfig(name):
     elif name == 'trichter':
         config.midiInputStartChannel = 44
         config.midiOutputChannel = 3
-        config.nMidiInputValues = 2
-        config.inputNValues = [254,254]
+        config.nMidiInputValues = 3
+        config.inputNValues = [254,254,254]
     elif name == 'eieiei':
         config.midiInputStartChannel = 54
         config.midiOutputChannel = 4
@@ -61,13 +62,18 @@ parser.add_argument('instrument', type=str,
 args = parser.parse_args()
 
 # create the instrument
-if(args.instrument=="auto"):
+device = {}
+instrumentName = args.instrument
+if instrumentName == "auto":
     print("detected hostname: %s" % socket.gethostname())
-    config = createConfig(socket.gethostname())
-else:
-    config = createConfig(args.instrument)
+    instrumentName = socket.gethostname()
 
-device = Instrument(config)
+if instrumentName == "bank":
+    device = Bank()
+else:
+    config = createConfig(instrumentName)
+    device = Instrument(config)
+
 
 # update instrument
 while True:
