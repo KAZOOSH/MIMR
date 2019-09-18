@@ -16,11 +16,13 @@ def createConfig(name):
         config.midiOutputChannel = 1
         config.nMidiInputValues = 3
         config.inputNValues = [254,254,254]
+        config.nMidiOutputValues = 6
     elif name == 'theremin':
         config.midiInputStartChannel = 34
         config.midiOutputChannel = 2
-        config.nMidiInputValues = 1
-        config.inputNValues = [254]
+        config.nMidiInputValues = 2
+        config.inputNValues = [254,254]
+        config.serialPort = "/dev/ttyUSB0"
     elif name == 'trichter':
         config.midiInputStartChannel = 44
         config.midiOutputChannel = 3
