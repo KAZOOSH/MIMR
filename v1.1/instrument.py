@@ -22,6 +22,7 @@ class InstrumentConfig:
         self.nMidiOutputValues = 2
         self.isPi1 = False
         self.inputNValues= [254]
+        self.serialPort = "/dev/ttyACM0"
 
 class Instrument:
     def __init__(self,config):
@@ -61,7 +62,7 @@ class Instrument:
         self.releaseTime = 0.01
 
         # open serial port to Arduino
-        self.serial = Serial( "/dev/ttyACM0", 115200, bytesize=8, parity='N', timeout=0.01 )
+        self.serial = Serial( config.serialPort, 115200, bytesize=8, parity='N', timeout=0.01 )
 
         # open UDP socket to listen raveloxmidi
         self.udpIn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
@@ -136,17 +137,17 @@ class Instrument:
                 pass
 
         # control command
-        if ord(data[0]) == 176:
+        if data[0] == 176:
             isUpdated = False
             # check if message is beat signal
-            if ord(data[1]) == 3:
+            if data[1] == 3:
                 self.inputValues[0] = min(2*ord(data[2]),254)
                 isUpdated = True
-            elif ord(data[1]) - self.midiInputStartChannel < self.inputValues and ord(data[1]) - self.midiInputStartChannel >= 0:
+            elif data[1]- self.midiInputStartChannel < self.inputValues and data[1] - self.midiInputStartChannel >= 0:
                 # get value from defined channel
-                index = ord(data[1]) - self.midiInputStartChannel
-                self.inputValues[index] = min(2*ord(data[2])*self.inputNValues[index]/254,254)
-                print(str(index) + "  " + str(self.inputValues[index]))
+                index = data[1] - self.midiInputStartChannel
+                self.inputValues[index] = min(2*data[2]*self.inputNValues[index]/254,254)
+                log(str(index) + "  " + str(self.inputValues[index]))
                 isUpdated = True
             
             #send new state to serial
@@ -213,7 +214,8 @@ class Instrument:
             elements.append(0)
 
         #write values to serial port
-        
+        print(elements)
+
         for x in elements:
             self.serial.write(bytes([x]))
 
