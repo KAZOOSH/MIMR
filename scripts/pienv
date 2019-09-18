@@ -1,0 +1,14 @@
+
+
+
+alias mimrStatus="sudo systemctl status mimrpython.service mimrrav.service"
+
+alias mimrstartPython="sudo systemctl start mimrpython.service" 
+alias mimrstartrav="sudo systemctl start mimrrav.service" 
+alias mimrstopPython="sudo systemctl stop mimrpython.service" 
+alias mimrstoprav="sudo systemctl stop mimrrav.service" 
+
+alias mimrwatchrav="sudo journalctl -f -u mimrrav.service"
+alias mimrwatchpython="sudo journalctl -f -u mimrpython.service"
+
+alias mimrenv="source /opt/mimr/python/bin/activate"

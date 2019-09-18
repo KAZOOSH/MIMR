@@ -1,0 +1,11 @@
+#!/bin/bash
+
+instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bassfahrer" "foen")
+
+
+
+for i in "${instruments[@]}"
+do
+	echo "run cmd on Instrument $i: "
+	ssh pi@$i $1
+done
