@@ -15,8 +15,8 @@ def createConfig(name):
     elif name == 'kuehler':
         config.midiInputStartChannel = 24
         config.midiOutputChannel = 1
-        config.nMidiInputValues = 3
-        config.inputNValues = [254,254,254]
+        config.nMidiInputValues = 2
+        config.inputNValues = [254,8]
         config.nMidiOutputValues = 6
     elif name == 'theremin':
         config.midiInputStartChannel = 34
@@ -34,6 +34,7 @@ def createConfig(name):
         config.midiOutputChannel = 4
         config.nMidiInputValues = 2
         config.inputNValues = [254,254]
+        config.nMidiOutputValues = 3
     elif name == 'goldenbox':
         config.midiInputStartChannel = 64
         config.midiOutputChannel = 5

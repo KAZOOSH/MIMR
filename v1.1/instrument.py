@@ -143,11 +143,11 @@ class Instrument:
             if data[1] == 3:
                 self.inputValues[0] = min(2*ord(data[2]),254)
                 isUpdated = True
-            elif data[1]- self.midiInputStartChannel < self.inputValues and data[1] - self.midiInputStartChannel >= 0:
+            elif data[1]- self.midiInputStartChannel < len(self.inputValues) and data[1] - self.midiInputStartChannel >= 0:
                 # get value from defined channel
                 index = data[1] - self.midiInputStartChannel
-                self.inputValues[index] = min(2*data[2]*self.inputNValues[index]/254,254)
-                log(str(index) + "  " + str(self.inputValues[index]))
+                self.inputValues[index] = int(min(2*data[2]*self.inputNValues[index]/254,254))
+                logging.info(str(index) + "  " + str(self.inputValues[index]))
                 isUpdated = True
             
             #send new state to serial

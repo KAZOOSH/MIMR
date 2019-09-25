@@ -51,7 +51,7 @@ unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
 #define BAUD_RATE 115200L
-byte serialIn[3] = {0,0,1}; //intensity, hue, isIdle
+byte serialIn[4] = {0,0,255,1}; //value, hue, saturation, isIdle
 
 #include <Wire.h>
 
@@ -90,7 +90,7 @@ void loop(){
   if( test == SYNC_BYTE )
   {
     // yes, read data bytes
-    Serial.readBytes( serialIn, 3 );
+    Serial.readBytes( serialIn, 4 );
   }
 
 
@@ -100,7 +100,7 @@ void loop(){
   lastState = serialIn[3];
 
   //if not idle proceed normal
-  if(serialIn[2] == 0){
+  if(serialIn[3] == 0){
     readTouchInputs();
     setLedColor();
   }
@@ -181,23 +181,12 @@ void setLedColor(){
     }
   }
   else{
-
-  bool isRed = bitRead(serialIn[1],1);
-  bool isGreen = bitRead(serialIn[1],2);
-  bool isBlue = bitRead(serialIn[1],3);
-  
-  if(!isRed && !isGreen && !isBlue){
-    isRed = true; isGreen = true; isBlue = true;
-  }
-
-      //int hue = serialIn[1];
-      //int value = 255 - serialIn[0];
-      //int saturation = serialIn[2];
-      int intensity = 255 - serialIn[0];
+      int hue = serialIn[1];
+      int value = 255 - serialIn[0];
+      int saturation = serialIn[2];
 
       CRGB color1 = CRGB(5,5,5);
-      //CRGB color2 = CHSV(hue, saturation, value);
-      CRGB color2 = CRGB(isRed*intensity,isGreen*intensity,isBlue*intensity);
+      CRGB color2 = CHSV(hue, saturation, value);
 
       for(int c = 0; c<NUM_LEDS; c++){
         if(touchStates[nLedIndex[c]] == 0){
