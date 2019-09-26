@@ -111,6 +111,9 @@ case $INSTRUMENTNAME in
      foen)
 		IP="58"
 	;;
+	 bank)
+		IP="59"
+	;;
 	 none)
 	 	IP=""
 	;; 
