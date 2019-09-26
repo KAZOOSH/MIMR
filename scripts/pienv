@@ -12,3 +12,4 @@ alias mimrwatchrav="sudo journalctl -f -u mimrrav.service"
 alias mimrwatchpython="sudo journalctl -f -u mimrpython.service"
 
 alias mimrenv="source /opt/mimr/python/bin/activate"
+alias mimrping="fping -r1 kurbel kuehler theremin trichter eieiei goldenbox bassfahrer foen"
