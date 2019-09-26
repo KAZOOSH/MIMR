@@ -1,0 +1,10 @@
+[
+	{
+		"type":"Midi",
+		"inputs":["Visualization"]
+	},
+	{
+		"type":"Visualization",
+		"inputs":["Midi"]
+	}
+]

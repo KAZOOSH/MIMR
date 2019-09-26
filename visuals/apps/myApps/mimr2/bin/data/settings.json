@@ -1,0 +1,10 @@
+{
+    "Visualization": {
+        "color": [255,0,0]
+    },
+    "Midi": {
+        
+        "name": "the nice gui",
+        "multiplicator": 1.3
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "ipAbleton":"localhost",
+    "midiPort":"DESKTOP-VHRVK9D 1",
+    "lengthRadarInBars":4,
+    "chaosObjects":[
+        {
+            "id":0,
+            "channel":10,
+            "note":1
+        },
+        {
+            "id":1,
+            "channel":10,
+            "note":2
+        },
+        {
+            "id":2,
+            "channel":10,
+            "note":3
+        },
+        {
+            "id":3,
+            "channel":10,
+            "note":4
+        },
+        {
+            "id":4,
+            "channel":10,
+            "note":5
+        }
+    ]
+}
