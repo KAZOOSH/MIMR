@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class Bank:
-    def __init__(self,config):
+    def __init__(self):
 
         # MIDI configuration
         # starting with 0xB0 -> 178  
@@ -43,7 +43,7 @@ class Bank:
         self.sensorPin = [7,8,25]
 
         GPIO.setmode( GPIO.BCM )
-        for s in sensorPin:
+        for s in self.sensorPin:
             GPIO.setup( s, GPIO.IN, pull_up_down=GPIO.PUD_UP )
 
         self.releasing = [False,False,False]
@@ -73,20 +73,20 @@ class Bank:
 
         # idle to active?
         for i in range(3):
-            sendIdleUpdate = false
+            sendIdleUpdate = False
             footActive = not GPIO.input(self.sensorPin[i])
 
-            if footActive[i]:
+            if footActive:
                 # accept immediately
                 self.releasing[i] = False
                 if self.outputValues[i] != 127:
                     sendIdleUpdate = True
                     self.outputValues[i] = 127
-                    logging.info("Instrument active")
+                    logging.info("Seat" + str(i) + " active")
             # about to go from active to idle?
             if self.outputValues[i] == 127 and not footActive:
                 # not yet releasing?
-                if not self.releasing:
+                if not self.releasing[i]:
                     # remember start
                     self.releaseStart[i] = time()
                     self.releasing[i] = True
@@ -96,11 +96,11 @@ class Bank:
                     sendIdleUpdate = True
                     self.outputValues[i] = 0
                     self.releasing[i] = False
-                    logging.info("Instrument inactive")
+                    logging.info("Seat" + str(i) + " inactive")
 
             # state changed? then send midi active message
             if sendIdleUpdate:
-                self.sendMidiMessage(0)
+                self.sendMidiMessage(i)
       
 
     def sendMidiMessage(self,attribute):
