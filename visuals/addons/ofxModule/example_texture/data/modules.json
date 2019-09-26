@@ -1,0 +1,10 @@
+[
+	{
+		"type":"Camera",
+		"inputs":["Presenter"]
+	},
+	{
+		"type":"Presenter",
+		"inputs":["Camera"]
+	}
+]

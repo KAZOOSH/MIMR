@@ -1,0 +1,10 @@
+[
+	{
+		"type":"Communicator",
+		"inputs":["Presenter"]
+	},
+	{
+		"type":"Presenter",
+		"inputs":["Communicator"]
+	}
+]
