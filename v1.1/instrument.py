@@ -184,7 +184,7 @@ class Instrument:
                 for i in range(len(serialReadValues)):
                     #compare read values with output values
                     #using i+1 because index 0 is active state
-                    if serialReadValues[i] != self.outputValues[i+1]:
+                    if serialReadValues[i] != self.outputValues[i+1] and self.outputValues[0] == 127:
                         # update cached value
                         self.outputValues[i+1] = serialReadValues[i]
                         logging.info("new value on channel " + str(i+1) + " : " + str(self.outputValues[i+1]))
