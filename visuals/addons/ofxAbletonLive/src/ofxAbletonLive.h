@@ -9,6 +9,7 @@
 
 #define ABLETON_OSC_HOST_DEFAULT "localhost"
 #define ABLETON_OSC_PORT_OUT 9000
+//#define ABLETON_OSC_PORT_OUT 9002
 #define ABLETON_OSC_PORT_IN 9001
 
 class ofxAbletonLive
@@ -60,6 +61,7 @@ public:
     ofParameter<float> & getCrossFader() {return crossfade;}
 	ofParameter<int> & getQuantization() { return quantization; }
 	ofParameter<bool> & isPlaying() { return playing; }
+	ofParameter<int> & getBeat() { return beat; }
 
     int getNumTracks() {return numTracks;}
     int getNumScenes() {return numScenes;}
@@ -133,6 +135,7 @@ protected:
     ofParameter<float> crossfade;
 	ofParameter<int> quantization;
 	ofParameter<bool> playing;
+	ofParameter<int> beat;
     
     ofxOscSender sender;
     ofxOscReceiver receiver;

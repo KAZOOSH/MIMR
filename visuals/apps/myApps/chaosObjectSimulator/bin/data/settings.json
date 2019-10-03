@@ -1,6 +1,6 @@
 {
-    "ipAbleton":"localhost",
-    "midiPort":"DESKTOP-VHRVK9D 1",
+    "ipAbleton":"192.168.1.236",
+    "midiPort":"brian 1",
     "lengthRadarInBars":4,
     "chaosObjects":[
         {

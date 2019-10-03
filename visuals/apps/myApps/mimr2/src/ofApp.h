@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
+
 #include "ModuleControl.h"
 
 #include "Visualization.h"
-#include "ofxModuleMidi.h"
 
 
 using namespace ofxModule;

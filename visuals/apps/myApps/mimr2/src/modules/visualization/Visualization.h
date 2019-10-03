@@ -1,7 +1,11 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxGui.h"
 #include "ModuleDrawable.h"
+#include "MidiCtrl.h"
+#include "RadarAttributes.h"
+#include "Renderer.h"
 
 namespace ofxModule {
 	// Basic example of a ModuleDrawable with communication
@@ -22,13 +26,18 @@ class Visualization : public ModuleDrawable{
 	void mouseEntered(ofMouseEventArgs & mouse) {};
 	void mouseExited(ofMouseEventArgs & mouse) {};
 
+	void keyPressed(ofKeyEventArgs & args);
+	void keyReleased(ofKeyEventArgs & args) {};
     
 	
 protected:
     void proceedModuleEvent(ModuleEvent& e);
     
     private:
-		ofColor color;
-		string text = "Click somewhere to multiply the X-position of the mouse.";
+		ofxPanel gui;
+		MidiCtrl midiCtrl;
+		RadarAttributes radarAttributes;
+		Renderer renderer;
+		ofFbo rendering;
 };
 }

@@ -14,51 +14,65 @@ namespace ofxModule {
     
 	Visualization::Visualization(string moduleName):ModuleDrawable("Visualization",moduleName){
 		
+		ofSetWindowShape(1920, 1080);
 		// register mouse events for interaction
 		ofRegisterMouseEvents(this);
+		ofRegisterKeyEvents(this);
 
-		// loading the settings saved in settings.json/"Presenter"
-		color = GeneralPurposeFunctions::colorFromJson(settings["color"]);
+		radarAttributes.setup(settings["midi"]["instruments"], settings["rendering"]);
+
+		MidiCtrlSettings midiSettings;
+		midiSettings.jsonSettings = settings["midi"];
+		midiSettings.radarAttributes = shared_ptr<RadarAttributes>(&radarAttributes);
+		midiCtrl.setup(midiSettings);
+
+		gui.setup("params");
+		gui.add(radarAttributes.params);
+
+		RendererSettings rendererSettings;
+		rendererSettings.radar = shared_ptr<RadarAttributes>(&radarAttributes);
+		rendererSettings.settings = settings;
+		renderer.setup(rendererSettings);
 
 		ofBackground(0);
+
+		rendering.allocate(settings["rendering"]["radarSize"][0], settings["rendering"]["radarSize"][1]);
     }
   
     
     
     //------------------------------------------------------------------
     void Visualization::update() {
-		// here could run something ;)
+		midiCtrl.update();
     }
 
 	void Visualization::draw()
 	{
-		// draw the received text
-		ofSetColor(color);
-		ofDrawBitmapString(text, 50, 50);
+		rendering.begin();
+		ofClear(0, 0);
+		renderer.draw();
+		rendering.end();
+		rendering.draw((ofGetWidth()-rendering.getWidth())*0.5, 0);
+		gui.draw();
 	}
 
 	void Visualization::mousePressed(ofMouseEventArgs & mouse)
 	{
-		// prepare a message with the mouse position
-		ofJson msg;
 
-		// add a value
-		msg["value"] = mouse.x;
-
-		//send a message to Communicator
-		notifyEvent("multiply",msg);
 	}
     
     
-    //------------------------------------------------------------------
+	void Visualization::keyPressed(ofKeyEventArgs & args)
+	{
+		if (args.key == 'l') {
+			renderer.loadShader();
+		}
+	}
+
+	//------------------------------------------------------------------
     void Visualization::proceedModuleEvent(ModuleEvent& e) {
 		
-		// receive the communicator message of function name "response"
-		if (e.function == "response") {
 
-			// read the answer
-			text = e.message["answer"].get<string>();
-		}
     }
     
 }

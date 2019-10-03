@@ -188,6 +188,7 @@ void ofxAbletonLive::update()
     {
         ofxOscMessage m;
         receiver.getNextMessage(m);
+
         //displayOscMessage(m);
         if      (m.getAddress() == "/live/device/param") {
             processParameterUpdate(m);
@@ -244,6 +245,9 @@ void ofxAbletonLive::update()
 		}
 		else if (m.getAddress() == "/live/quantization") {
 			quantization =  m.getArgAsInt(0);
+		}
+		else if (m.getAddress() == "/live/beat") {
+			beat = m.getArgAsInt(0);
 		}
     }
 }
