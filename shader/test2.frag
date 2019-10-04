@@ -167,8 +167,8 @@ vec3 samplef(in vec2 uv)
     return c;
 }
 
-    uniform sampler2D tex;
-    void main(void) {
+uniform sampler2D tex;
+void main(void) {
     vec2 fragCoord = vec2(gl_FragCoord.x,gl_FragCoord.y);
     vec2 iResolution = vec2(480.0,480.0);
 
@@ -190,4 +190,4 @@ vec3 samplef(in vec2 uv)
     col = clamp(col,0.0,1.0);
     
     gl_FragColor = vec4(col, 1.0);}
-    }
+}
