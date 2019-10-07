@@ -29,6 +29,7 @@ private:
 	ofShader waves;
 	ofShader blending;
 	ofShader shaper;
+	ofShader chromaticAbberation;
 	int lastPos = 0;
 };
 

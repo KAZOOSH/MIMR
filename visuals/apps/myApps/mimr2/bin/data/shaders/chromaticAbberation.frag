@@ -2,13 +2,14 @@
 
 #define PI 3.145926
 
-uniform sampler2DRect wave;
+uniform sampler2DRect tex;
 
 uniform int width;
 uniform int height;
 uniform vec2 center;
 uniform float time;
 uniform float radius;
+uniform float maxAbberation;
 
 out vec4 outputColor;
 
@@ -50,28 +51,18 @@ void main()
 {
 
 	float dist = distance(gl_FragCoord.xy,center);
-
-
-	float cosAlpha = cosAngle(gl_FragCoord.xy - center, vec2(1,0));
-    float alpha = acos(cosAlpha);
-    if(gl_FragCoord.y<center.y){
-    	alpha = 2*PI - alpha;
-    }
+	vec2 vD = gl_FragCoord.xy - center;
 
 	if(dist < radius){
-		//float fadeVal = map(dist,radius-300,radius-200,1,0,true);
-		dist = radius -dist;
-		float pos = time + dist;
-		if(pos > radius) pos -= radius;
-		//pos = 600 - pos;
-		vec4 tcol = texture(wave, vec2(pos,height*0.5/PI * alpha));
-		float dColor = map(dist,radius-500,radius-100,0,1,true);
-		//tcol *= vec4(1.0,1.0*dColor,1.0*dColor,1.0);
-		outputColor = vec4(tcol.xyz,1.0);
-		//outputColor = vec4(alpha/2/PI,0,0,1.0);
+		float abbStrength = map(dist,radius-200,radius-50,0,1,true)*maxAbberation;
+		vec2 dAbberation = normalize(vD)*abbStrength;
+
+		float r = texture(tex, gl_FragCoord.xy + dAbberation).r;
+		float g = texture(tex, gl_FragCoord.xy).g;
+		float b = texture(tex, gl_FragCoord.xy - dAbberation).b;
+
+		outputColor = vec4(r,g,b,texture(tex, gl_FragCoord.xy).a);
 	}else{
-		outputColor = vec4(0.0,0.0,0.0,0.0);
+		outputColor = texture(tex, gl_FragCoord.xy);
 	}
-    //outputColor = vec4(dist,dist,dist,1.0);
-    //outputColor = vec4(value,value,value,1.0);
 }
