@@ -19,7 +19,7 @@ void Renderer::setup(RendererSettings settings_)
 	height = settings["rendering"]["radarSize"][1];
 
 	// load shaders
-	loadShader();
+	loadShaders();
 }
 
 void Renderer::draw()
@@ -63,7 +63,7 @@ void Renderer::draw()
 		//map wave in circle
 		float angle = float(instrument.second.position) / float(radar->instruments.size()) * 2.0 * PI;
 
-		instrument.second.fboFinal.begin();
+		instrument.second.fboWave.begin();
 		ofClear(0, 0);
 		waves.begin();
 		waves.setUniformTexture("wave", instrument.second.fboShaper.getTexture(), 1);
@@ -76,9 +76,24 @@ void Renderer::draw()
 		waves.setUniform1f("time", pos);
 
 		ofDrawRectangle(0, 0, instrument.second.fboTex.getWidth(), instrument.second.fboTex.getHeight());
-
 		waves.end();
-		instrument.second.fboFinal.end();
+		instrument.second.fboWave.end();
+
+		instrument.second.fboAbberation.begin();
+		ofClear(0, 0);
+		chromaticAbberation.begin();
+		chromaticAbberation.setUniformTexture("tex", instrument.second.fboWave.getTexture(), 1);
+		chromaticAbberation.setUniform1i("width", instrument.second.fboWave.getWidth());
+		chromaticAbberation.setUniform1i("height", instrument.second.fboWave.getHeight());
+		chromaticAbberation.setUniform1f("radius", width);
+		chromaticAbberation.setUniform2f("center", ofVec2f(width*0.5 + cos(angle)*width*0.5, width*0.5 + sin(angle) * width*0.5));
+		chromaticAbberation.setUniform1f("time", pos);
+		chromaticAbberation.setUniform1f("maxAbberation", 10.0f);
+
+		ofDrawRectangle(0, 0, instrument.second.fboWave.getWidth(), instrument.second.fboWave.getHeight());
+
+		chromaticAbberation.end();
+		instrument.second.fboAbberation.end();
 
 		//cout << ofVec2f(shaderWidth*0.5 + cos(angle)*shaderWidth*0.5, shaderWidth*0.5 + sin(angle) * shaderWidth*0.5) << endl;
 		i++;
@@ -93,7 +108,7 @@ void Renderer::draw()
 
 	i = 0;
 	for (auto& instrument : radar->instruments) {
-		blending.setUniformTexture("tex" + ofToString(i), instrument.second.fboFinal.getTexture(), i + 1);
+		blending.setUniformTexture("tex" + ofToString(i), instrument.second.fboAbberation.getTexture(), i + 1);
 		i++;
 	}
 
@@ -106,9 +121,10 @@ void Renderer::draw()
 	//radar->instruments[3].fboTex.draw(600, 600,600,600);
 }
 
-void Renderer::loadShader()
+void Renderer::loadShaders()
 {
 	waves.load("shaders/waves");
 	blending.load("shaders/blending");
 	shaper.load("shaders/shaper");
+	chromaticAbberation.load("shaders/chromaticAbberation");
 }

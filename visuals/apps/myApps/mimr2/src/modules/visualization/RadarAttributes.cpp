@@ -36,9 +36,10 @@ void Instrument::setup(ofJson settings, ofJson renderSettings)
 		values.back().set(name + " value" + ofToString(i), 0, 0, 127);
 	}
 
-	fboFinal.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
+	fboWave.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
 	fboTex.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
 	fboShaper.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
+	fboAbberation.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
 
 	fboTex.begin();
 	ofClear(0, 255);

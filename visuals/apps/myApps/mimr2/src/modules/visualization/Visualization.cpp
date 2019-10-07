@@ -65,7 +65,7 @@ namespace ofxModule {
 	void Visualization::keyPressed(ofKeyEventArgs & args)
 	{
 		if (args.key == 'l') {
-			renderer.loadShader();
+			renderer.loadShaders();
 		}
 	}
 

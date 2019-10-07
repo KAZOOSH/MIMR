@@ -16,7 +16,7 @@ public:
 	~Renderer();
 	void setup(RendererSettings settings);
 	void draw();
-	void loadShader();
+	void loadShaders();
 
 private:
 	// settings
@@ -29,6 +29,7 @@ private:
 	ofShader waves;
 	ofShader blending;
 	ofShader shaper;
+	ofShader chromaticAbberation;
 	int lastPos = 0;
 };
 

@@ -17,9 +17,9 @@ out vec4 outputColor;
 int nTex = 8;
 vec4[8] colorValues; 
 
-float distance(float v1,float v2){
+/*float distance(float v1,float v2){
 	return abs(v2-v1);
-}
+}*/
 
 mat2 mm2(float a){float c = cos(a), s = sin(a);return mat2(c,-s,s,c);}
 float tri( float x){return abs(fract(x)-.5);}

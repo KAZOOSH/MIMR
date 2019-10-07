@@ -16,9 +16,10 @@ public:
 	vector<ofParameter<int>> values;
 
 	// rendering params
-	ofFbo fboFinal;
+	ofFbo fboWave;
 	ofFbo fboTex;
 	ofFbo fboShaper;
+	ofFbo fboAbberation;
 };
 
 class Beat {
