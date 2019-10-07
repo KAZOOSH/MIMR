@@ -24,11 +24,13 @@ void MidiCtrl::setup(MidiCtrlSettings settings)
 	//midiIn.setVerbose(true);
 
 	live.setup(settings.jsonSettings["abletonIp"].get<string>());
+	live.getBeat().addListener(this, &MidiCtrl::onBeat);
 }
 
 void MidiCtrl::update()
 {
 	live.update();
+	radar->beat.update();
 }
 
 void MidiCtrl::newMidiMessage(ofxMidiMessage & eventArgs)
@@ -39,4 +41,9 @@ void MidiCtrl::newMidiMessage(ofxMidiMessage & eventArgs)
 	else {
 		radar->instruments[eventArgs.channel].values[eventArgs.control-1] = eventArgs.value;
 	}
+}
+
+void MidiCtrl::onBeat(int & beat)
+{
+	radar->beat.newBeat(beat);
 }

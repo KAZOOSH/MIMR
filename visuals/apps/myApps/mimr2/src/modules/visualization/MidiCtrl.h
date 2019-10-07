@@ -20,6 +20,7 @@ public:
 	void update();
 
 	void newMidiMessage(ofxMidiMessage& eventArgs);
+	void onBeat(int& beat);
 
 private:
 	shared_ptr<RadarAttributes> radar;
