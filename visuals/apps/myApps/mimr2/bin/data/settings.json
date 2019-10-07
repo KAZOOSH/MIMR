@@ -2,6 +2,8 @@
     "Visualization": {
         "midi":{
             "abletonIp":"localhost",
+            "beatsPerBar":4,
+            "barsPerRadarRound":4,
             "port": "nanoKONTROL2 1",
             "instruments":[
                 {

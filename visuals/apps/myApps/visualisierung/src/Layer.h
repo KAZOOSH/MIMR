@@ -26,7 +26,7 @@ public:
     float lastTick;
     
     ofParameter<int> colorSet;
-    //  values for objects
+    //values for objects
     ofParameter<int> v_kurbel;
     ofParameter<bool> v_kuehler1;
     ofParameter<bool> v_kuehler2;
@@ -44,9 +44,6 @@ public:
     ofParameter<bool> v_foehn_schalter1;
     ofParameter<bool> v_foehn_schalter2;
     ofParameter<bool> v_foehn_schalter3;
-	ofParameter<bool> v_bank_schalter1;
-	ofParameter<bool> v_bank_schalter2;
-	ofParameter<bool> v_bank_schalter3;
 
     
 };

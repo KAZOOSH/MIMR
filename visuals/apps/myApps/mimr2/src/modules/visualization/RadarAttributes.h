@@ -21,20 +21,29 @@ public:
 	ofFbo fboShaper;
 };
 
+class Beat {
+public:
+	void newBeat(int value);
+	float getCurrentValue();
+	float getCurrentAngle();
+	long getLastBeat();
+	void setNBars(int n);
+
+private:
+	int nBars = 1;
+	long lastTimestamp = 0;
+	long dsTimestamp = 0;
+	float dsTime = 0;
+	float lastTime = 0;
+	float lastAngle = 0;
+	float currentAngle = 0;
+};
+
 class RadarAttributes {
 public:
 	RadarAttributes();
 	~RadarAttributes();
 	void setup(ofJson instruments, ofJson renderSettings);
-
-	// values for radar
-	float lastAngle = 0;
-	float currentAngle = 0;
-
-	long lastTimestamp = 0;
-	long dsTimestamp = 0;
-	float dsTime = 0;
-	float lastTime = 0;
 
 	ofParameterGroup params;
 
