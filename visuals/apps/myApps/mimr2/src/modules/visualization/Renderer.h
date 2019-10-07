@@ -16,7 +16,7 @@ public:
 	~Renderer();
 	void setup(RendererSettings settings);
 	void draw();
-	void loadShader();
+	void loadShaders();
 
 private:
 	// settings

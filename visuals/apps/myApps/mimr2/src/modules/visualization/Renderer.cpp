@@ -19,7 +19,7 @@ void Renderer::setup(RendererSettings settings_)
 	height = settings["rendering"]["radarSize"][1];
 
 	// load shaders
-	loadShader();
+	loadShaders();
 }
 
 void Renderer::draw()
@@ -106,7 +106,7 @@ void Renderer::draw()
 	//radar->instruments[3].fboTex.draw(600, 600,600,600);
 }
 
-void Renderer::loadShader()
+void Renderer::loadShaders()
 {
 	waves.load("shaders/waves");
 	blending.load("shaders/blending");
