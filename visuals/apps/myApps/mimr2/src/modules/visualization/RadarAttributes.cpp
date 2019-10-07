@@ -45,3 +45,53 @@ void Instrument::setup(ofJson settings, ofJson renderSettings)
 	ofClear(0, 255);
 	fboTex.end();
 }
+
+void Beat::update()
+{
+	auto now = ofGetElapsedTimeMillis();
+
+	// get the difference beat as reference 
+	BeatValue diffBeat = currentBeat - lastBeat;
+	long tDiff = now - currentBeat.timestamp;
+	
+	// get the current time marker
+	float multiplicator = tDiff / diffBeat.timestamp;
+	
+	// calculate current beat 
+	lastBeat = currentBeat;
+	currentBeat.timestamp = now;
+	currentBeat.beat += diffBeat.beat*multiplicator;
+	currentBeat.angle = getAngleFromBeat(currentBeat.beat);
+	
+}
+
+void Beat::newBeat(int value)
+{
+	lastBeat = currentBeat;
+
+	currentBeat.timestamp = ofGetElapsedTimeMillis();
+	currentBeat.beat = value;
+	currentBeat.angle = getAngleFromBeat(value);
+}
+
+BeatValue Beat::getCurrentBeat()
+{
+	return currentBeat;
+}
+
+BeatValue Beat::getLastBeat()
+{
+	return lastBeat;
+}
+
+void Beat::setNBars(int n)
+{
+	nBars = n;
+}
+
+float Beat::getAngleFromBeat(float beat)
+{
+	return fmod(beat,nBars*nBeats);
+}
+
+

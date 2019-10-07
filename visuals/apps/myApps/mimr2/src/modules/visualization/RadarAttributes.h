@@ -22,22 +22,36 @@ public:
 	ofFbo fboAbberation;
 };
 
+class BeatValue {
+public:
+	float beat = 0;
+	float angle = 0;
+	long timestamp = 0;
+
+	BeatValue operator-(BeatValue b) {
+		BeatValue ret;
+		ret.beat = beat - b.beat;
+		ret.angle = angle - b.angle;
+		ret.timestamp = timestamp - b.timestamp;
+	}
+};
+
 class Beat {
 public:
+	void update();
 	void newBeat(int value);
-	float getCurrentValue();
-	float getCurrentAngle();
-	long getLastBeat();
+	BeatValue getCurrentBeat();
+	BeatValue getLastBeat();
 	void setNBars(int n);
+
+protected:
+	float getAngleFromBeat(float beat);
 
 private:
 	int nBars = 1;
-	long lastTimestamp = 0;
-	long dsTimestamp = 0;
-	float dsTime = 0;
-	float lastTime = 0;
-	float lastAngle = 0;
-	float currentAngle = 0;
+	int nBeats = 4;
+	BeatValue lastBeat;
+	BeatValue currentBeat;
 };
 
 class RadarAttributes {
@@ -47,6 +61,7 @@ public:
 	void setup(ofJson instruments, ofJson renderSettings);
 
 	ofParameterGroup params;
+	Beat beat;
 
 	ofParameter<int> colorSet;
 	//  values for objects
