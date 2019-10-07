@@ -51,8 +51,9 @@ protected:
 private:
 	int nBars = 1;
 	int nBeats = 4;
-	BeatValue lastBeat;
+	BeatValue diffBeat;
 	BeatValue currentBeat;
+	BeatValue lastBeat;
 };
 
 class RadarAttributes {

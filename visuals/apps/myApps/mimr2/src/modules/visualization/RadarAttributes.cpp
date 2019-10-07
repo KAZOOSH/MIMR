@@ -50,28 +50,31 @@ void Beat::update()
 {
 	auto now = ofGetElapsedTimeMillis();
 
-	// get the difference beat as reference 
-	BeatValue diffBeat = currentBeat - lastBeat;
-	long tDiff = now - currentBeat.timestamp;
-	
+
+
+	long tDiff = now - lastBeat.timestamp;
+
 	// get the current time marker
-	float multiplicator = tDiff / diffBeat.timestamp;
-	
+	currentBeat.beat = ofMap(now, lastBeat.timestamp, lastBeat.timestamp + diffBeat.timestamp, lastBeat.beat, lastBeat.beat + 1);
+
 	// calculate current beat 
-	lastBeat = currentBeat;
+	//lastBeat = currentBeat;
 	currentBeat.timestamp = now;
-	currentBeat.beat += diffBeat.beat*multiplicator;
+	//currentBeat.beat += diffBeat.beat*multiplicator;
 	currentBeat.angle = getAngleFromBeat(currentBeat.beat);
-	
 }
 
 void Beat::newBeat(int value)
 {
-	lastBeat = currentBeat;
+	//diffBeat = currentBeat;
+	BeatValue bt;
+	bt.timestamp = ofGetElapsedTimeMillis();
+	bt.beat = value;
+	bt.angle = getAngleFromBeat(value);
 
-	currentBeat.timestamp = ofGetElapsedTimeMillis();
-	currentBeat.beat = value;
-	currentBeat.angle = getAngleFromBeat(value);
+	diffBeat = bt - lastBeat;
+	currentBeat = bt;
+	lastBeat = currentBeat;
 }
 
 BeatValue Beat::getCurrentBeat()
@@ -81,7 +84,7 @@ BeatValue Beat::getCurrentBeat()
 
 BeatValue Beat::getLastBeat()
 {
-	return lastBeat;
+	return diffBeat;
 }
 
 void Beat::setNBars(int n)
@@ -91,7 +94,7 @@ void Beat::setNBars(int n)
 
 float Beat::getAngleFromBeat(float beat)
 {
-	return fmod(beat,nBars*nBeats);
+	return fmod(beat,nBars*nBeats)*360 / (nBars*nBeats);
 }
 
 

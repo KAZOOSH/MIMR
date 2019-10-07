@@ -44,6 +44,8 @@ namespace ofxModule {
     //------------------------------------------------------------------
     void Visualization::update() {
 		midiCtrl.update();
+
+		//cout << radarAttributes.beat.getCurrentBeat().angle << " " << radarAttributes.beat.getCurrentBeat().beat << endl;
     }
 
 	void Visualization::draw()
