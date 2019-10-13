@@ -15,13 +15,29 @@ RadarAttributes::~RadarAttributes()
 void RadarAttributes::setup(ofJson jinstruments, ofJson renderSettings)
 {
 	for (auto& entry : jinstruments) {
-		instruments.insert(pair<int,Instrument>(entry["channel"],Instrument()));
-		instruments[entry["channel"]].setup(entry,renderSettings);
-		
-		params.add(instruments[entry["channel"]].isActive);
-		for (auto& val : instruments[entry["channel"]].values) {
+		auto in = pair<int, Instrument>(entry["channel"], Instrument());
+		in.second.setup(entry, renderSettings);
+		instruments.insert(in);
+		//instruments[entry["channel"]].setup(entry,renderSettings);
+		//instrumentByEffect.insert(pair<string, shared_ptr<Instrument>>(entry["effect"].get<string>(), shared_ptr<Instrument>(&instruments[entry["channel"]])));
+		if (instrumentByEffect.find(in.second.effect) != instrumentByEffect.end()) {
+			instrumentByEffect[in.second.effect].push_back(shared_ptr<Instrument>(&instruments[entry["channel"]]));
+		}else {
+			vector<shared_ptr<Instrument>> v;
+			v.push_back(shared_ptr<Instrument>(&instruments[entry["channel"]]));
+			instrumentByEffect.insert(pair<string, vector<shared_ptr<Instrument>>>(in.second.effect, v));
+		}
+
+
+		params.add(in.second.isActive);
+		for (auto& val : in.second.values) {
 			params.add(val);
 		}
+
+		/*params.add(instruments[entry["channel"]].isActive);
+		for (auto& val : instruments[entry["channel"]].values) {
+			params.add(val);
+		}*/
 	}
 }
 
@@ -30,6 +46,7 @@ void Instrument::setup(ofJson settings, ofJson renderSettings)
 	name = settings["name"].get<string>();
 	channel = settings["channel"];
 	position = settings["position"];
+	effect = settings["effect"];
 	isActive.set(name + " isActive",false);
 	for (int i = 0; i < settings["values"] - 1; ++i) {
 		values.push_back(ofParameter<int>());
@@ -84,7 +101,7 @@ BeatValue Beat::getCurrentBeat()
 
 BeatValue Beat::getLastBeat()
 {
-	return diffBeat;
+	return lastBeat;
 }
 
 void Beat::setNBars(int n)
@@ -92,9 +109,14 @@ void Beat::setNBars(int n)
 	nBars = n;
 }
 
+float Beat::getBeatLength()
+{
+	return diffBeat.timestamp;
+}
+
 float Beat::getAngleFromBeat(float beat)
 {
-	return fmod(beat,nBars*nBeats)*360 / (nBars*nBeats);
+	return fmod(beat,nBars*nBeats)*2*PI / (nBars*nBeats);
 }
 
 

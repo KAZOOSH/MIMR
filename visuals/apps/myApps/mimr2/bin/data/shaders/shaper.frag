@@ -4,9 +4,12 @@ uniform sampler2DRect wave;
 
 uniform int width;
 uniform int height;
-uniform int shaper;
+uniform int shaper0;
+uniform int shaper1;
+uniform int shaper2;
 
 uniform float time;
+uniform float intensity;
 
 out vec4 outputColor;
 
@@ -45,22 +48,36 @@ float mapN(float value, float inMin, float inMax, float outMin, float outMax, fl
 }
 
 vec4 shapeLinear(){
-	return texture(wave, gl_FragCoord.xy);
+	float nShapes = 14;
+	float wShape = float(width)/nShapes/3.14;  
+	float dx = sin(gl_FragCoord.y/wShape)*40*intensity;
+	if(gl_FragCoord.x + dx > width) dx -= width;
+	if(gl_FragCoord.x + dx < 0) dx += width;
+	return texture(wave, gl_FragCoord.xy+ vec2(dx,0) );
 }
 
 vec4 shapeSin(){
-	//lreturn texture(wave, gl_FragCoord.xy);
-	return texture(wave, gl_FragCoord.xy+ sin(gl_FragCoord.y/40)*20);// + vec2 (gl_FragCoord.x+ sin(gl_FragCoord.y/40), 0));
+	float nShapes = 3;
+	float wShape = float(width)/nShapes;  
+	float dx = mod(gl_FragCoord.y,wShape);
+	if(dx>wShape/2) dx = wShape-dx;
+	dx *= intensity*1.2;
+	if(gl_FragCoord.x + dx > width) dx -= width;
+	return texture(wave, gl_FragCoord.xy+ vec2(dx,0));
 }
 
 vec4 shapeTriangle(){
-	float dx = mod(gl_FragCoord.y,80);
-	if(dx>40) dx = 80-dx;
+	float nShapes = 18;
+	float wShape = float(width)/nShapes;  
+	float dx = mod(gl_FragCoord.y,wShape);
+	if(dx>wShape/2) dx = wShape-dx;
+	dx *= intensity*1.2;
+	if(gl_FragCoord.x + dx > width) dx -= width;
 	return texture(wave, gl_FragCoord.xy+ vec2(dx,0));
 }
 
 vec4 shapeQuad(){
-	float dx = mod(int(gl_FragCoord.y/40),2)*30;
+	float dx = mod(int(gl_FragCoord.y/40),2)*intensity*40;
 	float x = mod(gl_FragCoord.x-dx,width);
 	return texture(wave, vec2(x,gl_FragCoord.y));
 }
@@ -69,18 +86,17 @@ void main()
 {
 	//outputColor =shapeTriangle();
 
-	if (shaper == 0){
-		outputColor = shapeLinear();
-	}else if(shaper == 1){
-		outputColor = shapeSin();
-	}else if(shaper == 2){
-		outputColor = shapeTriangle();
-	}else if(shaper == 3){
-		outputColor = shapeQuad();
+	vec4 greyOut;
+
+
+	if(shaper0 == 1){
+		greyOut = shapeSin();
+	}else if(shaper1 == 1){
+		greyOut = shapeTriangle();
+	}else if(shaper2 == 1){
+		greyOut = shapeQuad();
 	}else{
-		outputColor = vec4(0.0,0.0,0.0,0.0);
+		greyOut = shapeLinear();
 	}
-	
-    //outputColor = vec4(dist,dist,dist,1.0);
-    //outputColor = vec4(value,value,value,1.0);
+    outputColor = greyOut;
 }

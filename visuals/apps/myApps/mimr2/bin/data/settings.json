@@ -3,54 +3,63 @@
         "midi":{
             "abletonIp":"localhost",
             "beatsPerBar":4,
-            "barsPerRadarRound":4,
+            "barsPerRadarRound":16,
             "port": "nanoKONTROL2 1",
             "instruments":[
                 {
                     "name":"kurbel",
                     "channel":3,
                     "values":2,
-                    "position":0
+                    "position":0,
+                    "effect":"lineDistance"
                 },{
                     "name":"kuehler",
                     "channel":4,
                     "values":6,
-                    "position":1
+                    "position":90,
+                    "effect":"lineDistance"
                 },{
                     "name":"theremin",
                     "channel":5,
                     "values":2,
-                    "position":2
+                    "position":45,
+                    "effect":"zoom"
                 },{
                     "name":"trichter",
                     "channel":6,
                     "values":2,
-                    "position":3
+                    "position":135,
+                    "effect":"abberation"
                 },{
                     "name":"eieiei",
                     "channel":7,
                     "values":3,
-                    "position":4
+                    "position":225,
+                    "effect":"colorInvasion"
                 },{
                     "name":"goldenbox",
                     "channel":8,
                     "values":2,
-                    "position":5
+                    "position":180,
+                    "effect":"lineDistance"
                 },{
                     "name":"bassfahrer",
                     "channel":9,
                     "values":2,
-                    "position":6
+                    "position":270,
+                    "effect":"lineDistance"
                 },{
                     "name":"foen",
                     "channel":10,
                     "values":5,
-                    "position":7
+                    "position":315,
+                    "effect":"lineShape"
                 },{
                     "name":"bank",
                     "channel":11,
                     "values":3,
-                    "position":8
+                    "position":8,
+                    "effect":"none"
                 }
             ]
         },

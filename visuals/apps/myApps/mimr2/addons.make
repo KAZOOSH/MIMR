@@ -1,4 +1,5 @@
 ofxAbletonLive
+ofxEasing
 ofxGui
 ofxMidi
 ofxModule

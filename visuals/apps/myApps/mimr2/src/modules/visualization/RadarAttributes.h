@@ -10,6 +10,7 @@ public:
 	string name;
 	int channel;
 	int position;
+	string effect = "lineDistance";
 
 	// current values
 	ofParameter<bool> isActive;
@@ -20,6 +21,7 @@ public:
 	ofFbo fboTex;
 	ofFbo fboShaper;
 	ofFbo fboAbberation;
+	float posLastRadarWave = 0;
 };
 
 class BeatValue {
@@ -44,12 +46,13 @@ public:
 	BeatValue getCurrentBeat();
 	BeatValue getLastBeat();
 	void setNBars(int n);
+	float getBeatLength();
 
 protected:
 	float getAngleFromBeat(float beat);
 
 private:
-	int nBars = 1;
+	int nBars = 4;
 	int nBeats = 4;
 	BeatValue diffBeat;
 	BeatValue currentBeat;
@@ -68,6 +71,7 @@ public:
 	ofParameter<int> colorSet;
 	//  values for objects
 	map<int,Instrument> instruments;
+	map<string, vector<shared_ptr<Instrument>>> instrumentByEffect;
 
 
 };

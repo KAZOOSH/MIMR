@@ -1,12 +1,3 @@
-/*
- *  Queue.cpp
- *  printer
- *
- *  Created by Brian Eschrich on 09.10.15
- *  Copyright 2015 __MyCompanyName__. All rights reserved.
- *
- */
-
 #include "Visualization.h"
 #include "GeneralPurposeFunctions.h"
 

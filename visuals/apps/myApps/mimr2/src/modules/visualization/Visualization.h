@@ -7,6 +7,7 @@
 #include "RadarAttributes.h"
 #include "Renderer.h"
 
+
 namespace ofxModule {
 	// Basic example of a ModuleDrawable with communication
 class Visualization : public ModuleDrawable{
@@ -39,5 +40,8 @@ protected:
 		RadarAttributes radarAttributes;
 		Renderer renderer;
 		ofFbo rendering;
+
+		
+
 };
 }

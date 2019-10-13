@@ -10,12 +10,13 @@ uniform sampler2DRect tex4;
 uniform sampler2DRect tex5;
 uniform sampler2DRect tex6;
 uniform sampler2DRect tex7;
+uniform sampler2DRect tex8;
 uniform float time;
 
 out vec4 outputColor;
 
-int nTex = 8;
-vec4[8] colorValues; 
+int nTex = 9;
+vec4[9] colorValues; 
 
 /*float distance(float v1,float v2){
 	return abs(v2-v1);
@@ -52,26 +53,41 @@ float triangleNoise(vec2 p)
 
 void main()
 {
-    colorValues[0] = texture(tex0, gl_FragCoord.xy);// * vec4(1.0,0.0,0,1.0);
-    colorValues[1] = texture(tex1, gl_FragCoord.xy);// * vec4(0.0,1.0,0,1.0);;
+    colorValues[0] = texture(tex0, gl_FragCoord.xy);// vec4(1.0,0.0,0,1.0);
+    colorValues[1] = texture(tex1, gl_FragCoord.xy);// vec4(0.0,1.0,0,1.0);;
     colorValues[2] = texture(tex2, gl_FragCoord.xy);// * vec4(0.0,0,1,1.0);;
     colorValues[3] = texture(tex3, gl_FragCoord.xy);// * vec4(1.0,1,0,1.0);;
     colorValues[4] = texture(tex4, gl_FragCoord.xy);// * vec4(0.0,1,1,1.0);
     colorValues[5] = texture(tex5, gl_FragCoord.xy);// * vec4(0.0,1,1,1.0);
     colorValues[6] = texture(tex6, gl_FragCoord.xy);// * vec4(0.0,1,1,1.0);
-    colorValues[7] = texture(tex7, gl_FragCoord.xy);// * vec4(0.0,1,1,1.0);
+    colorValues[7] = texture(tex7, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
+    colorValues[8] = texture(tex8, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
+
+    float opacity = 0.6;
+    float maxOpacity = 0.8;
 
     vec4 color = vec4(0, 0, 0, 0);
-    for(int i=0;i<nTex-1;i++){
-    	color += colorValues[i]*(colorValues[i].a) + colorValues[i+1]*(1-colorValues[i].a);
-    	//color = mix(colorValues[i],colorValues[i+1],0.5);
-    	//color += (colorValues[i]);
+    for(int i=0;i<nTex;i++){
+        if(color.a < 1.0){
+            color += vec4(colorValues[i].rgb,colorValues[i].a*opacity);
+            if(color.a > maxOpacity) color.a = maxOpacity;
+        }
+       // color += colorValues[i]*(colorValues[i].a*.6) + colorValues[i+1]*(1-colorValues[i].a*.6);
+        //color = mix(colorValues[i],colorValues[i+1],0.5);
+        //color += (colorValues[i]);
     }
-    //color = abs(color);
+   // color = vec4(color.rgb*color.a,color.a*3.0);
+    // if(color.a > 1.0) color.a = 1.0;
+   /* vec4 color = vec4(0, 0, 0, 0);
+    for(int i=0;i<nTex-1;i++){
+        color += colorValues[i]*(colorValues[i].a*.6) + colorValues[i+1]*(1-colorValues[i].a*.6);
+        //color = mix(colorValues[i],colorValues[i+1],0.5);
+        //color += (colorValues[i]);
+    }*/
 
     float dist = distance(gl_FragCoord.xy,vec2(width*0.5,width*0.5));
     if(dist > width*0.5) color = vec4(0,0,0,0);
     //color.a *= (0.5 + 0.5*triangleNoise(gl_FragCoord.xy/500));
 
-    outputColor = color;
+    outputColor =  color;
 }

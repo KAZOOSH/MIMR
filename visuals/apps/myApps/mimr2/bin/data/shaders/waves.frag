@@ -3,12 +3,16 @@
 #define PI 3.145926
 
 uniform sampler2DRect wave;
+uniform sampler2DRect shaper;
 
 uniform int width;
 uniform int height;
 uniform vec2 center;
 uniform float time;
 uniform float radius;
+
+uniform vec2 centerShaper;
+uniform float rShaper;
 
 out vec4 outputColor;
 
@@ -50,7 +54,12 @@ void main()
 {
 
 	float dist = distance(gl_FragCoord.xy,center);
+	int currentTex = 0;
 
+	float dShaper = distance(gl_FragCoord.xy,centerShaper);
+	if(dShaper < rShaper){
+		currentTex = 1;
+	}
 
 	float cosAlpha = cosAngle(gl_FragCoord.xy - center, vec2(1,0));
     float alpha = acos(cosAlpha);
@@ -65,13 +74,21 @@ void main()
 		if(pos > radius) pos -= radius;
 		//pos = 600 - pos;
 		vec4 tcol = texture(wave, vec2(pos,height*0.5/PI * alpha));
+		if(currentTex == 1){
+			tcol = texture(shaper, vec2(pos,height*0.5/PI * alpha));
+		}
 		float dColor = map(dist,radius-500,radius-100,0,1,true);
 		//tcol *= vec4(1.0,1.0*dColor,1.0*dColor,1.0);
-		outputColor = vec4(tcol.xyz,1.0);
+		if(tcol.r == 1.0) tcol.a = 1.0;
+		else tcol.a = 0.0;
+		outputColor = tcol;
+
 		//outputColor = vec4(alpha/2/PI,0,0,1.0);
 	}else{
 		outputColor = vec4(0.0,0.0,0.0,0.0);
 	}
     //outputColor = vec4(dist,dist,dist,1.0);
     //outputColor = vec4(value,value,value,1.0);
+
+   // outputColor = vec4(rShaper/width,0.0,0.0,1.0);
 }

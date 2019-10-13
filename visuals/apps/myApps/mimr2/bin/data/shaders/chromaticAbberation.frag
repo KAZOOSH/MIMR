@@ -54,7 +54,7 @@ void main()
 	vec2 vD = gl_FragCoord.xy - center;
 
 	if(dist < radius){
-		float abbStrength = map(dist,radius-200,radius-50,0,1,true)*maxAbberation;
+		float abbStrength = map(dist,radius-600,radius-50,0,1,true)*maxAbberation;
 		vec2 dAbberation = normalize(vD)*abbStrength;
 
 		float r = texture(tex, gl_FragCoord.xy + dAbberation).r;
