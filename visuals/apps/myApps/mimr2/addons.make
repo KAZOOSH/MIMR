@@ -3,4 +3,7 @@ ofxEasing
 ofxGui
 ofxMidi
 ofxModule
+ofxOpenCv
 ofxOsc
+ofxPoco
+ofxQuadWarp

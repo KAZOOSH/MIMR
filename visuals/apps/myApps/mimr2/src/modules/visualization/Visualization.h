@@ -7,6 +7,8 @@
 #include "RadarAttributes.h"
 #include "Renderer.h"
 
+#include "ofxOsc.h"
+#include "ofxQuadWarp.h"
 
 namespace ofxModule {
 	// Basic example of a ModuleDrawable with communication
@@ -41,7 +43,7 @@ protected:
 		Renderer renderer;
 		ofFbo rendering;
 
-		
-
+		ofxOscReceiver osc;
+		ofxQuadWarp warper;
 };
 }

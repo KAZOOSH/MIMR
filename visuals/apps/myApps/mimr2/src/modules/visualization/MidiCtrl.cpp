@@ -23,6 +23,9 @@ void MidiCtrl::setup(MidiCtrlSettings settings)
 	midiIn.addListener(this);
 	//midiIn.setVerbose(true);
 
+	midiOut.listOutPorts();
+	midiOut.openPort(settings.jsonSettings["portOut"].get<string>());
+
 	live.setup(settings.jsonSettings["abletonIp"].get<string>());
 	live.getBeat().addListener(this, &MidiCtrl::onBeat);
 }
@@ -46,4 +49,9 @@ void MidiCtrl::newMidiMessage(ofxMidiMessage & eventArgs)
 void MidiCtrl::onBeat(int & beat)
 {
 	radar->beat.newBeat(beat);
+}
+
+void MidiCtrl::sendMidi(int channel, int note, int value)
+{
+	midiOut.sendControlChange(channel, note, value);
 }

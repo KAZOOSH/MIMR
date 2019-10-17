@@ -53,7 +53,7 @@ float triangleNoise(vec2 p)
 
 void main()
 {
-    colorValues[0] = texture(tex0, gl_FragCoord.xy);// vec4(1.0,0.0,0,1.0);
+    colorValues[0] = texture(tex0, gl_FragCoord.xy);//* vec4(1.0,0.0,0,1.0);
     colorValues[1] = texture(tex1, gl_FragCoord.xy);// vec4(0.0,1.0,0,1.0);;
     colorValues[2] = texture(tex2, gl_FragCoord.xy);// * vec4(0.0,0,1,1.0);;
     colorValues[3] = texture(tex3, gl_FragCoord.xy);// * vec4(1.0,1,0,1.0);;
@@ -63,8 +63,8 @@ void main()
     colorValues[7] = texture(tex7, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
     colorValues[8] = texture(tex8, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
 
-    float opacity = 0.6;
-    float maxOpacity = 0.8;
+    float opacity = 0.7;
+    float maxOpacity = 0.9;
 
     vec4 color = vec4(0, 0, 0, 0);
     for(int i=0;i<nTex;i++){
@@ -90,4 +90,5 @@ void main()
     //color.a *= (0.5 + 0.5*triangleNoise(gl_FragCoord.xy/500));
 
     outputColor =  color;
+    //outputColor =  vec4(0,0,0,0.0);
 }

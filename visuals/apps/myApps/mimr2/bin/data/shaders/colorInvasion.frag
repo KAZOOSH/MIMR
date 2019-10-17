@@ -217,6 +217,6 @@ void main()
 
 	
 	//outputColor = vec4(1.0,1.0,1.0,noise);
-	outputColor = vec4(lerpRGB(vec3(1.0,0.29,0.7)*0.6,vec3(1.0,0.29,0.7)*0.01,lerpV).rgb, 1.0);
-
+	outputColor = vec4(lerpRGB(vec3(1.0,0.29,0.7),vec3(1.0,0.29,0.7)*0.01,lerpV).rgb, 1.0);
+	//outputColor = vec4(1.0,1.0,1.0,1.0);
 }

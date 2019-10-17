@@ -14,7 +14,7 @@ RadarAttributes::~RadarAttributes()
 
 void RadarAttributes::setup(ofJson jinstruments, ofJson renderSettings)
 {
-	for (auto& entry : jinstruments) {
+	for (auto& entry : jinstruments["instruments"]) {
 		auto in = pair<int, Instrument>(entry["channel"], Instrument());
 		in.second.setup(entry, renderSettings);
 		instruments.insert(in);
@@ -27,17 +27,17 @@ void RadarAttributes::setup(ofJson jinstruments, ofJson renderSettings)
 			v.push_back(shared_ptr<Instrument>(&instruments[entry["channel"]]));
 			instrumentByEffect.insert(pair<string, vector<shared_ptr<Instrument>>>(in.second.effect, v));
 		}
-
-
 		params.add(in.second.isActive);
 		for (auto& val : in.second.values) {
 			params.add(val);
 		}
-
-		/*params.add(instruments[entry["channel"]].isActive);
-		for (auto& val : instruments[entry["channel"]].values) {
-			params.add(val);
-		}*/
+	}
+	for (auto& entry : jinstruments["chaosObjects"]["note"]) {
+		auto in = pair<int, ChaosObject>(entry, ChaosObject());
+		in.second.setup(jinstruments["chaosObjects"]["channel"], entry,renderSettings);
+		in.second.isActive = false;
+		chaosObjects.insert(in);
+		//params.add(in.second.isActive);
 	}
 }
 
@@ -61,6 +61,12 @@ void Instrument::setup(ofJson settings, ofJson renderSettings)
 	fboTex.begin();
 	ofClear(0, 255);
 	fboTex.end();
+	fboWave.begin();
+	ofClear(0, 0);
+	fboWave.end();
+	fboShaper.begin();
+	ofClear(0, 0);
+	fboShaper.end();
 }
 
 void Beat::update()
@@ -119,4 +125,23 @@ float Beat::getAngleFromBeat(float beat)
 	return fmod(beat,nBars*nBeats)*2*PI / (nBars*nBeats);
 }
 
+void ChaosObject::setup(int channel_, int note_, ofJson renderSettings)
+{
+	fboWave.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
+	fboTex.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
+	fboShaper.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
+	fboAbberation.allocate(renderSettings["radarSize"][0], renderSettings["radarSize"][1]);
 
+	fboTex.begin();
+	ofClear(0, 255);
+	fboTex.end();
+	fboWave.begin();
+	ofClear(0, 0);
+	fboWave.end();
+	fboShaper.begin();
+	ofClear(0, 0);
+	fboShaper.end();
+
+	note = note_;
+	channel = channel_;
+}

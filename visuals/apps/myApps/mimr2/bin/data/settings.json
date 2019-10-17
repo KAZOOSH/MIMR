@@ -5,6 +5,7 @@
             "beatsPerBar":4,
             "barsPerRadarRound":16,
             "port": "nanoKONTROL2 1",
+            "portOut": "nanoKONTROL2 1",
             "instruments":[
                 {
                     "name":"kurbel",
@@ -29,7 +30,7 @@
                     "channel":6,
                     "values":2,
                     "position":135,
-                    "effect":"abberation"
+                    "effect":"optic"
                 },{
                     "name":"eieiei",
                     "channel":7,
@@ -47,7 +48,7 @@
                     "channel":9,
                     "values":2,
                     "position":270,
-                    "effect":"lineDistance"
+                    "effect":"lineWidth"
                 },{
                     "name":"foen",
                     "channel":10,
@@ -61,10 +62,18 @@
                     "position":8,
                     "effect":"none"
                 }
-            ]
+            ],
+            "chaosObjects":{
+                "oscPort":9020,
+                "channel":10,
+                "note":[
+                    1,2,3,4,5
+                ]
+            }
         },
         "rendering":{
             "radarSize":[1080,1080]
         }
     }
+    
 }

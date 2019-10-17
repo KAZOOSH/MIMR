@@ -21,10 +21,12 @@ public:
 
 	void newMidiMessage(ofxMidiMessage& eventArgs);
 	void onBeat(int& beat);
+	void sendMidi(int channel, int note, int value);
 
 private:
 	shared_ptr<RadarAttributes> radar;
 	ofxMidiIn midiIn;
+	ofxMidiOut midiOut;
 	ofxAbletonLive live;
 
 	

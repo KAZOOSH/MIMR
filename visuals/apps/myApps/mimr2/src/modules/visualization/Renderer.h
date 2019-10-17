@@ -24,11 +24,15 @@ public:
 	void onZoomStart(bool& isStart);
 	void onColorInvasionStart(bool& isStart);
 	void onLineShapeStart(bool& isStart);
+	void onLineWidthStart(bool& isStart);
 
 protected:
+	void renderWaves();
 	void renderZoom();
 	void renderColorInvasion();
+	void renderLineShape();
 	void renderLineWidth();
+	void renderDistortion();
 
 	void drawEffectStartAnimation(string effectName);
 	void calculateRingValues(string effectName, ofVec2f& center, float& radius);
@@ -48,6 +52,7 @@ private:
 	ofShader shaper;
 	ofShader chromaticAbberation;
 	ofShader colorInvasion;
+	ofShader distortion;
 	int lastPos = 0;
 
 	map<string, Timer> timer;
@@ -56,5 +61,6 @@ private:
 	ofFbo fboZoom;
 	ofFbo fboRadar;
 	ofFbo fboBgBlend;
+	ofFbo fboDistort;
 };
 

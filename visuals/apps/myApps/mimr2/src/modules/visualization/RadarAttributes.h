@@ -24,6 +24,18 @@ public:
 	float posLastRadarWave = 0;
 };
 
+class ChaosObject : public Instrument{
+public:
+	void setup(int channel , int note, ofJson renderSettings);
+
+	// attributes
+	ofVec2f positionXY;
+	int note;
+	bool hasSend = false;
+	long lastActivated = 0;
+	
+};
+
 class BeatValue {
 public:
 	float beat = 0;
@@ -72,6 +84,6 @@ public:
 	//  values for objects
 	map<int,Instrument> instruments;
 	map<string, vector<shared_ptr<Instrument>>> instrumentByEffect;
-
+	map<int, ChaosObject> chaosObjects;
 
 };

@@ -53,7 +53,21 @@ vec4 shapeLinear(){
 	float dx = sin(gl_FragCoord.y/wShape)*40*intensity;
 	if(gl_FragCoord.x + dx > width) dx -= width;
 	if(gl_FragCoord.x + dx < 0) dx += width;
-	return texture(wave, gl_FragCoord.xy+ vec2(dx,0) );
+
+	vec4[5] colors;
+
+	 colors[0] = texture(wave, gl_FragCoord.xy+ vec2(dx,0));
+	 colors[1] = texture(wave, gl_FragCoord.xy+ vec2(dx+1,0));
+	 colors[2] = texture(wave, gl_FragCoord.xy+ vec2(dx-1,0));
+	 colors[3] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+	 colors[4] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+
+	vec4 vout = vec4(0,0,0,1);
+	for(int i=0;i<5;++i){
+		if(vout.r<colors[i].r) vout = colors[i];
+	}
+
+	return vout;
 }
 
 vec4 shapeSin(){
@@ -63,7 +77,20 @@ vec4 shapeSin(){
 	if(dx>wShape/2) dx = wShape-dx;
 	dx *= intensity*1.2;
 	if(gl_FragCoord.x + dx > width) dx -= width;
-	return texture(wave, gl_FragCoord.xy+ vec2(dx,0));
+	vec4[5] colors;
+
+	 colors[0] = texture(wave, gl_FragCoord.xy+ vec2(dx,0));
+	 colors[1] = texture(wave, gl_FragCoord.xy+ vec2(dx+1,0));
+	 colors[2] = texture(wave, gl_FragCoord.xy+ vec2(dx-1,0));
+	 colors[3] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+	 colors[4] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+
+	vec4 vout = vec4(0,0,0,1);
+	for(int i=0;i<5;++i){
+		if(vout.r<colors[i].r) vout = colors[i];
+	}
+
+	return vout;
 }
 
 vec4 shapeTriangle(){
@@ -73,13 +100,42 @@ vec4 shapeTriangle(){
 	if(dx>wShape/2) dx = wShape-dx;
 	dx *= intensity*1.2;
 	if(gl_FragCoord.x + dx > width) dx -= width;
-	return texture(wave, gl_FragCoord.xy+ vec2(dx,0));
+	
+	vec4[5] colors;
+
+	 colors[0] = texture(wave, gl_FragCoord.xy+ vec2(dx,0));
+	 colors[1] = texture(wave, gl_FragCoord.xy+ vec2(dx+1,0));
+	 colors[2] = texture(wave, gl_FragCoord.xy+ vec2(dx-1,0));
+	 colors[3] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+	 colors[4] = texture(wave, gl_FragCoord.xy+ vec2(dx-2,0));
+
+	vec4 vout = vec4(0,0,0,1);
+	for(int i=0;i<5;++i){
+		if(vout.r<colors[i].r) vout = colors[i];
+	}
+
+	return vout;
 }
 
 vec4 shapeQuad(){
 	float dx = mod(int(gl_FragCoord.y/40),2)*intensity*40;
 	float x = mod(gl_FragCoord.x-dx,width);
 	return texture(wave, vec2(x,gl_FragCoord.y));
+
+	vec4[5] colors;
+
+	 colors[0] = texture(wave, vec2(x,gl_FragCoord.y));
+	 colors[1] = texture(wave, vec2(x-0.5,gl_FragCoord.y));
+	 colors[2] = texture(wave, vec2(x-1,gl_FragCoord.y));
+	 colors[3] = texture(wave, vec2(x+1,gl_FragCoord.y));
+	 colors[4] = texture(wave, vec2(x+0.5,gl_FragCoord.y));
+
+	vec4 vout = vec4(0,0,0,1);
+	for(int i=0;i<5;++i){
+		if(vout.r<colors[i].r) vout = colors[i];
+	}
+
+	return vout;
 }
 
 void main()
