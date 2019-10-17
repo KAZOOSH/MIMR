@@ -25,6 +25,7 @@ public:
 	void onColorInvasionStart(bool& isStart);
 	void onLineShapeStart(bool& isStart);
 	void onLineWidthStart(bool& isStart);
+	void onDistortionStart(bool& isStart);
 
 protected:
 	void renderWaves();

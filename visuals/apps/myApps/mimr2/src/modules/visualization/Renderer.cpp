@@ -62,6 +62,9 @@ void Renderer::setup(RendererSettings settings_)
 	timer.insert(pair<string, Timer>("lineWidth", Timer()));
 	timer["lineWidth"].setCountdown(2000, 0); // enter
 
+	timer.insert(pair<string, Timer>("optic", Timer()));
+	timer["optic"].setCountdown(2000, 0); // enter
+
 	for (auto& instrument : radar->instruments) {
 		string effect = instrument.second.effect;
 		if (effect == "zoom") {
@@ -72,6 +75,8 @@ void Renderer::setup(RendererSettings settings_)
 			instrument.second.isActive.addListener(this, &Renderer::onLineShapeStart);
 		}else if (effect == "lineWidth") {
 			instrument.second.isActive.addListener(this, &Renderer::onLineWidthStart);
+		}else if (effect == "optic") {
+			instrument.second.isActive.addListener(this, &Renderer::onDistortionStart);
 		}
 	}
 
@@ -158,6 +163,15 @@ void Renderer::onLineWidthStart(bool & isStart)
 		timer["lineWidth"].start();
 	}
 	else { timer["lineWidth"].stop(); }
+}
+
+void Renderer::onDistortionStart(bool & isStart)
+{
+	if (isStart) {
+		timer["optic"].setCountdown(radar->beat.getBeatLength() * 2, 0);
+		timer["optic"].start();
+	}
+	else { timer["optic"].stop(); }
 }
 
 void Renderer::renderWaves()
@@ -615,19 +629,24 @@ void Renderer::renderDistortion()
 	ofClear(0, 0);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
+	float radius = 0;
+	if (radar->instrumentByEffect["optic"][0]->isActive) {
+		if (timer["optic"].isRunning()) {
+			radius = ofMap(timer["optic"].getPercentage(), 0, 1, 0, width);
+		}
+		else {
+			radius = width;
+		}
+	}
+	float angle = radar->instrumentByEffect["optic"][0]->position * PI / 180;
 
-		//ofVec2f center = ofVec2f(width*0.5);
-		//float radius = width * 0.5;
-		//if (timer["colorInvasion"].getRound() == 0) {
-		//	calculateRingValues("colorInvasion", center, radius);
-		//}
-		//float angle = radar->instrumentByEffect["colorInvasion"][0]->position * PI / 180;
 		distortion.begin();
 		distortion.setUniformTexture("tex", fboBgBlend.getTexture(), 1);
 		distortion.setUniform1i("width", width);
 		distortion.setUniform1i("height", width);
-		distortion.setUniform1f("radius", width);
+		distortion.setUniform1f("radius", radius);
 		distortion.setUniform1f("intensity", ofMap(radar->instrumentByEffect["optic"][0]->values[0],0,127,0,1));
+		distortion.setUniform2f("center", ofVec2f(width*0.5 + cos(angle)*width*0.5, width*0.5 + sin(angle) * width*0.5));
 		ofDrawRectangle(0, 0, fboDistort.getWidth(), fboDistort.getHeight());
 
 		//ofDrawCircle(center, radius);

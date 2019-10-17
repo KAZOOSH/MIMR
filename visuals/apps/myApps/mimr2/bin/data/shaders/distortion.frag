@@ -8,6 +8,9 @@ uniform int height;
 uniform float time;
 uniform float intensity;
 
+uniform float radius;
+uniform vec2 center;
+
 out vec4 outputColor;
 
 
@@ -44,55 +47,42 @@ float mapN(float value, float inMin, float inMax, float outMin, float outMax, fl
 	return map(pct, 0,1, outMin, outMax);
 }
 
+float mapE(float value, float shaper){
+	//pct = pow(pct, shaper);
+	//return map(pct, 0,1, outMin, outMax);
+    return pow(value, shaper);
+}
 
-vec2 ProjectCoordsSphere(vec2 normCoords)
-{
-    const float SPHERE_RADIUS_SQ = 1.0;
-    //z^2 = R^2 - (x^2 + y^2).
-    //float z2 = SPHERE_RADIUS_SQ - dot(normCoords, normCoords);
-    float z2 = 1 - distance(vec2(0,0),normCoords);
 
-    //if(z2 <= 0.0)
-    //    return normCoords;
+vec2 remapCoords(vec2 coords){
+    float d = distance(vec2(0,0),coords);
 
-    //z2 *= 10*intensity;
+    //float dx = 1 + mapN(d,0,1,0,1,intensity) - d;
+    float strength = map(intensity,0,1,0.3,4);
+    float dx = 1 + mapE(d,strength) - d;
 
-    //Project the 3D point(normCoords.x, normCoords.y, sqrt(z2)) onto the screen
-    //to emulate the sphere-like refraction.
-    //vec2 outProjectedCoords = normCoords / sqrt(z2);
+    vec2 outProjectedCoords =  vec2(coords.x*dx,coords.y*dx );
 
-    float mult = mapN(z2,0,1,0,1,1.0 + intensity);
-    vec2 outProjectedCoords =  normCoords;
-
-    //Add an antialiasing step to avoid jagged edges on the lens.
-    const float AA_EDGE = 0.2;
-    /*if(z2 < AA_EDGE)
-    {
-        //Smooth transition of the squared z from 0 to AA_EDGE.
-        //Normalize this transition factor to the [0,1] interval.
-        float aaFactor = smoothstep(0.0, 1.0, z2 / AA_EDGE);
-        
-        //Perform another smooth transition between the projected coordinates and the original ones.
-        //When z is very small, the projected coordinates are very big and tend to opint to the same position,
-        //thus giving the edge of the lens a jagged appearance.
-        outProjectedCoords = mix(
-            normCoords, 
-            outProjectedCoords,
-        	aaFactor);
-    }*/
-    
-    return outProjectedCoords;
+    return  outProjectedCoords;
 }
 
 void main()
 {
-	vec2 uv = gl_FragCoord.xy/vec2(width,height);
-	uv -= vec2(0.5,0.5);
-	uv*=2;
+    float dist = distance(gl_FragCoord.xy,center);
 
-	vec2 cellDelta = ProjectCoordsSphere(uv);
-	vec2 xy = cellDelta + vec2(0.5,0.5);
-	vec4 col = texture(tex, xy*vec2(width,height));
+    if  (dist < radius){
+        vec2 uv = gl_FragCoord.xy/vec2(width,height);
+        uv -= vec2(0.5,0.5);
+        uv*=2;
+
+        vec2 cellDelta = remapCoords(uv);
+        vec2 xy = (cellDelta*0.5) + vec2(0.5,0.5);
+        vec4 col = texture(tex, xy*vec2(width,height));
+        
+        outputColor = col;
+    }else{
+        outputColor = texture(tex, gl_FragCoord.xy);
+    }
+
 	
-    outputColor = col;
 }

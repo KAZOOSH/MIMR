@@ -93,7 +93,7 @@ namespace ofxModule {
 			ofVec2f v0 = ofVec2f(1, 0);
 			ofVec2f v1 = object.second.positionXY - center;
 			v1.normalize();
-			if (object.second.isActive) cout << v1 << endl;
+			//if (object.second.isActive) cout << v1 << endl;
 			float angle = v0.angleRad(v1);
 			//if (angle < 0) angle = 360 + angle;
 			//angle /= 180 * PI;
@@ -130,7 +130,7 @@ namespace ofxModule {
 		ofClear(0, 0);
 		renderer.draw();
 		rendering.end();
-		rendering.draw((ofGetWidth()-rendering.getWidth())*0.5, 0);
+		//rendering.draw((ofGetWidth()-rendering.getWidth())*0.5, 0);
 		
 		//======================== get our quad warp matrix.
 
@@ -139,7 +139,7 @@ namespace ofxModule {
 		//======================== use the matrix to transform our fbo.
 
 		
-		/*ofPushMatrix();
+		ofPushMatrix();
 		ofMultMatrix(mat);
 		rendering.draw(0, 0);
 		if (warper.isShowing()) {
@@ -149,7 +149,7 @@ namespace ofxModule {
 			ofDrawRectangle(0, rendering.getWidth() / 2, rendering.getWidth(), 2);
 			ofDrawRectangle(rendering.getWidth() / 2,0,2, rendering.getWidth());
 		}
-		ofPopMatrix();*/
+		ofPopMatrix();
 		
 		//======================== draw quad warp ui.
 
