@@ -32,7 +32,7 @@ def createConfig(name):
     elif name == 'eieiei':
         config.midiInputStartChannel = 54
         config.midiOutputChannel = 4
-        config.nMidiInputValues = 2
+        config.nMidiInputValues = 1
         config.inputNValues = [254,254]
         config.nMidiOutputValues = 3
     elif name == 'goldenbox':

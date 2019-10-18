@@ -24,7 +24,7 @@
 #include "mpr121.h"
 
 //LED control
-#define NUM_LEDS 50
+#define NUM_LEDS 36
 #define DATA_PIN 3
 #define CLOCK_PIN 13
 
@@ -94,10 +94,10 @@ void loop(){
   }
 
 
-  if(serialIn[3] == 0 && lastState == 1){
+  if(serialIn[2] == 0 && lastState == 1){
       lastActivated = millis();
   }
-  lastState = serialIn[3];
+  lastState = serialIn[2];
 
   //if not idle proceed normal
   if(serialIn[2] == 0){
@@ -190,10 +190,8 @@ void setLedColor(){
     isRed = true; isGreen = true; isBlue = true;
   }
 
-      //int hue = serialIn[1];
-      //int value = 255 - serialIn[0];
-      //int saturation = serialIn[2];
-      int intensity = 255 - serialIn[0];
+      int intensity = 150 - serialIn[0];
+      if(intensity < 0 ) intensity = 0;
 
       CRGB color1 = CRGB(5,5,5);
       //CRGB color2 = CHSV(hue, saturation, value);

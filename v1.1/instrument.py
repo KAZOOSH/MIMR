@@ -55,7 +55,7 @@ class Instrument:
             self.footSensorPin = 7
 
         GPIO.setmode( GPIO.BCM )
-        GPIO.setup( self.footSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_UP )
+        GPIO.setup( self.footSensorPin, GPIO.IN  )
 
         self.releasing = False
         self.releaseStart = 0
@@ -85,7 +85,7 @@ class Instrument:
         #outputValues[0] is the active state 0-idle 127-active
 
         # query sensor state
-        footActive = not GPIO.input(self.footSensorPin)
+        footActive = GPIO.input(self.footSensorPin)
 
         sendIdleUpdate = False
 
@@ -195,8 +195,9 @@ class Instrument:
             safe = False
 
     def sendMidiMessage(self,attribute):
-        bytes = struct.pack( "BBBB", 0xaa, self.midiOutputChannel, attribute, int(self.outputValues[attribute]))
-        self.udpOut.send( bytes )    
+        if attribute == 0 or self.outputValues[0] == 127:
+            bytes = struct.pack( "BBBB", 0xaa, self.midiOutputChannel, attribute, int(self.outputValues[attribute]))
+            self.udpOut.send( bytes )  
 
     def sendSerial(self):
         # update Arduino, first add sync byte
