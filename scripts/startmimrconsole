@@ -1,14 +1,16 @@
 #!/bin/bash
 
-instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bassfahrer" "foen")
-
+instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bassfahrer" "foen" "bank")
+CMD="$1"
 
 
 for i in "${instruments[@]}"
 do
-
-	
-	#konsole --new-tab --hold -e ssh pi@$i
-	screen -t $i
-	screen -p $i -X stuff "ssh pi@$i\n"
+	if [ -z "$CMD" ]
+	then
+		screen -t $i
+		screen -p $i -X stuff "ssh pi@$i\n"
+	else
+		screen -p $i -X stuff "$CMD"
+	fi
 done

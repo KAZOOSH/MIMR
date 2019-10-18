@@ -1,6 +1,6 @@
 #!/bin/bash
 
-instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bassfahrer" "foen")
+instruments=( "Kurbel" "kuehler" "theremin" "trichter" "eieiei" "goldenbox" "bassfahrer" "foen" "bank")
 
 
 

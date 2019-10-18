@@ -57,7 +57,10 @@ case $INSTRUMENTNAME in
      foen)
 		IP="58"
 	;;
-	 auto)
+     bank)
+		IP="59"
+	;;
+     auto)
 	 	INSTRUMENTNAME=$HOSTNAME
 	;; 
      *)
