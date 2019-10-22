@@ -206,6 +206,8 @@ void loop()
 */
   Serial.print(tune);
   Serial.println("");
+  if(tune > 255*5) tune = 255*5;
+  if (tune <0) tune = 0;
   CRGB color = CRGB(tune/5,tune/5,tune/5); 
 
   for( int i = 0; i < NUM_LEDS; i++) {

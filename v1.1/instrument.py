@@ -6,6 +6,9 @@ import sys
 from time import time
 from serial import Serial
 import struct
+from osc4py3.as_eventloop import *
+from osc4py3 import oscbuildparse
+from osc4py3 import oscmethod as osm
 
 import RPi.GPIO as GPIO
 
@@ -16,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 class InstrumentConfig:
     def __init__(self):
+        self.name = "none"
         self.midiInputStartChannel = 0
         self.midiOutputChannel = 0
         self.nMidiInputValues = 1
@@ -23,9 +27,17 @@ class InstrumentConfig:
         self.isPi1 = False
         self.inputNValues= [254]
         self.serialPort = "/dev/ttyACM0"
+        self.oscServer = "192.168.1.133"
+        self.oscSendPort = 9002
+        self.oscReceivePort = 9002
+        self.enableMidi = False
+        self.enableOsc = True
+
 
 class Instrument:
     def __init__(self,config):
+
+        self.name = config.name
 
         # MIDI configuration
         # starting with 0xB0 -> 178  
@@ -72,12 +84,23 @@ class Instrument:
         self.udpIn.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,128)
 
         # open UDP socket to send raveloxmidi
-        self.udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-        self.udpOut.connect( ( "localhost", 5006 ) )
+        if config.enableMidi:
+            self.udpOut = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+            self.udpOut.connect( ( "localhost", 5006 ) )
+
+        # open OSC communication
+        if config.enableOsc:
+            osc_startup()
+            self.osc_udp_client(config.oscServer, config.oscPort, self.name)
+            self.osc_udp_server("0.0.0.0", config.oscReceivePort, self.name)
+            self.osc_method("/mimr", self.readOscInput, argscheme=OSCARG_MESSAGE)
 
     def update(self):
         self.updateFootState()
-        self.readMidiInput()
+        if config.enableMidi:
+            self.readMidiInput()
+        if config.enableOsc:
+            osc_process()
         self.readSerialInput()  
 
     def updateFootState(self):
@@ -117,6 +140,10 @@ class Instrument:
             self.sendMidiMessage(0)
             self.sendSerial()
     
+    def readOscInput(self,msg):
+        pass
+
+
     def readMidiInput(self):
         # incoming UDP packets in buffer?
         bufferClear = False
@@ -198,6 +225,11 @@ class Instrument:
         if attribute == 0 or self.outputValues[0] == 127:
             bytes = struct.pack( "BBBB", 0xaa, self.midiOutputChannel, attribute, int(self.outputValues[attribute]))
             self.udpOut.send( bytes )  
+
+    def sendOscMessage(self,attribute):
+        if attribute == 0 or self.outputValues[0] == 127:
+            msg = oscbuildparse.OSCMessage("/mimr/instrument", None, [self.name, self.midiOutputChannel, attribute,int(self.outputValues[attribute])])
+            osc_send(msg, self.name)
 
     def sendSerial(self):
         # update Arduino, first add sync byte

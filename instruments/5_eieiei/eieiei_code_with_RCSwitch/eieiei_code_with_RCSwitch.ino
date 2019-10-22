@@ -16,7 +16,7 @@ unsigned long lastSendTime = 0;
 
 // baud rate for USB communication with RasPi
 #define BAUD_RATE 115200L
-
+byte serialIn[3] = {0,0,1}; //intensity,  isIdle
 
 // analog ports for measuring
 const int motorPin2 = A5;   
@@ -101,7 +101,7 @@ void loop() {
   //Serial.println(maxvalueMotor);
   // Serial.print(" ");
   // Serial.println( min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10)); 
-   outRot =  min(100,max(0,(int((maxvalueMotor- minvalueMotor) /10)) - 1) * 10);
+   outRot =  min(100,max(0,(int((maxvalueMotor- minvalueMotor-5) /10)) - 1) * 10);
   
    maxvalueMotor=maxvalueMotor*0.9999;
    minvalueMotor=min(minvalueMotor*1.0001,maxvalueMotor);
@@ -167,12 +167,8 @@ void printDistance(){
   distSensorValue = median(distSensorValue0,distSensorValue1,distSensorValue2);
 
   outDist = (int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127);
+  if(outDist <=10) outDist = 0;
   //Serial.print(":");
   //Serial.print((int)(((distSensorValue-distSensorValueMin)/(max(1,distSensorValueMax-distSensorValueMin))) * 127));
   
 }
-
-
-
-
-

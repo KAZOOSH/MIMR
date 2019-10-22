@@ -6,6 +6,7 @@ import socket
 
 def createConfig(name):
     config = InstrumentConfig()
+    config.name = name
 
     if name == 'kurbel':
         config.midiInputStartChannel = 14

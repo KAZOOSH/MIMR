@@ -24,7 +24,7 @@
 #include "mpr121.h"
 
 //LED control
-#define NUM_LEDS 36
+#define NUM_LEDS 40
 #define DATA_PIN 3
 #define CLOCK_PIN 13
 
@@ -190,15 +190,15 @@ void setLedColor(){
     isRed = true; isGreen = true; isBlue = true;
   }
 
-      int intensity = 150 - serialIn[0];
+      int intensity = 255 - serialIn[0];
       if(intensity < 0 ) intensity = 0;
 
-      CRGB color1 = CRGB(5,5,5);
+      CRGB color1 = CRGB(1,1,1);
       //CRGB color2 = CHSV(hue, saturation, value);
       CRGB color2 = CRGB(isRed*intensity,isGreen*intensity,isBlue*intensity);
 
       for(int c = 0; c<NUM_LEDS; c++){
-        if(touchStates[nLedIndex[c]] == 0){
+        if(touchStates[nLedIndex[c]] == 0 || c%3 == 1){
           leds[c] = color1;
         }
         else {
