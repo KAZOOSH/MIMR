@@ -6,7 +6,7 @@ from osc4py3 import oscbuildparse
 osc_startup()
 
 # Make client channels to send packets.
-osc_udp_client("127.0.0.1", 9020, "mimr")
+osc_udp_client("127.0.0.1", 9002, "mimr")
 
 # Build a simple message and send it.
 msg = oscbuildparse.OSCMessage("/chaos", "ibff", [1,True,0.3,0.41])

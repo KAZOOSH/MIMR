@@ -13,7 +13,7 @@ namespace ofxModule {
 		radarAttributes.setup(settings["midi"], settings["rendering"]);
 
 		MidiCtrlSettings midiSettings;
-		midiSettings.jsonSettings = settings["midi"];
+		midiSettings.jsonSettings = settings;
 		midiSettings.radarAttributes = shared_ptr<RadarAttributes>(&radarAttributes);
 		midiCtrl.setup(midiSettings);
 
@@ -29,7 +29,7 @@ namespace ofxModule {
 
 		rendering.allocate(settings["rendering"]["radarSize"][0], settings["rendering"]["radarSize"][1]);
 
-		osc.setup(settings["midi"]["chaosObjects"]["oscPort"].get<int>());
+		//osc.setup(settings["midi"]["chaosObjects"]["oscPort"].get<int>());
 
 
 		int x = (ofGetWidth() - rendering.getWidth()) * 0.5;       // center on screen.
@@ -55,36 +55,36 @@ namespace ofxModule {
     void Visualization::update() {
 		midiCtrl.update();
 
-		// update chaos osc
-		// check for waiting messages
-		while (osc.hasWaitingMessages()) {
+		//// update chaos osc
+		//// check for waiting messages
+		//while (osc.hasWaitingMessages()) {
 
-			// get the next message
-			ofxOscMessage m;
-			osc.getNextMessage(m);
+		//	// get the next message
+		//	ofxOscMessage m;
+		//	osc.getNextMessage(m);
 
-			// check for mouse moved message
-			if (m.getAddress() == "/chaos") {
-				int id = m.getArgAsInt32(0);
-				bool isActive = m.getArgAsBool(1);
-				float x = m.getArgAsFloat(2);
-				float y = m.getArgAsFloat(3);
+		//	// check for mouse moved message
+		//	if (m.getAddress() == "/chaos") {
+		//		int id = m.getArgAsInt32(0);
+		//		bool isActive = m.getArgAsBool(1);
+		//		float x = m.getArgAsFloat(2);
+		//		float y = m.getArgAsFloat(3);
 
-				for (auto& chaos : radarAttributes.chaosObjects) {
-					if (chaos.second.note == id) {
-						chaos.second.positionXY = ofVec2f(x*rendering.getWidth(), y*rendering.getHeight());
-						if (isActive && chaos.second.positionXY.distance(ofVec2f(rendering.getWidth(), rendering.getHeight())*.5) < rendering.getWidth()*0.5) {
-							chaos.second.isActive = true;
-							//cout << chaos.second.note << "  active " << chaos.second.isActive << "  pos" << x << "," << y << "     "<< chaos.second.positionXY<<endl;
-						}
-						else {
-							chaos.second.isActive = false;
-						}
-					}
-				}
-			}
+		//		for (auto& chaos : radarAttributes.chaosObjects) {
+		//			if (chaos.second.note == id) {
+		//				chaos.second.positionXY = ofVec2f(x*rendering.getWidth(), y*rendering.getHeight());
+		//				if (isActive && chaos.second.positionXY.distance(ofVec2f(rendering.getWidth(), rendering.getHeight())*.5) < rendering.getWidth()*0.5) {
+		//					chaos.second.isActive = true;
+		//					//cout << chaos.second.note << "  active " << chaos.second.isActive << "  pos" << x << "," << y << "     "<< chaos.second.positionXY<<endl;
+		//				}
+		//				else {
+		//					chaos.second.isActive = false;
+		//				}
+		//			}
+		//		}
+		//	}
 
-		}
+		//}
 
 		// update chaos midi
 		float maxAngle = 0.05;

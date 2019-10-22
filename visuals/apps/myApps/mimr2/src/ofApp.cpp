@@ -22,10 +22,6 @@ void ofApp::setup(){
 		// add the module to the control
         webModule.getModuleLoader()->addModule(mod);
     }
-	if (webModule.getModuleLoader()->getCountModulesConfig("Midi")) {
-		//auto mod = new ofxModuleMidi();
-		//webModule.getModuleLoader()->addModule(mod);
-	}
     
 	// enables the communication between modules (set in modules.json)
 	webModule.getModuleLoader()->initModuleCommunication();

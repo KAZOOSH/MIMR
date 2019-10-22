@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxMidi.h"
+#include "ofxOsc.h"
 
 class ofApp : public ofBaseApp , public ofxMidiListener{
 public:
@@ -35,7 +36,8 @@ public:
     ofFbo fbo;
     
     int n;
-	ofxMidiIn midiIn;
+	ofxOscReceiver osc;
+	//ofxMidiIn midiIn;
 
 	float zoom = 0;
 	ofJson settings;

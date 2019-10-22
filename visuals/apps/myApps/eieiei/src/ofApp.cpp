@@ -35,12 +35,12 @@ void ofApp::setup() {
     n=0;
 
 	
-
-	midiIn.listInPorts();
+	osc.setup(settings["port"].get<int>());
+	/*midiIn.listInPorts();
 
 	midiIn.openPort(settings["port"].get<string>());
 	midiIn.ignoreTypes(false, false, false);
-	midiIn.addListener(this);
+	midiIn.addListener(this);*/
 }
 
 
@@ -52,6 +52,29 @@ void ofApp::update() {
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
 	time += ofGetLastFrameTime();// *ofMap(depth, 0, 127, 1.0, 1.9);
+
+	while (osc.hasWaitingMessages()) {
+
+		// get the next message
+		ofxOscMessage m;
+		osc.getNextMessage(m);
+
+		if (m.getAddress() == "/mimr/instrument") {
+			int channel = m.getArgAsInt(0);
+			int control = m.getArgAsInt(1);
+			int value = m.getArgAsInt(2);
+
+			if (channel == settings["channel"]) {
+				if (control == 0) {
+					//radar->instruments[channel].isActive = value == 127 ? true : false;
+				}
+				else if (control == settings["control"]){
+					zoom = ofMap(value, 0, 127, 0, PI / 2 - 0.5);
+				}
+			}
+			
+		}
+	}
 }
 
 //--------------------------------------------------------------

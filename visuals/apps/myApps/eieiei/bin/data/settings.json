@@ -1,5 +1,5 @@
 {
-    "port":"visualisierung_in 0",
+    "port":9002,
     "channel":7,
     "control":1,
     "fullScreen":true,

@@ -6,6 +6,7 @@
         "barsPerRadarRound": 16,
         "port": "visualisierung_in 0",
         "portOut": "visualisierung_in 1",
+        "oscOut":"192.168.178.21",
         "instruments": [
           {
             "name": "kurbel",
