@@ -8,7 +8,7 @@ from serial import Serial
 import struct
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
-from osc4py3 import oscmethod as osm
+from osc4py3.oscmethod import *
 
 import RPi.GPIO as GPIO
 
@@ -43,6 +43,10 @@ class Instrument:
         # starting with 0xB0 -> 178  
         self.midiOutputChannel = 178 + config.midiOutputChannel
         self.midiInputStartChannel = config.midiInputStartChannel
+        self.enableMidi = config.enableMidi
+
+        # osc
+        self.enableOsc = config.enableOsc
 
         #beat channel
         self.beatChannel = 3
@@ -91,15 +95,15 @@ class Instrument:
         # open OSC communication
         if config.enableOsc:
             osc_startup()
-            self.osc_udp_client(config.oscServer, config.oscPort, self.name)
-            self.osc_udp_server("0.0.0.0", config.oscReceivePort, self.name)
-            self.osc_method("/mimr", self.readOscInput, argscheme=OSCARG_MESSAGE)
+            osc_udp_client(config.oscServer, config.oscSendPort, self.name)
+            #osc_udp_server("0.0.0.0", config.oscReceivePort, self.name)
+            osc_method("/mimr", self.readOscInput, argscheme=OSCARG_MESSAGE)
 
     def update(self):
         self.updateFootState()
-        if config.enableMidi:
+        if self.enableMidi:
             self.readMidiInput()
-        if config.enableOsc:
+        if self.enableOsc:
             osc_process()
         self.readSerialInput()  
 
@@ -137,7 +141,10 @@ class Instrument:
 
         # state changed? then send midi active message
         if sendIdleUpdate:
-            self.sendMidiMessage(0)
+            if self.enableMidi:
+                self.sendMidiMessage(0)
+            if self.enableOsc:
+                self.sendOscMessage(0)
             self.sendSerial()
     
     def readOscInput(self,msg):
@@ -217,7 +224,10 @@ class Instrument:
                         logging.info("new value on channel " + str(i+1) + " : " + str(self.outputValues[i+1]))
                         
                         #send value
-                        self.sendMidiMessage(i+1)
+                        if self.enableMidi:
+                            self.sendMidiMessage(i+1)
+                        if self.enableOsc:
+                            self.sendOscMessage(i+1)
                         
             safe = False
 
