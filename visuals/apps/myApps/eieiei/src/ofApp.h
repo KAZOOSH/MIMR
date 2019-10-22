@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxSerial.h"
 #include "ofxGui.h"
+#include "ofxMidi.h"
 
-class ofApp : public ofBaseApp{
+class ofApp : public ofBaseApp , public ofxMidiListener{
 public:
     
     void setup();
@@ -21,7 +21,7 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
-    
+	void newMidiMessage(ofxMidiMessage& eventArgs);
     
     ofShader shader;
     ofPlanePrimitive plane;
@@ -31,9 +31,12 @@ public:
     ofxPanel gui;
     ofParameter<float> time;
     
-    ofx::IO::SerialDevice device;
     
     ofFbo fbo;
     
     int n;
+	ofxMidiIn midiIn;
+
+	float zoom = 0;
+	ofJson settings;
 };

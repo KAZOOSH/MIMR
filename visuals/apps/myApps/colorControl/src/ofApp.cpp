@@ -2,50 +2,59 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
-	ofSetWindowPosition(0, 0);
-	ofSetLogLevel(OF_LOG_NOTICE);
-	ofLogToConsole();
-
-	// Our app will consist of 2 modules that show how module communication works
-	// Communicator : it receives a number, multiplies it and sends it to the presenter
-	// Presenter : it sends a number, receives an answer from the communicator and shows ist on the screen
-    
-    // first we init the app by crawling the config (modules.json), 
-	// searching for the specific components and adding them to the module control
-    
-    if (webModule.getModuleLoader()->getCountModulesConfig("Visualization")) {
-		
-		// create a communicator
-        auto mod = new Visualization();
-
-		// add the module to the control
-        webModule.getModuleLoader()->addModule(mod);
-    }
-	if (webModule.getModuleLoader()->getCountModulesConfig("Midi")) {
-		//auto mod = new ofxModuleMidi();
-		//webModule.getModuleLoader()->addModule(mod);
-	}
-    
-	// enables the communication between modules (set in modules.json)
-	webModule.getModuleLoader()->initModuleCommunication();
+	config = ofLoadJson("config.json");
+	midiOut.listOutPorts();
+	midiOut.openPort(config["port"].get<string>());
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	// update the modules
-	webModule.getModuleRunner()->updateModules();
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	// draw the modules
-    webModule.getModuleRunner()->drawModules();
+	ofSetBackgroundColor(0);
+	vector<string> s{ "weis","rot","grün","blau","gelb","cyan","magenta" };
+	int i = 0;
+	for (auto c:s){
+		ofDrawBitmapString(c + ofToString(i), 30, i * 10 + 10);
+		++i;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	int channel = 1;
+	switch (key)
+	{
+	case '0':
+		
+		break;
+	case '1':
+		midiOut.sendControlChange(channel, 15, 1);
+		break;
+	case '2':
+		
+		break;
+	case '3':
+		
+		break;
+	case '4':
+		
+		break;
+	case '5':
+		
+		break;
+	case '6':
+		
+		break;
+	case '7':
+		
+		break;
+	default:
+		break;
+	}
 }
 
 //--------------------------------------------------------------
@@ -74,6 +83,16 @@ void ofApp::mouseReleased(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y){
+
+}
+
+//--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
 
 }
@@ -81,6 +100,10 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
 
+}
+
+void ofApp::setColorScheme(int i)
+{
 }
 
 //--------------------------------------------------------------

@@ -45,5 +45,7 @@ protected:
 
 		ofxOscReceiver osc;
 		ofxQuadWarp warper;
+
+		bool isGui = false;
 };
 }

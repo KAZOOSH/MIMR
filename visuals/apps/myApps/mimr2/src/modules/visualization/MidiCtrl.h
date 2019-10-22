@@ -22,6 +22,7 @@ public:
 	void newMidiMessage(ofxMidiMessage& eventArgs);
 	void onBeat(int& beat);
 	void sendMidi(int channel, int note, int value);
+	void sendNote(int channel, int note, bool isOn);
 
 private:
 	shared_ptr<RadarAttributes> radar;

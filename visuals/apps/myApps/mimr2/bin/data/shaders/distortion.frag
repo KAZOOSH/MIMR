@@ -58,7 +58,7 @@ vec2 remapCoords(vec2 coords){
     float d = distance(vec2(0,0),coords);
 
     //float dx = 1 + mapN(d,0,1,0,1,intensity) - d;
-    float strength = map(intensity,0,1,0.3,4);
+    float strength = map(intensity,0,1,0.3,3);
     float dx = 1 + mapE(d,strength) - d;
 
     vec2 outProjectedCoords =  vec2(coords.x*dx,coords.y*dx );
@@ -68,7 +68,14 @@ vec2 remapCoords(vec2 coords){
 
 void main()
 {
+    if(distance(gl_FragCoord.xy,vec2(width*0.5,height*0.5))>width*0.5){
+        outputColor = vec4(0,0,0,1);
+    }else{
+
+    
+
     float dist = distance(gl_FragCoord.xy,center);
+
 
     if  (dist < radius){
         vec2 uv = gl_FragCoord.xy/vec2(width,height);
@@ -84,5 +91,5 @@ void main()
         outputColor = texture(tex, gl_FragCoord.xy);
     }
 
-	
+    }
 }

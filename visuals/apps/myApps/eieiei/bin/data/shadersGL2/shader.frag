@@ -130,9 +130,9 @@ vec4 samplef(in vec2 uv)
 	
     
 
-	vec3 bg = vec3(0,0,0);// vLerp( cos(iTime/10));
+	vec3 bg =  vLerp( cos(depth));
 
-	vec3 col = vLerp(sin(iTime/9));
+	vec3 col = vLerp(sin(depth));
 
 
 	vec3 c = bg;
@@ -150,13 +150,13 @@ vec4 samplef(in vec2 uv)
 	if (r>.9) c = bg;
 
 	if (c!=bg) alpha = 1;
-	return vec4(c,alpha);
+	return vec4(c,1);
 }
 
 void main()
 {
 	vec2 fragCoord = tcoord;
-	vec2 iResolution = vec2(2000,1500);
+	vec2 iResolution = vec2(800,600);
 
 	vec2 uv = (fragCoord.xy / iResolution.xy * 2. - 1.)
 			* vec2(iResolution.x / iResolution.y, 1) * 1.25;

@@ -4,63 +4,63 @@
         "abletonIp": "localhost",
         "beatsPerBar": 4,
         "barsPerRadarRound": 16,
-        "port": "mimr_in 0",
-        "portOut": "mimr_in 1",
+        "port": "visualisierung_in 0",
+        "portOut": "visualisierung_in 1",
         "instruments": [
           {
             "name": "kurbel",
             "channel": 3,
             "values": 2,
-            "position": 0,
+            "position": 10,
             "effect": "lineDistance"
           },
           {
             "name": "kuehler",
             "channel": 4,
             "values": 6,
-            "position": 90,
+            "position": 290,
             "effect": "lineDistance"
           },
           {
             "name": "theremin",
             "channel": 5,
             "values": 2,
-            "position": 45,
-            "effect": "zoom"
+            "position": 330,
+            "effect": "lineWidth"
           },
           {
             "name": "trichter",
             "channel": 6,
             "values": 2,
-            "position": 135,
+            "position": 155,
             "effect": "optic"
           },
           {
             "name": "eieiei",
             "channel": 7,
             "values": 3,
-            "position": 225,
+            "position": 215,
             "effect": "colorInvasion"
           },
           {
             "name": "goldenbox",
             "channel": 8,
             "values": 2,
-            "position": 180,
+            "position": 110,
             "effect": "lineDistance"
           },
           {
             "name": "bassfahrer",
             "channel": 9,
             "values": 2,
-            "position": 270,
-            "effect": "lineWidth"
+            "position": 257,
+            "effect": "zoom"
           },
           {
             "name": "foen",
             "channel": 10,
             "values": 5,
-            "position": 315,
+            "position": 65,
             "effect": "lineShape"
           },
           {
@@ -73,7 +73,7 @@
         ],
         "chaosObjects": {
           "oscPort": 9020,
-          "channel": 10,
+          "channel": 11,
           "note": [
             1,
             2,

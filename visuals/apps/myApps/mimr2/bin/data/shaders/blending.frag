@@ -15,7 +15,7 @@ uniform float time;
 
 out vec4 outputColor;
 
-int nTex = 9;
+int nTex = 8;
 vec4[9] colorValues; 
 
 /*float distance(float v1,float v2){
@@ -63,8 +63,8 @@ void main()
     colorValues[7] = texture(tex7, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
     colorValues[8] = texture(tex8, gl_FragCoord.xy);// vec4(0.0,1,1,1.0);
 
-    float opacity = 0.7;
-    float maxOpacity = 0.9;
+    float opacity = 0.8;
+    float maxOpacity = 0.95;
 
     vec4 color = vec4(0, 0, 0, 0);
     for(int i=0;i<nTex;i++){

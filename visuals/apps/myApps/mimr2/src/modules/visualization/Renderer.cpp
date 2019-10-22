@@ -100,7 +100,8 @@ void Renderer::draw()
 		ofSetColor(255);
 		if (e.second.isActive) {
 			float y = height - e.second.positionXY.y;
-			ofDrawCircle(e.second.positionXY.x,y, 10);
+			drawRing(ofVec2f(e.second.positionXY.x, y), 100, 2,ofColor(255,50));
+			//ofDrawCircle(e.second.positionXY.x,y, 10);
 		}
 	}
 
@@ -130,7 +131,7 @@ void Renderer::loadShaders()
 void Renderer::onZoomStart(bool & isStart)
 {
 	if (isStart) { 
-		timer["zoom"].setCountdown(radar->beat.getBeatLength(), 0);
+		timer["zoom"].setCountdown(radar->beat.getBeatLength()*4, 0);
 		timer["zoom"].start(); 
 	}
 	else { timer["zoom"].stop(); }
@@ -140,7 +141,7 @@ void Renderer::onZoomStart(bool & isStart)
 void Renderer::onColorInvasionStart(bool & isStart)
 {
 	if (isStart) { 
-		timer["colorInvasion"].setCountdown(radar->beat.getBeatLength()*2, 0);
+		timer["colorInvasion"].setCountdown(radar->beat.getBeatLength()*4, 0);
 		timer["colorInvasion"].setCountdown(radar->beat.getBeatLength() * 4, 1);
 		timer["colorInvasion"].start(); 
 	}
@@ -150,7 +151,7 @@ void Renderer::onColorInvasionStart(bool & isStart)
 void Renderer::onLineShapeStart(bool & isStart)
 {
 	if (isStart) {
-		timer["lineShape"].setCountdown(radar->beat.getBeatLength()*2, 0);
+		timer["lineShape"].setCountdown(radar->beat.getBeatLength()*4, 0);
 		timer["lineShape"].start();
 	}
 	else { timer["lineShape"].stop(); }
@@ -159,7 +160,7 @@ void Renderer::onLineShapeStart(bool & isStart)
 void Renderer::onLineWidthStart(bool & isStart)
 {
 	if (isStart) {
-		timer["lineWidth"].setCountdown(radar->beat.getBeatLength()*2, 0);
+		timer["lineWidth"].setCountdown(radar->beat.getBeatLength()*4, 0);
 		timer["lineWidth"].start();
 	}
 	else { timer["lineWidth"].stop(); }
@@ -168,7 +169,7 @@ void Renderer::onLineWidthStart(bool & isStart)
 void Renderer::onDistortionStart(bool & isStart)
 {
 	if (isStart) {
-		timer["optic"].setCountdown(radar->beat.getBeatLength() * 2, 0);
+		timer["optic"].setCountdown(radar->beat.getBeatLength() * 4, 0);
 		timer["optic"].start();
 	}
 	else { timer["optic"].stop(); }
@@ -179,7 +180,7 @@ void Renderer::renderWaves()
 	
 	int pos = fmod(ofGetElapsedTimeMillis() / 7, width);
 	int i = 0;
-	float wRadar = 2;
+	float wRadar = 3;
 
 	// waves
 	for (auto& instrument : radar->instruments) {
@@ -384,10 +385,10 @@ void Renderer::renderWaves()
 				shaper.setUniform1i("width", instrument.second.fboShaper.getWidth());
 				shaper.setUniform1i("height", instrument.second.fboShaper.getHeight());
 				shaper.setUniform1f("time", pos);
-				shaper.setUniform1i("shaper0", iShape->values[1] == 127 ? 1 : 0);
-				shaper.setUniform1i("shaper1", iShape->values[2] == 127 ? 1 : 0);
-				shaper.setUniform1i("shaper2", iShape->values[3] == 127 ? 1 : 0);
-				shaper.setUniform1f("intensity", ofMap(iShape->values[0], 0, 127, 0, 1));
+				shaper.setUniform1i("shaper0", iShape->values[0] == 127 ? 1 : 0);
+				shaper.setUniform1i("shaper1", iShape->values[1] == 127 ? 1 : 0);
+				shaper.setUniform1i("shaper2", iShape->values[2] == 127 ? 1 : 0);
+				shaper.setUniform1f("intensity", ofMap(iShape->values[3], 0, 127, 0, 1));
 				ofDrawRectangle(0, 0, instrument.second.fboShaper.getWidth(), instrument.second.fboTex.getHeight());
 				shaper.end();
 				instrument.second.fboShaper.end();
@@ -503,7 +504,17 @@ void Renderer::renderWaves()
 	ofVec2f p1(width*.5, height*.5);
 	ofVec2f p2(width*.5 + cos(radar->beat.getCurrentBeat().angle)*width*0.5, height*.5 - sin(radar->beat.getCurrentBeat().angle)*height*0.5);
 	ofVec2f d = p2 - p1;
+	
+	ofPushMatrix();
+	ofTranslate(p1);
+	ofPushMatrix();
+	ofRotateRad(2*PI - radar->beat.getCurrentBeat().angle);
+	ofDrawRectangle(0, 0, width, 2);
+	ofPopMatrix();
+	ofPopMatrix();
+
 	ofDrawLine(p1, p2);
+	
 	float percentage = 1 - (fmod(radar->beat.getCurrentBeat().beat,16)/16.0);
 	ofDrawCircle(p1 + d * percentage,ofxeasing::map(percentage,0,1,2,10,ofxeasing::sine::easeInOut));
 
@@ -619,6 +630,15 @@ void Renderer::renderLineShape()
 
 void Renderer::renderLineWidth()
 {
+	if (timer["lineWidth"].getRound() == 0 && timer["lineWidth"].isRunning()) {
+		auto& iShape = radar->instrumentByEffect["lineWidth"][0];
+		float angle = iShape->position / 180.0 * PI;
+
+		float r = width / 2;
+
+		float percentage = ofxeasing::map(timer["lineWidth"].getPercentage(), 0.0, 1.0, 0.0, 1.0, ofxeasing::sine::easeIn);
+		drawRing(ofVec2f(width*0.5 + cos(angle)*width*0.5, width*0.5 + sin(angle) * width*0.5), percentage*width, percentage * 40);
+	}
 }
 
 void Renderer::renderDistortion()
@@ -655,6 +675,16 @@ void Renderer::renderDistortion()
 	fboDistort.end();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
+	if (timer["optic"].getRound() == 0 && timer["optic"].isRunning()) {
+		auto& iShape = radar->instrumentByEffect["optic"][0];
+		float angle = iShape->position / 180.0 * PI;
+
+		float r = width / 2;
+
+		float percentage = ofxeasing::map(timer["optic"].getPercentage(), 0.0, 1.0, 0.0, 1.0, ofxeasing::sine::easeIn);
+		drawRing(ofVec2f(width*0.5 + cos(angle)*width*0.5, width*0.5 + sin(angle) * width*0.5), percentage*width, 2);
+	}
+
 }
 
 void Renderer::drawEffectStartAnimation(string effectName)
@@ -666,7 +696,7 @@ void Renderer::drawEffectStartAnimation(string effectName)
 		ofVec2f center;
 		float radius;
 
-		float angle = float(radar->instrumentByEffect[effectName][0]->position) / 360 * 2.0 * PI;
+		float angle = float(radar->instrumentByEffect[effectName][0]->position);// / 360 * 2.0 * PI;
 		float percentage = ofxeasing::map(timer[effectName].getPercentage(), 0.0, 1.0, 0.0, 1.0, ofxeasing::sine::easeIn);
 
 		drawOpenRing(angle, percentage, lineWidth);

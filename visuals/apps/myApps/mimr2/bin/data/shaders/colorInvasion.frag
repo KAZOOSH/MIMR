@@ -1,5 +1,13 @@
 #version 150
 
+#define PURPLE vec3(0.64,0,0.69)
+#define PINK vec3(1,0,0.59)
+#define TURQUOISE vec3(0,0.73,0.83) 
+#define BLUE vec3(0,0.38,0.68) 
+
+//Changes the strength of the displacement
+#define DSP_STR 1.5
+
 uniform sampler2DRect tex;
 
 uniform int width;
@@ -192,6 +200,51 @@ vec3 lerpRGB(in vec3 rgb1, in vec3 rgb2, in float rate)
 {
     return hsv2rgb(lerpHSV(rgb2hsv(rgb1),rgb2hsv(rgb2),rate));
 }
+float getsat(vec3 c)
+{
+    float mi = min(min(c.x, c.y), c.z);
+    float ma = max(max(c.x, c.y), c.z);
+    return (ma - mi)/(ma+ 1e-7);
+}
+
+//Improved rgb lerp
+vec3 iLerp(in vec3 a, in vec3 b, in float x)
+{
+    //Interpolated base color (with singularity fix)
+    vec3 ic = mix(a, b, x) + vec3(1e-6,0.,0.);
+    
+    //Saturation difference from ideal scenario
+    float sd = abs(getsat(ic) - mix(getsat(a), getsat(b), x));
+    
+    //Displacement direction
+    vec3 dir = normalize(vec3(2.*ic.x - ic.y - ic.z, 2.*ic.y - ic.x - ic.z, 2.*ic.z - ic.y - ic.x));
+    //Simple Lighntess
+    float lgt = dot(vec3(1.0), ic);
+    
+    //Extra scaling factor for the displacement
+    float ff = dot(dir, normalize(ic));
+    
+    //Displace the color
+    ic += DSP_STR*dir*sd*ff*lgt;
+    return clamp(ic,0.,1.);
+}
+
+vec3 vLerp(float x){
+	x = abs(x);
+
+	if (x < 0.25){
+		return iLerp(PURPLE, PINK, x*4.0);
+	}
+	else if (x < 0.5){
+		return iLerp(PINK, TURQUOISE, (x-0.25)*4.0);
+	}
+	else if (x < 0.75){
+		return iLerp(TURQUOISE, BLUE, (x-0.5)*4.0);
+	}
+	else{
+		return iLerp(BLUE, PURPLE, (x-0.75)*4.0);
+	}
+}
 
 void main()
 {
@@ -212,11 +265,18 @@ void main()
 
 	lerpV = sin(lerpV*3.14);
 
-	lerpV += scaleColor;
+	//lerpV += scaleColor;
 	lerpV = clamp(lerpV,0,1);
 
+    float lerpFinal = (scaleColor*.75) + lerpV*0.25;
 	
 	//outputColor = vec4(1.0,1.0,1.0,noise);
-	outputColor = vec4(lerpRGB(vec3(1.0,0.29,0.7),vec3(1.0,0.29,0.7)*0.01,lerpV).rgb, 1.0);
+
+    //vec3 bg =  vLerp( cos(depth));
+
+	//vec3 col = vLerp(sin(depth));
+
+    outputColor = vec4(vLerp(lerpFinal),1.0);
+	//outputColor = vec4(lerpRGB(vec3(1.0,0.29,0.7),vec3(1.0,0.29,0.7)*0.01,lerpV).rgb, 1.0);
 	//outputColor = vec4(1.0,1.0,1.0,1.0);
 }

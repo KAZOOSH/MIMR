@@ -107,12 +107,18 @@ namespace ofxModule {
 			bool isIn = dAngle <= maxAngle ? true : false;
 
 			if (object.second.hasSend && !isIn) {
-				midiCtrl.sendMidi(object.second.channel, object.second.note, 0);
+				
+					midiCtrl.sendMidi(object.second.channel, object.second.note, 0);
+		
 				object.second.hasSend = false;
-				//cout << "midi off " << object.second.channel << "  " << object.second.note << endl;
+				//cout << 00"midi off " << object.second.channel << "  " << object.second.note << endl;
 			}
 			else if (object.second.isActive && isIn && !object.second.hasSend) {
+	
 					midiCtrl.sendMidi(object.second.channel, object.second.note, 127);
+				
+				
+			
 					object.second.hasSend = true;
 					object.second.lastActivated = ofGetElapsedTimeMillis();
 
@@ -165,7 +171,7 @@ namespace ofxModule {
 		ofSetColor(ofColor::red);
 		warper.drawSelectedCorner();
 		
-		gui.draw();
+		if(isGui)gui.draw();
 
 
 	}
@@ -186,9 +192,9 @@ namespace ofxModule {
 			warper.toggleShow();
 		}
 
-		/*if (args.key == 'l' ) {
-			warper.load();
-		}*/
+		if (args.key == 'g' ) {
+			isGui = !isGui;
+		}
 
 		if (args.key == 's') {
 			warper.save();

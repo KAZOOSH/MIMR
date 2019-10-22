@@ -55,3 +55,13 @@ void MidiCtrl::sendMidi(int channel, int note, int value)
 {
 	midiOut.sendControlChange(channel, note, value);
 }
+
+void MidiCtrl::sendNote(int channel, int note, bool isOn)
+{
+	if (isOn) {
+		midiOut.sendNoteOn(channel, note);
+	}
+	else {
+		midiOut.sendNoteOff(channel, note);
+	}
+}

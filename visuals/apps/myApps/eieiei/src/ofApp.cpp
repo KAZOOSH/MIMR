@@ -2,25 +2,29 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-    
+	settings = ofLoadJson("settings.json");
     
     shader.load("shadersGL2/shader");
+	ofLogToConsole();
     
     
+    img.allocate(800,600,OF_IMAGE_COLOR_ALPHA);
+    fbo.allocate(800,600);
+	ofSetWindowShape(800, 600);
+
+	ofSetWindowPosition(settings["position"], 0);
+	//ofSetFullscreen(settings["fullScreen"]);
+
     
-    img.allocate(2000,1500,OF_IMAGE_COLOR_ALPHA);
-    fbo.allocate(2000,1500);
     
-    ofSetWindowShape(800, 600);
-    
-    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+   /* std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     
     for (std::size_t i = 0; i < devicesInfo.size(); ++i)
     {
         ofLogNotice("ofApp::setup") << "\t" << devicesInfo[i];
-    }
+    }*/
     
     gui.setup();
     
@@ -29,22 +33,30 @@ void ofApp::setup() {
     gui.setPosition(500,20);
     
     n=0;
+
+	
+
+	midiIn.listInPorts();
+
+	midiIn.openPort(settings["port"].get<string>());
+	midiIn.ignoreTypes(false, false, false);
+	midiIn.addListener(this);
 }
 
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    
+	
     
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
-    //time += ofGetLastFrameTime() * ofMap(depth, 0, 127, 1.0, 1.9);
+	time += ofGetLastFrameTime();// *ofMap(depth, 0, 127, 1.0, 1.9);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    
+	
     // bind our texture. in our shader this will now be tex0 by default
     // so we can just go ahead and access it there.
     fbo.begin();
@@ -54,10 +66,9 @@ void ofApp::draw() {
     // up a lot of matrices that we want for figuring out the texture matrix
     // and the modelView matrix
     shader.begin();
-    shader.setUniform1f("iTime", time/3);
-    shader.setUniform1f("depth", depth);
+    shader.setUniform1f("iTime", time);
+    shader.setUniform1f("depth", zoom);
     
-    shader.setUniform1f("mouseX", 12);
     
     ofPushMatrix();
     
@@ -71,7 +82,7 @@ void ofApp::draw() {
     
     fbo.draw(0,0,800,600);
     
-    gui.draw();
+   // gui.draw();
     
 }
 
@@ -90,6 +101,8 @@ void ofApp::keyPressed(int key){
         im.save("img/pic_" + ofToString(n) + ".png");
         n++;
     }
+
+	if (key == 'f') ofToggleFullscreen();
     
 }
 
@@ -126,6 +139,13 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
     
+}
+
+void ofApp::newMidiMessage(ofxMidiMessage & eventArgs)
+{
+	if (eventArgs.channel == settings["channel"] && eventArgs.control == settings["control"]) {
+		zoom = ofMap(eventArgs.value, 0, 127, 0, PI/2-0.5);
+	}
 }
 
 //--------------------------------------------------------------
