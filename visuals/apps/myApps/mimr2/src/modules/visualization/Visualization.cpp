@@ -111,13 +111,11 @@ namespace ofxModule {
 					midiCtrl.sendMidi(object.second.channel, object.second.note, 0);
 		
 				object.second.hasSend = false;
-				//cout << 00"midi off " << object.second.channel << "  " << object.second.note << endl;
+				cout << "midi off " << object.second.channel << "  " << object.second.note << endl;
 			}
 			else if (object.second.isActive && isIn && !object.second.hasSend) {
 	
 					midiCtrl.sendMidi(object.second.channel, object.second.note, 127);
-				
-				
 			
 					object.second.hasSend = true;
 					object.second.lastActivated = ofGetElapsedTimeMillis();

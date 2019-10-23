@@ -61,7 +61,8 @@ void MidiCtrl::sendMidi(int channel, int note, int value)
 	//midiOut.sendControlChange(channel, note, value);
 
 	ofxOscMessage m;
-	m.setAddress("/mimr/instrument");
+	m.setAddress("/mimr/chaos");
+	m.addStringArg("chaos");
 	m.addIntArg(176 + channel-1);
 	m.addIntArg(note);
 	m.addIntArg(value);
@@ -92,12 +93,15 @@ void MidiCtrl::updateOsc()
 			int control = m.getArgAsInt(1);
 			int value = m.getArgAsInt(2);
 
-			if (control == 0) {
-				radar->instruments[channel].isActive = value == 127 ? true : false;
+			if (radar->instruments.find(channel) != radar->instruments.end()) {
+				if (control == 0) {
+					radar->instruments[channel].isActive = value == 127 ? true : false;
+				}
+				else {
+					radar->instruments[channel].values[control - 1] = value;
+				}
 			}
-			else {
-				radar->instruments[channel].values[control - 1] = value;
-			}
+			
 		}
 		else if (m.getAddress() == "/mimr/beat") {
 			radar->beat.newBeat(m.getArgAsInt(0));
