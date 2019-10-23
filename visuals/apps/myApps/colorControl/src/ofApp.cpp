@@ -3,8 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	config = ofLoadJson("config.json");
-	midiOut.listOutPorts();
-	midiOut.openPort(config["port"].get<string>());
+	osc.setup(config["oscAddress"].get<string>(),config["oscPort"].get<int>());
 }
 
 //--------------------------------------------------------------
@@ -16,11 +15,12 @@ void ofApp::update(){
 void ofApp::draw(){
 	ofSetBackgroundColor(0);
 	vector<string> s{ "weis","rot","grün","blau","gelb","cyan","magenta" };
-	int i = 0;
+	int i = 1;
 	for (auto c:s){
-		ofDrawBitmapString(c + ofToString(i), 30, i * 10 + 10);
+		ofDrawBitmapString(c + " " + ofToString(i), 30, i * 10 + 10);
 		++i;
 	}
+
 }
 
 //--------------------------------------------------------------
@@ -28,29 +28,26 @@ void ofApp::keyPressed(int key){
 	int channel = 1;
 	switch (key)
 	{
-	case '0':
-		
-		break;
 	case '1':
-		midiOut.sendControlChange(channel, 15, 1);
+		setColorScheme(0);
 		break;
 	case '2':
-		
+		setColorScheme(1);
 		break;
 	case '3':
-		
+		setColorScheme(2);
 		break;
 	case '4':
-		
+		setColorScheme(3);
 		break;
 	case '5':
-		
+		setColorScheme(4);
 		break;
 	case '6':
-		
+		setColorScheme(5);
 		break;
 	case '7':
-		
+		setColorScheme(6);
 		break;
 	default:
 		break;
@@ -104,6 +101,25 @@ void ofApp::gotMessage(ofMessage msg){
 
 void ofApp::setColorScheme(int i)
 {
+	vector<int>			channels {   15,   25,45,46 };
+	vector<vector<int>> colorSets{ {127, 127 ,0 ,127},
+	{ 127, 127 ,0 ,127 },
+	{ 127, 127 ,0 ,127 },
+	{ 127, 127 ,0 ,127 },
+	{ 127, 127 ,0 ,127 },
+	{ 127, 127 ,0 ,127 },
+	{ 127, 127 ,0 ,127 }
+	};
+
+	for (size_t c = 0; c < channels.size(); c++){
+
+		ofxOscMessage m;
+		m.setAddress("/mimr/color");
+		m.addIntArg(176);
+		m.addIntArg(channels[c]);
+		m.addIntArg(colorSets[i][c]);
+		osc.sendMessage(m, false);
+	}
 }
 
 //--------------------------------------------------------------

@@ -66,7 +66,8 @@ void ofApp::update() {
 
 			if (channel == settings["channel"]) {
 				if (control == 0) {
-					//radar->instruments[channel].isActive = value == 127 ? true : false;
+					if (value == 127) brightness = 1;
+					else brightness = 0.3;
 				}
 				else if (control == settings["control"]){
 					zoom = ofMap(value, 0, 127, 0, PI / 2 - 0.5);
@@ -91,7 +92,7 @@ void ofApp::draw() {
     shader.begin();
     shader.setUniform1f("iTime", time);
     shader.setUniform1f("depth", zoom);
-    
+	shader.setUniform1f("brightness", brightness);
     
     ofPushMatrix();
     

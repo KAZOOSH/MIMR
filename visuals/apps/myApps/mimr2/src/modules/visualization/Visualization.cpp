@@ -55,37 +55,6 @@ namespace ofxModule {
     void Visualization::update() {
 		midiCtrl.update();
 
-		//// update chaos osc
-		//// check for waiting messages
-		//while (osc.hasWaitingMessages()) {
-
-		//	// get the next message
-		//	ofxOscMessage m;
-		//	osc.getNextMessage(m);
-
-		//	// check for mouse moved message
-		//	if (m.getAddress() == "/chaos") {
-		//		int id = m.getArgAsInt32(0);
-		//		bool isActive = m.getArgAsBool(1);
-		//		float x = m.getArgAsFloat(2);
-		//		float y = m.getArgAsFloat(3);
-
-		//		for (auto& chaos : radarAttributes.chaosObjects) {
-		//			if (chaos.second.note == id) {
-		//				chaos.second.positionXY = ofVec2f(x*rendering.getWidth(), y*rendering.getHeight());
-		//				if (isActive && chaos.second.positionXY.distance(ofVec2f(rendering.getWidth(), rendering.getHeight())*.5) < rendering.getWidth()*0.5) {
-		//					chaos.second.isActive = true;
-		//					//cout << chaos.second.note << "  active " << chaos.second.isActive << "  pos" << x << "," << y << "     "<< chaos.second.positionXY<<endl;
-		//				}
-		//				else {
-		//					chaos.second.isActive = false;
-		//				}
-		//			}
-		//		}
-		//	}
-
-		//}
-
 		// update chaos midi
 		float maxAngle = 0.05;
 		for (auto& object : radarAttributes.chaosObjects) {
@@ -119,8 +88,6 @@ namespace ofxModule {
 			
 					object.second.hasSend = true;
 					object.second.lastActivated = ofGetElapsedTimeMillis();
-
-
 					cout << "midi on " << object.second.channel << "  " << object.second.note << endl;
 			}
 			

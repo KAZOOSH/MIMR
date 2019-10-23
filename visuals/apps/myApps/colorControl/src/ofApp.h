@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxMidi.h"
+#include "ofxOsc.h"
 
 class ofApp : public ofBaseApp{
 
@@ -25,6 +25,6 @@ class ofApp : public ofBaseApp{
 		void setColorScheme(int i);
 
 		ofJson config;
-		ofxMidiOut midiOut;
+		ofxOscSender osc;
 		
 };
