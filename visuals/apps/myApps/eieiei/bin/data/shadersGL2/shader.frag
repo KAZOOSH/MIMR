@@ -16,6 +16,7 @@
 uniform sampler2DRect tex0;
 uniform float iTime;
 uniform float depth;
+uniform float brightness;
 
 varying vec2 tcoord;
 
@@ -173,5 +174,5 @@ void main()
     
     //fragColor = vec4(clamp(col, 0., 1.), 1)
  	//gl_FragColor = vec4(uv.x,uv.y,0,1);
-    gl_FragColor = vec4(clamp(col, 0., 1.));
+    gl_FragColor = vec4(clamp(col, 0., 1.).rgb*brightness,1.0);
 }

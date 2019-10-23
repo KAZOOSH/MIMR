@@ -40,5 +40,6 @@ public:
 	//ofxMidiIn midiIn;
 
 	float zoom = 0;
+	float brightness = 0.3;
 	ofJson settings;
 };
