@@ -1,6 +1,6 @@
 from instrument import InstrumentConfig
 from instrument import Instrument
-from bank import Bank
+#from bank import Bank
 import argparse
 import socket
 
@@ -9,50 +9,50 @@ def createConfig(name):
     config.name = name
 
     if name == 'kurbel':
-        config.midiInputStartChannel = 14
-        config.midiOutputChannel = 0
-        config.nMidiInputValues = 2
+        
+        
+        
         config.inputNValues = [254,8]
     elif name == 'kuehler':
-        config.midiInputStartChannel = 24
-        config.midiOutputChannel = 1
-        config.nMidiInputValues = 2
+        
+        
+        
         config.inputNValues = [254,8]
-        config.nMidiOutputValues = 6
+        
     elif name == 'theremin':
-        config.midiInputStartChannel = 34
-        config.midiOutputChannel = 2
-        config.nMidiInputValues = 2
+        
+        
+        
         config.inputNValues = [254,254]
         config.serialPort = "/dev/ttyUSB0"
     elif name == 'trichter':
-        config.midiInputStartChannel = 44
-        config.midiOutputChannel = 3
-        config.nMidiInputValues = 3
+        
+        
+        
         config.inputNValues = [254,254,254]
     elif name == 'eieiei':
-        config.midiInputStartChannel = 54
-        config.midiOutputChannel = 4
-        config.nMidiInputValues = 1
+        
+        
+        
         config.inputNValues = [254,254]
-        config.nMidiOutputValues = 3
+        
     elif name == 'goldenbox':
-        config.midiInputStartChannel = 64
-        config.midiOutputChannel = 5
-        config.nMidiInputValues = 2
+        
+        
+        
         config.inputNValues = [254,254]
-        config.isPi1 = True
+
     elif name == 'bassfahrer':
-        config.midiInputStartChannel = 64
-        config.midiOutputChannel = 6
-        config.nMidiInputValues = 0
+        
+        
+        
         config.inputNValues = []
     elif name == 'foen':
-        config.midiInputStartChannel = 74
-        config.midiOutputChannel = 7
-        config.nMidiInputValues = 1
+        
+        
+        
         config.inputNValues = [254]
-        config.nMidiOutputValues = 5
+        
     return config
 
 
@@ -71,7 +71,9 @@ if instrumentName == "auto":
     instrumentName = socket.gethostname()
 
 if instrumentName == "bank":
-    device = Bank()
+    #device = Bank()
+    print("currently not implementet")
+    exit(1)
 else:
     config = createConfig(instrumentName)
     device = Instrument(config)
