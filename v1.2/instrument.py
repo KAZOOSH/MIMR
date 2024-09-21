@@ -13,7 +13,7 @@ class InstrumentConfig:
     def __init__(self):
         self.name = "none"
         self.serialPort = "/dev/ttyACM0"
-        self.oscServer = "192.168.1.133"
+        self.oscServer = "192.168.1.254"
         self.oscSendPort = 9002
         self.oscReceivePort = 9002
 
@@ -68,8 +68,6 @@ class Instrument:
         packet = [self.name]
         packet.extend(data)
         msg = oscbuildparse.OSCMessage("/mimr/instrument", None, packet)
-        print(data)
-        print(packet)
         osc_send(msg, self.name)
 
     def sendSerial(self):
@@ -82,5 +80,4 @@ class Instrument:
 
         #set instrument to active ....
         packet.append(0) #tmp activate - todo remove later ...
-        logging.debug("serial write: " + str(bytes(packet)))
         self.serial.write(bytes(packet))
