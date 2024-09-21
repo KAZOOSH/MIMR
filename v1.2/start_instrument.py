@@ -9,48 +9,28 @@ def createConfig(name):
     config.name = name
 
     if name == 'kurbel':
-        
-        
-        
         config.inputNValues = [254,8]
+
     elif name == 'kuehler':
-        
-        
-        
         config.inputNValues = [254,8]
         
     elif name == 'theremin':
-        
-        
-        
         config.inputNValues = [254,254]
         config.serialPort = "/dev/ttyUSB0"
+
     elif name == 'trichter':
-        
-        
-        
         config.inputNValues = [254,254,254]
+
     elif name == 'eieiei':
-        
-        
-        
         config.inputNValues = [254,254]
-        
+
     elif name == 'goldenbox':
-        
-        
-        
         config.inputNValues = [254,254]
 
     elif name == 'bassfahrer':
-        
-        
-        
         config.inputNValues = []
+
     elif name == 'foen':
-        
-        
-        
         config.inputNValues = [254]
         
     return config
@@ -76,6 +56,8 @@ if instrumentName == "bank":
     exit(1)
 else:
     config = createConfig(instrumentName)
+    #config.serialPort = "/dev/ttyACM4"
+    #config.oscServer = "192.168.1.253"
     device = Instrument(config)
 
 
