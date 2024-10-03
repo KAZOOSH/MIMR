@@ -7,15 +7,16 @@ from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
 from osc4py3.oscmethod import *
 
-logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',)
+
 
 class InstrumentConfig:
     def __init__(self):
         self.name = "none"
         self.serialPort = "/dev/ttyACM0"
-        self.oscServer = "192.168.1.254"
+        self.oscServer = "192.168.1.253"
         self.oscSendPort = 9002
         self.oscReceivePort = 9002
+        self.sendBytes = [255]
 
 class Instrument:
     def __init__(self,config):
@@ -23,13 +24,14 @@ class Instrument:
 
         # open serial port to Arduino
         self.serial = Serial( config.serialPort, 115200, bytesize=8, parity='N', timeout=0.01 )
+        self.sendBytes = config.sendBytes
 
         # open OSC communication
         osc_startup()
         osc_udp_client(config.oscServer, config.oscSendPort, self.name)
         #osc_udp_server("0.0.0.0", config.oscReceivePort, self.name)
         osc_method("/mimr", self.readOscInput, argscheme=OSCARG_MESSAGE)
-        
+
         #give the instrument some time to init ....
         time.sleep(2)
         self.sendSerial()
@@ -54,6 +56,7 @@ class Instrument:
                 value = line[1:-1]
                 #create array of values
                 serialReadValues = list([int(x) for x in value.split()])
+                logging.debug("got serial msg: " + ",".join([str(x) for x in serialReadValues]))
                 #convert to int numbers and clamp
                 #for x in serialReadValues:
                 #    x = int(x)
@@ -69,6 +72,7 @@ class Instrument:
         packet.extend(data)
         msg = oscbuildparse.OSCMessage("/mimr/instrument", None, packet)
         osc_send(msg, self.name)
+        logging.debug("send osc msg: " + ",".join([str(x) for x in packet]))
 
     def sendSerial(self):
         # first add sync byte ...
@@ -76,8 +80,9 @@ class Instrument:
 
         #add data here
 
-        packet.append(255)
+        packet.extend(self.sendBytes)
 
         #set instrument to active ....
         packet.append(0) #tmp activate - todo remove later ...
+        logging.debug("send serial msg: " + ",".join([str(x) for x in packet]))
         self.serial.write(bytes(packet))

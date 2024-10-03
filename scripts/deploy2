@@ -1,0 +1,28 @@
+
+#!/bin/bash
+
+LDIR="$(cd `dirname $0` && cd .. && pwd)"
+cd "$LDIR/v1.2/"
+FILES="instrument.py start_instrument.py"
+
+echo "deploy goldebox ..."
+scp $FILES pi@192.168.1.56:/opt/mimr/python
+
+echo "deploy kuehler ..."
+scp $FILES pi@192.168.1.52:/opt/mimr/python
+
+echo "deploy trichter ..."
+scp $FILES pi@192.168.1.54:/opt/mimr/python
+
+echo "deploy trichter ..."
+scp $FILES pi@192.168.1.57:/opt/mimr/python
+
+ssh pi@192.168.1.56 sudo systemctl restart mimrpython
+ssh pi@192.168.1.52 sudo systemctl restart mimrpython
+ssh pi@192.168.1.54 sudo systemctl restart mimrpython
+ssh pi@192.168.1.57 sudo systemctl restart mimrpython
+
+ssh pi@192.168.1.56 sudo systemctl status mimrpython
+ssh pi@192.168.1.52 sudo systemctl status mimrpython
+ssh pi@192.168.1.54 sudo systemctl status mimrpython
+ssh pi@192.168.1.57 sudo systemctl status mimrpython
